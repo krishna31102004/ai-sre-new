@@ -32,3 +32,6 @@ This file is the running log for architectural and scope decisions. Add a dated 
 - 2026-07-09: Choose models per graph node rather than fixing one global model, because cheap classification steps and stronger reasoning steps have different cost and quality needs.
 - 2026-07-09: Read the OpenAI API key from environment variables loaded through `.env` during development, because secrets must stay out of version control and deployment config should be explicit.
 - 2026-07-09: Treat the OpenTelemetry demo app as an external Docker Compose dependency rather than vendoring or forking it, because the repo should own the AI SRE system and only wire against the demo environment.
+- 2026-07-09: Use the standard-library `venv` module for the local Python environment, because it is universally available and avoids introducing another package manager before the project needs one.
+- 2026-07-09: Use `python3` consistently in scripts and documentation, because this machine does not expose a `python` command on PATH outside the virtual environment.
+- 2026-07-09: Run local Postgres from the `pgvector/pgvector:pg16` image, because it enables the vector extension while preserving normal Postgres behavior for relational state.
