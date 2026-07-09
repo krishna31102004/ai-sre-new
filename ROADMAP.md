@@ -58,18 +58,18 @@ Done means an alert can trigger an investigation that identifies a likely suspec
 
 Done means the MVP is complete: a real injected fault triggers an autonomous investigation that correlates a likely bad commit, retrieves a relevant runbook, estimates impact from telemetry, and emits a single evidence-cited incident brief through the local notifier without human intervention.
 
-- [ ] Write the initial runbook corpus for supported fault scenarios.
-- [ ] Define runbook metadata tags such as service, alert type, and symptom.
-- [ ] Add runbook ingestion pipeline.
-- [ ] Chunk runbooks by section.
-- [ ] Generate embeddings for runbook chunks.
+- [x] Write the initial runbook corpus for supported fault scenarios.
+- [x] Define runbook metadata tags such as service, alert type, and symptom.
+- [x] Add runbook ingestion pipeline.
+- [x] Chunk runbooks by section.
+- [x] Generate embeddings for runbook chunks.
 - [ ] Store runbook chunks and embeddings in Postgres with pgvector.
 - [ ] Add pgvector index strategy.
-- [ ] Implement deterministic tag filtering for runbooks.
-- [ ] Implement embedding-based ranking within filtered candidates.
-- [ ] Define Pydantic schema for runbook retrieval findings.
-- [ ] Add tests for runbook tag filtering.
-- [ ] Add tests for expected runbook retrieval on known alerts.
+- [x] Implement deterministic tag filtering for runbooks.
+- [x] Implement embedding-based ranking within filtered candidates.
+- [x] Define Pydantic schema for runbook retrieval findings.
+- [x] Add tests for runbook tag filtering.
+- [x] Add tests for expected runbook retrieval on known alerts.
 - [ ] Implement Prometheus client.
 - [ ] Define metric queries for error rate, latency, and request volume.
 - [ ] Build service dependency graph representation.

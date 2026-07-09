@@ -4,7 +4,12 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from glassbox_sre.schemas import AlertmanagerWebhook, CommitCorrelationFinding, DeployRecord
+from glassbox_sre.schemas import (
+    AlertmanagerWebhook,
+    CommitCorrelationFinding,
+    DeployRecord,
+    RunbookChunk,
+)
 from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -59,6 +64,21 @@ class FindingRow(Base):
     validation_state: Mapped[str] = mapped_column(String(40), nullable=False)
     evidence_json: Mapped[list[dict[str, Any]]] = mapped_column(json_type(), nullable=False)
     reasoning: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class RunbookChunkRow(Base):
+    __tablename__ = "runbook_chunks"
+
+    chunk_id: Mapped[str] = mapped_column(String(240), primary_key=True)
+    runbook_id: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    section_heading: Mapped[str] = mapped_column(Text, nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    service_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    alertname: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    symptoms_json: Mapped[list[str]] = mapped_column(json_type(), nullable=False)
+    fault_flag: Mapped[str | None] = mapped_column(String(120))
+    embedding_json: Mapped[list[float]] = mapped_column(json_type(), nullable=False)
 
 
 def make_session_factory(database_url: str) -> sessionmaker[Session]:
@@ -150,3 +170,44 @@ def update_investigation_brief(session: Session, investigation_id: str, brief: s
     if row is None:
         raise ValueError(f"unknown investigation_id={investigation_id}")
     row.final_brief = brief
+
+
+def upsert_runbook_chunks(
+    session: Session,
+    chunks: list[RunbookChunk],
+    embeddings: dict[str, list[float]],
+) -> None:
+    for chunk in chunks:
+        existing = session.get(RunbookChunkRow, chunk.chunk_id)
+        row = existing or RunbookChunkRow(chunk_id=chunk.chunk_id)
+        row.runbook_id = chunk.runbook_id
+        row.title = chunk.title
+        row.section_heading = chunk.section_heading
+        row.body = chunk.body
+        row.service_name = chunk.service
+        row.alertname = chunk.alertname
+        row.symptoms_json = chunk.symptoms
+        row.fault_flag = chunk.fault_flag
+        row.embedding_json = embeddings[chunk.chunk_id]
+        session.add(row)
+
+
+def load_runbook_chunks_from_db(session: Session) -> list[tuple[RunbookChunk, list[float]]]:
+    rows = session.scalars(select(RunbookChunkRow).order_by(RunbookChunkRow.chunk_id)).all()
+    return [
+        (
+            RunbookChunk(
+                chunk_id=row.chunk_id,
+                runbook_id=row.runbook_id,
+                title=row.title,
+                section_heading=row.section_heading,
+                body=row.body,
+                service=row.service_name,
+                alertname=row.alertname,
+                symptoms=row.symptoms_json,
+                fault_flag=row.fault_flag,
+            ),
+            row.embedding_json,
+        )
+        for row in rows
+    ]

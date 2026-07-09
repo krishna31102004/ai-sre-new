@@ -27,7 +27,7 @@ class DeployRecord(BaseModel):
 
 
 class EvidenceItem(BaseModel):
-    kind: Literal["deploy", "commit", "diff", "heuristic", "alert"]
+    kind: Literal["deploy", "commit", "diff", "heuristic", "alert", "runbook", "metric"]
     summary: str
     reference: str
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -58,3 +58,39 @@ class CommitCorrelationFinding(BaseModel):
 
 class CommitCorrelationResult(BaseModel):
     findings: list[CommitCorrelationFinding] = Field(default_factory=list)
+
+
+class RunbookMetadata(BaseModel):
+    runbook_id: str
+    title: str
+    service: str
+    upstream_service: str | None = None
+    alertname: str
+    symptoms: list[str] = Field(default_factory=list)
+    fault_flag: str | None = None
+    severity_hint: str | None = None
+    environment: str | None = None
+
+
+class RunbookChunk(BaseModel):
+    chunk_id: str
+    runbook_id: str
+    title: str
+    section_heading: str
+    body: str
+    service: str
+    alertname: str
+    symptoms: list[str] = Field(default_factory=list)
+    fault_flag: str | None = None
+
+
+class RunbookRetrievalFinding(BaseModel):
+    runbook_id: str
+    chunk_id: str
+    title: str
+    section_heading: str
+    service: str
+    alertname: str
+    score: float = Field(ge=0.0)
+    evidence: list[EvidenceItem] = Field(min_length=1)
+    summary: str
