@@ -33,15 +33,15 @@ Done means an alert can trigger an investigation that identifies a likely suspec
 - [x] Keep the OpenTelemetry demo external through Docker Compose rather than vendoring or forking it into this repo.
 - [x] Build minimal LangGraph workflow with a triage node and a brief node.
 - [x] Add basic LangSmith tracing for the minimal graph.
-- [ ] Design the deploy history schema.
-- [ ] Create a small initial deploy history dataset.
-- [ ] Author seeded commits mapped to the first fault scenario.
-- [ ] Store deploy records in Postgres.
+- [x] Design the deploy history schema.
+- [x] Create a small initial deploy history dataset.
+- [x] Author seeded commits mapped to the first fault scenario.
+- [x] Store deploy records in Postgres.
 - [ ] Add durable investigation records to Postgres.
 - [ ] Implement alert-to-service mapping logic.
-- [ ] Implement deploy-window lookup around alert `startsAt`.
-- [ ] Implement candidate commit retrieval with `git log`.
-- [ ] Add service/path heuristics for narrowing candidate commits.
+- [x] Implement deploy-window lookup around alert `startsAt`.
+- [x] Implement candidate commit retrieval with `git log`.
+- [x] Add service/path heuristics for narrowing candidate commits.
 - [ ] Add diff extraction for candidate commits.
 - [ ] Define Pydantic schema for commit-correlation findings.
 - [ ] Implement LLM-based candidate diff ranking.

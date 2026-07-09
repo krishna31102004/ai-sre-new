@@ -1,0 +1,152 @@
+from __future__ import annotations
+
+import uuid
+from datetime import UTC, datetime
+from typing import Any
+
+from glassbox_sre.schemas import AlertmanagerWebhook, CommitCorrelationFinding, DeployRecord
+from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
+from sqlalchemy.types import JSON
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+def json_type() -> JSON:
+    return JSONB().with_variant(JSON(), "sqlite")
+
+
+class DeploymentRow(Base):
+    __tablename__ = "deployments"
+
+    deployment_id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    service_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    environment: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    deployed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    commit_sha: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    commit_title: Mapped[str] = mapped_column(Text, nullable=False)
+    repo_path: Mapped[str] = mapped_column(Text, nullable=False)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(json_type(), default=dict)
+
+
+class InvestigationRow(Base):
+    __tablename__ = "investigations"
+
+    investigation_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    alert_status: Mapped[str] = mapped_column(String(40), nullable=False)
+    alert_name: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    service_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    final_brief: Mapped[str | None] = mapped_column(Text)
+    payload_json: Mapped[dict[str, Any]] = mapped_column(json_type(), nullable=False)
+
+
+class FindingRow(Base):
+    __tablename__ = "investigation_findings"
+
+    finding_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    investigation_id: Mapped[str] = mapped_column(
+        ForeignKey("investigations.investigation_id"), nullable=False, index=True
+    )
+    commit_sha: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    commit_title: Mapped[str] = mapped_column(Text, nullable=False)
+    service_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    validation_state: Mapped[str] = mapped_column(String(40), nullable=False)
+    evidence_json: Mapped[list[dict[str, Any]]] = mapped_column(json_type(), nullable=False)
+    reasoning: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+def make_session_factory(database_url: str) -> sessionmaker[Session]:
+    engine = create_engine(database_url)
+    return sessionmaker(engine)
+
+
+def init_db(session_factory: sessionmaker[Session]) -> None:
+    Base.metadata.create_all(session_factory.kw["bind"])
+
+
+def upsert_deployments(session: Session, deployments: list[DeployRecord]) -> None:
+    for deployment in deployments:
+        existing = session.get(DeploymentRow, deployment.deployment_id)
+        row = existing or DeploymentRow(deployment_id=deployment.deployment_id)
+        row.service_name = deployment.service_name
+        row.environment = deployment.environment
+        row.deployed_at = deployment.deployed_at
+        row.commit_sha = deployment.commit_sha
+        row.commit_title = deployment.commit_title
+        row.repo_path = deployment.repo_path
+        row.metadata_json = {}
+        session.add(row)
+
+
+def load_deployments(session: Session) -> list[DeployRecord]:
+    rows = session.scalars(select(DeploymentRow).order_by(DeploymentRow.deployed_at)).all()
+    return [
+        DeployRecord(
+            deployment_id=row.deployment_id,
+            service_name=row.service_name,
+            environment=row.environment,
+            deployed_at=row.deployed_at,
+            commit_sha=row.commit_sha,
+            commit_title=row.commit_title,
+            repo_path=row.repo_path,
+        )
+        for row in rows
+    ]
+
+
+def create_investigation(session: Session, payload: AlertmanagerWebhook) -> str:
+    first_alert = payload.alerts[0]
+    investigation_id = str(uuid.uuid4())
+    service_name = (
+        first_alert.labels.get("service")
+        or first_alert.labels.get("service_name")
+        or first_alert.labels.get("job")
+        or "unknown-service"
+    )
+    session.add(
+        InvestigationRow(
+            investigation_id=investigation_id,
+            alert_status=payload.status,
+            alert_name=first_alert.labels.get("alertname", "unknown-alert"),
+            service_name=service_name,
+            started_at=first_alert.starts_at,
+            created_at=datetime.now(UTC),
+            final_brief=None,
+            payload_json=payload.model_dump(mode="json", by_alias=True),
+        )
+    )
+    return investigation_id
+
+
+def save_findings(
+    session: Session,
+    investigation_id: str,
+    findings: list[CommitCorrelationFinding],
+) -> None:
+    for finding in findings:
+        session.add(
+            FindingRow(
+                finding_id=str(uuid.uuid4()),
+                investigation_id=investigation_id,
+                commit_sha=finding.commit_sha,
+                commit_title=finding.commit_title,
+                service_name=finding.service_name,
+                confidence=finding.confidence,
+                validation_state=finding.validation_state.value,
+                evidence_json=[item.model_dump(mode="json") for item in finding.evidence],
+                reasoning=finding.reasoning,
+            )
+        )
+
+
+def update_investigation_brief(session: Session, investigation_id: str, brief: str) -> None:
+    row = session.get(InvestigationRow, investigation_id)
+    if row is None:
+        raise ValueError(f"unknown investigation_id={investigation_id}")
+    row.final_brief = brief
