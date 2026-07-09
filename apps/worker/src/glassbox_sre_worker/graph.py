@@ -2,10 +2,25 @@ import json
 import logging
 import os
 from collections.abc import Callable
+from pathlib import Path
 from typing import NotRequired, TypedDict
 
+from glassbox_sre.commit_correlation import git_show_diff, rank_commit_candidates
 from glassbox_sre.config import Settings, get_settings
-from glassbox_sre.schemas import AlertmanagerWebhook
+from glassbox_sre.schemas import (
+    AlertmanagerWebhook,
+    CommitCorrelationFinding,
+    CommitCorrelationResult,
+    DeployRecord,
+)
+from glassbox_sre.storage import (
+    create_investigation,
+    init_db,
+    load_deployments,
+    make_session_factory,
+    save_findings,
+    update_investigation_brief,
+)
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
@@ -26,6 +41,7 @@ class TriageResult(BaseModel):
 class InvestigationState(TypedDict):
     alert_payload: AlertmanagerWebhook
     triage: NotRequired[TriageResult]
+    commit_findings: NotRequired[list[CommitCorrelationFinding]]
     brief: NotRequired[str]
 
 
@@ -109,11 +125,103 @@ def _build_triage_node(settings: Settings):
     return triage_node
 
 
+def _build_commit_correlation_node(settings: Settings, repo_root: Path):
+    if not settings.openai_api_key:
+        raise RuntimeError(
+            "OPENAI_API_KEY must be set in .env before running the Phase 1 LangGraph worker."
+        )
+
+    session_factory = make_session_factory(settings.postgres_url)
+    init_db(session_factory)
+    llm = ChatOpenAI(
+        model=settings.openai_triage_model,
+        api_key=settings.openai_api_key,
+        temperature=0,
+    ).with_structured_output(
+        CommitCorrelationResult,
+        include_raw=True,
+        method="function_calling",
+    )
+
+    def commit_correlation_node(
+        state: InvestigationState,
+    ) -> dict[str, list[CommitCorrelationFinding]]:
+        payload = state["alert_payload"]
+        with session_factory() as session:
+            deployments = load_deployments(session)
+        deterministic_findings = rank_commit_candidates(payload, deployments, repo_root)
+        candidate_context = [
+            {
+                "commit_sha": finding.commit_sha,
+                "commit_title": finding.commit_title,
+                "service_name": finding.service_name,
+                "deterministic_confidence": finding.confidence,
+                "validation_state": finding.validation_state.value,
+                "evidence": [item.model_dump(mode="json") for item in finding.evidence],
+                "diff": git_show_diff(finding.commit_sha, repo_root, max_chars=2500),
+            }
+            for finding in deterministic_findings[:3]
+        ]
+
+        result = llm.invoke(
+            [
+                SystemMessage(
+                    content=(
+                        "You are the commit-correlation investigator for a read-only AI SRE. "
+                        "Rank candidate commits using only the provided alert, deploy, path, "
+                        "and diff evidence. Every finding must include evidence and a validation "
+                        "state of validated, invalidated, or inconclusive."
+                    )
+                ),
+                HumanMessage(
+                    content=json.dumps(
+                        {
+                            "alert": payload.model_dump(mode="json", by_alias=True),
+                            "candidates": candidate_context,
+                        },
+                        sort_keys=True,
+                    )
+                ),
+            ]
+        )
+        raw_message = result.get("raw") if isinstance(result, dict) else None
+        token_usage = None
+        if raw_message is not None:
+            token_usage = getattr(raw_message, "usage_metadata", None) or getattr(
+                raw_message, "response_metadata", {}
+            ).get("token_usage")
+        if token_usage:
+            logger.info("commit correlation OpenAI token usage: %s", token_usage)
+
+        parsed = result.get("parsed") if isinstance(result, dict) else result
+        if not isinstance(parsed, CommitCorrelationResult):
+            parsed = CommitCorrelationResult.model_validate(parsed)
+        return {"commit_findings": parsed.findings}
+
+    return commit_correlation_node
+
+
 def brief_node(state: InvestigationState) -> dict[str, str]:
     payload = state["alert_payload"]
     triage = state["triage"]
     alert_names = triage.alert_names or _extract_alert_names(payload)
     service_names = triage.affected_services or _extract_service_names(payload)
+    findings = state.get("commit_findings", [])
+    top_finding = findings[0] if findings else None
+    suspect_block = (
+        "suspect commit: none\n"
+        "confidence: 0.00\n"
+        "evidence: no commit-correlation finding was produced"
+    )
+    if top_finding is not None:
+        evidence_text = "; ".join(item.summary for item in top_finding.evidence)
+        suspect_block = (
+            f"suspect commit: {top_finding.commit_sha[:12]} - {top_finding.commit_title}\n"
+            f"confidence: {top_finding.confidence:.2f}\n"
+            f"validation: {top_finding.validation_state.value}\n"
+            f"evidence: {evidence_text}\n"
+            f"reasoning: {top_finding.reasoning}"
+        )
 
     brief = (
         "[investigation brief]\n"
@@ -123,7 +231,7 @@ def brief_node(state: InvestigationState) -> dict[str, str]:
         f"severity: {triage.severity}\n"
         f"type: {triage.incident_type}\n"
         f"summary: {triage.summary}\n"
-        "next step: commit/deploy correlation will be added in this phase."
+        f"{suspect_block}"
     )
     return {"brief": brief}
 
@@ -131,20 +239,42 @@ def brief_node(state: InvestigationState) -> dict[str, str]:
 def build_investigation_graph(
     settings: Settings | None = None,
     triage_node: Callable[[InvestigationState], dict[str, TriageResult]] | None = None,
+    commit_correlation_node: Callable[
+        [InvestigationState], dict[str, list[CommitCorrelationFinding]]
+    ]
+    | None = None,
+    repo_root: Path | None = None,
 ):
     resolved_settings = settings or get_settings()
     _configure_langsmith(resolved_settings)
+    resolved_repo_root = repo_root or Path.cwd()
 
     graph = StateGraph(InvestigationState)
     graph.add_node("triage", triage_node or _build_triage_node(resolved_settings))
+    graph.add_node(
+        "commit_correlation",
+        commit_correlation_node
+        or _build_commit_correlation_node(resolved_settings, resolved_repo_root),
+    )
     graph.add_node("brief", brief_node)
     graph.set_entry_point("triage")
-    graph.add_edge("triage", "brief")
+    graph.add_edge("triage", "commit_correlation")
+    graph.add_edge("commit_correlation", "brief")
     graph.add_edge("brief", END)
     return graph.compile()
 
 
 def run_investigation(payload: AlertmanagerWebhook, settings: Settings | None = None) -> str:
-    graph = build_investigation_graph(settings)
+    resolved_settings = settings or get_settings()
+    session_factory = make_session_factory(resolved_settings.postgres_url)
+    init_db(session_factory)
+    with session_factory.begin() as session:
+        investigation_id = create_investigation(session, payload)
+
+    graph = build_investigation_graph(resolved_settings)
     result = graph.invoke({"alert_payload": payload})
-    return result["brief"]
+    brief = result["brief"]
+    with session_factory.begin() as session:
+        save_findings(session, investigation_id, result.get("commit_findings", []))
+        update_investigation_brief(session, investigation_id, brief)
+    return brief

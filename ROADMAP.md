@@ -37,21 +37,22 @@ Done means an alert can trigger an investigation that identifies a likely suspec
 - [x] Create a small initial deploy history dataset.
 - [x] Author seeded commits mapped to the first fault scenario.
 - [x] Store deploy records in Postgres.
-- [ ] Add durable investigation records to Postgres.
-- [ ] Implement alert-to-service mapping logic.
+- [x] Add durable investigation records to Postgres.
+- [x] Implement alert-to-service mapping logic.
 - [x] Implement deploy-window lookup around alert `startsAt`.
 - [x] Implement candidate commit retrieval with `git log`.
 - [x] Add service/path heuristics for narrowing candidate commits.
-- [ ] Add diff extraction for candidate commits.
-- [ ] Define Pydantic schema for commit-correlation findings.
-- [ ] Implement LLM-based candidate diff ranking.
-- [ ] Require confidence score and evidence for each ranked commit.
-- [ ] Represent hypotheses with validation states.
-- [ ] Add graph fan-out structure even if only one investigator is fully implemented.
-- [ ] Update the incident brief to include suspect commit, confidence, and evidence links.
-- [ ] Add tests for deploy-window filtering.
-- [ ] Add tests for hypothesis schema validation.
-- [ ] Run the first end-to-end commit-correlation demo.
+- [x] Add diff extraction for candidate commits.
+- [x] Define Pydantic schema for commit-correlation findings.
+- [x] Implement LLM-based candidate diff ranking.
+- [x] Require confidence score and evidence for each ranked commit.
+- [x] Represent hypotheses with validation states.
+- [x] Add graph fan-out structure even if only one investigator is fully implemented.
+- [x] Update the incident brief to include suspect commit, confidence, and evidence links.
+- [x] Add tests for deploy-window filtering.
+- [x] Add tests for hypothesis schema validation.
+- [x] Run the first end-to-end commit-correlation demo.
+- [x] Phase 1 complete.
 
 ## Phase 2: Runbook RAG And Impact Estimation
 
