@@ -1,16 +1,21 @@
+from functools import lru_cache
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
-
-    environment: str = "development"
-    log_level: str = "INFO"
     redis_url: str = "redis://localhost:6379/0"
-    database_url: str = "postgresql+psycopg://glassbox_sre:glassbox_sre@localhost:5432/glassbox_sre"
-    alert_queue_name: str = "glassbox_sre:alerts"
-    local_notifier_output_path: str = "logs/incident-briefs.jsonl"
+    postgres_url: str = "postgresql://glassbox:glassbox@localhost:5432/glassbox_sre"
+    openai_api_key: str | None = None
+    slack_bot_token: str | None = None
+    slack_signing_secret: str | None = None
+    alert_queue_name: str = "glassbox:alerts"
+    worker_poll_interval_seconds: float = 1.0
+    log_level: str = "INFO"
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
+@lru_cache
 def get_settings() -> Settings:
     return Settings()

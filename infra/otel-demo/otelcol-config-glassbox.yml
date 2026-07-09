@@ -1,0 +1,24 @@
+exporters:
+  otlp_grpc/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+    sending_queue:
+      batch:
+  otlp_http/prometheus:
+    endpoint: "http://prometheus:9090/api/v1/otlp"
+    tls:
+      insecure: true
+    sending_queue:
+      batch:
+
+service:
+  pipelines:
+    traces:
+      exporters: [debug, otlp_grpc/jaeger, span_metrics]
+    metrics:
+      exporters: [debug, otlp_http/prometheus]
+    logs:
+      exporters: [debug]
+    profiles:
+      exporters: [debug]

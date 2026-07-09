@@ -16,7 +16,7 @@ This file is the running log for architectural and scope decisions. Add a dated 
 - 2026-07-09: Use Slack Bolt instead of a basic incoming webhook, because slash commands, interactive actions, threads, Block Kit, and request verification make the integration production-shaped.
 - 2026-07-09: Use Pydantic for typed state, tool contracts, and structured LLM outputs, because validation is central to making the agent reliable and debuggable.
 - 2026-07-09: Use LangSmith for agent tracing, because replayable graph traces are important for debugging, evaluation, and interview demos.
-- 2026-07-09: Keep the reasoning model behind LangGraph model-agnostic while initially targeting a Claude Sonnet-class model, because this preserves flexibility while using a strong reasoning model.
+- 2026-07-09: Keep the reasoning model behind LangGraph model-agnostic while initially targeting OpenAI models, because this preserves flexibility while matching the chosen provider and cost profile.
 - 2026-07-09: Implement commit correlation as deterministic deploy-window narrowing followed by LLM diff ranking, because pure timing correlation is too broad and pure LLM-over-all-commits is unreliable.
 - 2026-07-09: Require evidence citations on every incident-brief claim, because the project must be glass-box and defensible rather than a black-box chatbot.
 - 2026-07-09: Include a gate node that can stop or gather more context before conclusion, because avoiding thin-evidence conclusions is a core agentic design principle.
@@ -40,3 +40,12 @@ This file is the running log for architectural and scope decisions. Add a dated 
 - 2026-07-09: Keep one root editable install for all internal packages instead of separate installs for `apps/api`, `apps/worker`, and `packages/core`, because a single setup command is less error-prone across repeated fresh clones.
 - 2026-07-09: Explicitly map `glassbox_sre`, `glassbox_sre_api`, and `glassbox_sre_worker` in `pyproject.toml`, because implicit multi-root package discovery installed the distribution but did not expose the import packages reliably.
 - 2026-07-09: Pin local setup to `pip<26` for now, because pip 26.1.2 hung during basic commands in this environment while pip 25.3 completed installs normally.
+- 2026-07-09: Track the official OpenTelemetry demo as a git submodule under `infra/otel-demo/opentelemetry-demo`, because it keeps the demo external and pinned without vendoring or forking its source into this repo.
+- 2026-07-09: Use a slim Glassbox SRE compose overlay on top of the official demo core compose instead of the upstream full observability overlay, because Phase 0 needs Prometheus, Alertmanager, Grafana, and Jaeger but not the heavier OpenSearch/OpAMP stack.
+- 2026-07-09: Diagnose the earlier hangs as host machine disk pressure causing macOS dataless placeholder files and stuck Git/Python/Pip operations, because freeing local storage and replacing placeholder files made the existing approach work.
+- 2026-07-09: Accept that `docker system prune -a` clears the local Docker image/build cache while preserving named Postgres and Redis volumes, because the stack can be re-pulled from compose without losing project data.
+- 2026-07-09: Publish the OTel frontend proxy on host port `18080` while leaving the demo's internal Envoy port at `8080`, because this avoids local host port conflicts without breaking the demo load generator.
+- 2026-07-09: Use `adFailure=on` as the Phase 0 real fault scenario, because the demo load generator continuously exercises `AdService/GetAds` and produces observable error spans.
+- 2026-07-09: Alert on `sum(rate(traces_span_metrics_calls_total{service_name="ad", status_code="STATUS_CODE_ERROR"}[5m])) > 0.01` for Phase 0, because the real OTel demo emits sparse ad errors under the injected fault and a five-minute window matches observed telemetry.
+- 2026-07-09: Keep the shared Alertmanager schema minimal for Phase 0, because the real Alertmanager webhook payload is compatible with the required `status`, `alerts`, `labels`, `annotations`, and `startsAt` fields while extra fields are safely ignored.
+- 2026-07-09: Move the repository remote from `krishna31102004/ai-sre` to `krishna31102004/ai-sre-new`, because the old remote had a persistent unresolved push hang and the new repo is the clean target for preserving history.

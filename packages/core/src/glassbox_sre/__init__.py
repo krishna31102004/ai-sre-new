@@ -1,1 +1,1 @@
-"""Shared contracts and utilities for Glassbox SRE."""
+"""Shared package for Glassbox SRE services."""

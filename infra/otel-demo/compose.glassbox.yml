@@ -1,5 +1,36 @@
 services:
+  jaeger:
+    image: ${JAEGERTRACING_IMAGE}
+    container_name: jaeger
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: unless-stopped
+    ports:
+      - "${JAEGER_UI_PORT}:16686"
+      - "${JAEGER_GRPC_PORT}"
+
+  grafana:
+    image: ${GRAFANA_IMAGE}
+    container_name: grafana
+    deploy:
+      resources:
+        limits:
+          memory: 175M
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    volumes:
+      - ../../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+
   prometheus:
+    image: ${PROMETHEUS_IMAGE}
+    container_name: prometheus
     command:
       - --web.console.templates=/etc/prometheus/consoles
       - --web.console.libraries=/etc/prometheus/console_libraries
@@ -10,6 +41,13 @@ services:
       - --web.route-prefix=/
       - --web.enable-otlp-receiver
       - --enable-feature=exemplar-storage
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
     volumes:
       - ../../prometheus/prometheus-config.yaml:/etc/prometheus/prometheus-config.yaml:ro
       - ../../prometheus/rules:/etc/prometheus/rules:ro
@@ -29,3 +67,24 @@ services:
     volumes:
       - ../../alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     restart: unless-stopped
+
+  frontend-proxy:
+    ports: !override
+      - "${GLASSBOX_FRONTEND_HOST_PORT:-18080}:${ENVOY_PORT}"
+      - "${ENVOY_ADMIN_PORT}:${ENVOY_ADMIN_PORT}"
+
+  otel-collector:
+    command:
+      - --config=/etc/otelcol-config.yml
+      - --config=/etc/otelcol-config-glassbox.yml
+      - --feature-gates=service.profilesSupport
+    volumes:
+      - ${HOST_FILESYSTEM}:/hostfs:ro
+      - ${DOCKER_SOCK}:/var/run/docker.sock:ro
+      - ${OTEL_COLLECTOR_CONFIG}:/etc/otelcol-config.yml
+      - ../../otel-demo/otelcol-config-glassbox.yml:/etc/otelcol-config-glassbox.yml:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+      jaeger:
+        condition: service_started

@@ -1,1 +1,1 @@
-"""Async investigation worker package for Glassbox SRE."""
+"""Async investigation worker for Glassbox SRE."""

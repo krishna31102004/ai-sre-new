@@ -1,1 +1,1 @@
-"""FastAPI ingestion service package for Glassbox SRE."""
+"""FastAPI ingestion service for Glassbox SRE."""

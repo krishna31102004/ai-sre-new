@@ -4,26 +4,23 @@ This roadmap is organized by dependency order and demoable capability, not by ca
 
 ## Phase 0: Environment Setup And Walking Skeleton
 
-Done means a real `flagd` fault in the OpenTelemetry demo can trigger a Prometheus alert, Alertmanager can call the FastAPI webhook, the investigation job can be queued, a minimal LangGraph workflow can run, and a local stub notifier can emit a formatted incident message to the console and/or a file.
+Done means a real `flagd` fault in the OpenTelemetry demo can trigger a Prometheus alert, Alertmanager can call the FastAPI webhook, the investigation job can be queued, and a local stub notifier can emit a formatted incident message to the console and/or a file. LangGraph starts in Phase 1 when there is real investigation work to orchestrate.
 
 - [x] Create the initial service-oriented repository structure with `apps/api`, `apps/worker`, `packages/core`, and `infra`.
 - [x] Add project configuration for Python formatting, linting, testing, and environment management.
-- [ ] Stand up the OpenTelemetry Astronomy Shop demo locally.
-- [ ] Confirm the demo emits metrics, traces, and logs through Prometheus, Grafana, and Jaeger.
-- [ ] Confirm `flagd` fault flags can be flipped manually.
-- [ ] Identify one simple fault scenario for the first vertical slice.
-- [ ] Add Prometheus alerting rule for the first chosen fault.
-- [ ] Configure Alertmanager webhook receiver for the local FastAPI service.
+- [x] Stand up the OpenTelemetry Astronomy Shop demo locally.
+- [x] Confirm the demo emits metrics, traces, and logs through Prometheus, Grafana, and Jaeger.
+- [x] Confirm `flagd` fault flags can be flipped manually.
+- [x] Identify one simple fault scenario for the first vertical slice.
+- [x] Add Prometheus alerting rule for the first chosen fault.
+- [x] Configure Alertmanager webhook receiver for the local FastAPI service.
 - [x] Build FastAPI `/webhook/alert` endpoint.
 - [x] Validate Alertmanager payloads with Pydantic models.
 - [x] Return quickly from the webhook and enqueue work into Redis.
 - [x] Build minimal Redis-backed investigation worker.
-- [ ] Build minimal LangGraph workflow with a triage node and a brief node.
-- [ ] Build local notifier abstraction.
 - [x] Emit a formatted incident brief through the local stub notifier.
 - [x] Write local notifier output to console and/or a development file.
 - [x] Add basic structured logging.
-- [ ] Add basic LangSmith tracing for the minimal graph.
 - [x] Document local setup commands.
 
 ## Phase 1: Core Investigation With Commit Correlation
@@ -31,6 +28,8 @@ Done means a real `flagd` fault in the OpenTelemetry demo can trigger a Promethe
 Done means an alert can trigger an investigation that identifies a likely suspect commit or deploy from seeded metadata, includes confidence and evidence, and emits that result through the local notifier.
 
 - [ ] Keep the OpenTelemetry demo external through Docker Compose rather than vendoring or forking it into this repo.
+- [ ] Build minimal LangGraph workflow with a triage node and a brief node.
+- [ ] Add basic LangSmith tracing for the minimal graph.
 - [ ] Design the deploy history schema.
 - [ ] Create a small initial deploy history dataset.
 - [ ] Author seeded commits mapped to the first fault scenario.
@@ -85,6 +84,7 @@ Done means the MVP is complete: a real injected fault triggers an autonomous inv
 Done means the local notifier can be replaced by a real Slack Bolt notifier and an incident resolution signal can trigger a structured, blameless postmortem generated from captured evidence and event logs, saved as JSON and Markdown.
 
 - [ ] Configure Slack Bolt app in development mode.
+- [ ] Define notifier interface shared by local stub and Slack implementation.
 - [ ] Implement Slack notifier behind the same notifier interface as the local stub.
 - [ ] Post Block Kit incident briefs to Slack.
 - [ ] Add Slack thread updates for investigation progress.
