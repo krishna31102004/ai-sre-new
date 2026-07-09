@@ -35,3 +35,5 @@ This file is the running log for architectural and scope decisions. Add a dated 
 - 2026-07-09: Use the standard-library `venv` module for the local Python environment, because it is universally available and avoids introducing another package manager before the project needs one.
 - 2026-07-09: Use `python3` consistently in scripts and documentation, because this machine does not expose a `python` command on PATH outside the virtual environment.
 - 2026-07-09: Run local Postgres from the `pgvector/pgvector:pg16` image, because it enables the vector extension while preserving normal Postgres behavior for relational state.
+- 2026-07-09: Use a Redis list plus JSON-serialized Pydantic payloads for the Phase 0 alert queue, with `RPUSH` on ingestion and simple `LPOP` polling in the worker, because it is the smallest reliable queue abstraction needed to prove async ingestion without adding Celery or another worker framework.
+- 2026-07-09: Store queued alert messages as `AlertmanagerWebhook.model_dump_json(by_alias=True)`, because the same shared Pydantic schema can validate both API input and worker input.

@@ -21,3 +21,49 @@ cp .env.example .env
 ```
 
 The project uses the standard-library `venv` module so the setup works anywhere Python 3.11+ is available without requiring a separate package manager.
+
+## Phase 0 Manual Loop
+
+Start Redis and Postgres:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up -d postgres redis
+```
+
+Start the API:
+
+```bash
+source .venv/bin/activate
+uvicorn glassbox_sre_api.main:app --reload --port 8000
+```
+
+In another terminal, start the worker:
+
+```bash
+source .venv/bin/activate
+python -m glassbox_sre_worker.main
+```
+
+Send a fake Alertmanager payload:
+
+```bash
+curl -X POST http://localhost:8000/webhook/alert \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "firing",
+    "alerts": [
+      {
+        "labels": {
+          "alertname": "HighErrorRate",
+          "service": "checkout"
+        },
+        "annotations": {
+          "summary": "Checkout error rate is above threshold."
+        },
+        "startsAt": "2026-07-09T12:00:00Z"
+      }
+    ]
+  }'
+```
+
+The API should return `{"status":"queued","alerts":1}` and the worker should print a `[stub incident brief]` within a few seconds.
