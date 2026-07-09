@@ -37,7 +37,8 @@ Start the demo with its observability stack and the Glassbox SRE alert overlay:
 
 ```bash
 docker compose \
-  --env-file infra/otel-demo/opentelemetry-demo/.env \
+  --env-file infra/otel-demo/.env.demo \
+  --env-file infra/otel-demo/opentelemetry-demo/.env.override \
   --env-file infra/otel-demo/.env.glassbox \
   -f infra/otel-demo/opentelemetry-demo/compose.yaml \
   -f infra/otel-demo/compose.glassbox.yml \

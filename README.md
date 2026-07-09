@@ -13,6 +13,7 @@ Start with the project memory files before making changes:
 Use `python3` consistently for local commands and scripts.
 
 ```bash
+cd /Users/kb4086/dev/ai-new
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade "pip<26"
@@ -47,7 +48,7 @@ docker compose -f infra/docker/docker-compose.yml up -d postgres redis
 Start the API:
 
 ```bash
-cd /Users/kb4086/Desktop/ai-new
+cd /Users/kb4086/dev/ai-new
 source .venv/bin/activate
 uvicorn glassbox_sre_api.main:app --reload --port 8000
 ```
@@ -55,7 +56,7 @@ uvicorn glassbox_sre_api.main:app --reload --port 8000
 In another terminal, start the worker:
 
 ```bash
-cd /Users/kb4086/Desktop/ai-new
+cd /Users/kb4086/dev/ai-new
 source .venv/bin/activate
 python -m glassbox_sre_worker.main
 ```

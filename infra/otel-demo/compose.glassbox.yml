@@ -77,7 +77,6 @@ services:
     command:
       - --config=/etc/otelcol-config.yml
       - --config=/etc/otelcol-config-glassbox.yml
-      - --feature-gates=service.profilesSupport
     volumes:
       - ${HOST_FILESYSTEM}:/hostfs:ro
       - ${DOCKER_SOCK}:/var/run/docker.sock:ro
