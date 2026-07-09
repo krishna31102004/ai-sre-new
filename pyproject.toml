@@ -53,6 +53,9 @@ testpaths = [
   "packages/core/tests"
 ]
 asyncio_mode = "auto"
+markers = [
+  "live: requires live infrastructure or external API credentials"
+]
 
 [tool.ruff]
 line-length = 100

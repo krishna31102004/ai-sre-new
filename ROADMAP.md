@@ -31,8 +31,8 @@ Done means a real `flagd` fault in the OpenTelemetry demo can trigger a Promethe
 Done means an alert can trigger an investigation that identifies a likely suspect commit or deploy from seeded metadata, includes confidence and evidence, and emits that result through the local notifier.
 
 - [x] Keep the OpenTelemetry demo external through Docker Compose rather than vendoring or forking it into this repo.
-- [ ] Build minimal LangGraph workflow with a triage node and a brief node.
-- [ ] Add basic LangSmith tracing for the minimal graph.
+- [x] Build minimal LangGraph workflow with a triage node and a brief node.
+- [x] Add basic LangSmith tracing for the minimal graph.
 - [ ] Design the deploy history schema.
 - [ ] Create a small initial deploy history dataset.
 - [ ] Author seeded commits mapped to the first fault scenario.

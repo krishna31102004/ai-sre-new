@@ -82,6 +82,10 @@ Postgres stores durable investigation records, findings, hypotheses, evidence li
 
 The evaluation harness is a first-class deliverable, not an afterthought. It should run 20-40 scripted synthetic incidents with known ground truth, then score root-cause identification, bad-commit top-1/top-3 accuracy, runbook retrieval hit rate, impact classification accuracy, and end-to-end latency. Evaluation should be replayable and honest, using known fault flags, seeded bad commits, expected runbooks, and captured world snapshots where possible.
 
+### Testing Discipline
+
+Starting in Phase 1, every phase checkpoint and meaningful unit of work must include automated tests before moving to the next unit. Pure logic such as schema validation, deploy-window filtering, heuristic matching, and ranking should have fast unit tests that require no Docker, Postgres, OpenAI, or live demo stack. Integration-style tests should mock external calls such as OpenAI so the default test suite does not burn API calls or require live infrastructure. Tests that intentionally require live infrastructure, the OpenTelemetry demo, Postgres, or real external API credentials must be marked with `@pytest.mark.live` so fast local and future CI runs can skip or select them explicitly.
+
 ## Locked Tech Stack
 
 - LangGraph - stateful, branching, partially parallel agent orchestration with checkpointing and replayable traces.

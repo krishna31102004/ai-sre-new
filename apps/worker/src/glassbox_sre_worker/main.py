@@ -4,6 +4,7 @@ import time
 
 from glassbox_sre.config import get_settings
 from glassbox_sre.schemas import AlertmanagerWebhook
+from glassbox_sre_worker.graph import run_investigation
 from redis import Redis
 
 settings = get_settings()
@@ -21,36 +22,13 @@ def _handle_shutdown(signum: int, _frame: object) -> None:
     running = False
 
 
-def format_stub_incident_brief(payload: AlertmanagerWebhook) -> str:
-    alert_names = [
-        alert.labels.get("alertname", "unknown-alert") for alert in payload.alerts
-    ]
-    service_names = sorted(
-        {
-            alert.labels.get("service")
-            or alert.labels.get("service_name")
-            or alert.labels.get("job")
-            or "unknown-service"
-            for alert in payload.alerts
-        }
-    )
-
-    return (
-        "[stub incident brief]\n"
-        f"status: {payload.status}\n"
-        f"alerts: {', '.join(alert_names)}\n"
-        f"services: {', '.join(service_names)}\n"
-        "next step: real LangGraph investigation will be added in a later phase."
-    )
-
-
 def process_next_message() -> bool:
     raw_message = redis_client.lpop(settings.alert_queue_name)
     if raw_message is None:
         return False
 
     payload = AlertmanagerWebhook.model_validate_json(raw_message)
-    brief = format_stub_incident_brief(payload)
+    brief = run_investigation(payload, settings)
     logger.info("processed alert webhook\n%s", brief)
     return True
 

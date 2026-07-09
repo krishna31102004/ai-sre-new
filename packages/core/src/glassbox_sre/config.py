@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     postgres_url: str = "postgresql://glassbox:glassbox@localhost:5432/glassbox_sre"
     openai_api_key: str | None = None
+    openai_triage_model: str = "gpt-4.1-mini"
+    langsmith_tracing: str | None = None
+    langsmith_api_key: str | None = None
+    langsmith_project: str | None = "glassbox-sre-dev"
     slack_bot_token: str | None = None
     slack_signing_secret: str | None = None
     alert_queue_name: str = "glassbox:alerts"
