@@ -34,12 +34,17 @@ dev = [
   "mypy>=1.16.0"
 ]
 
-[tool.setuptools.packages.find]
-where = [
-  "apps/api/src",
-  "apps/worker/src",
-  "packages/core/src"
+[tool.setuptools]
+packages = [
+  "glassbox_sre",
+  "glassbox_sre_api",
+  "glassbox_sre_worker"
 ]
+
+[tool.setuptools.package-dir]
+glassbox_sre = "packages/core/src/glassbox_sre"
+glassbox_sre_api = "apps/api/src/glassbox_sre_api"
+glassbox_sre_worker = "apps/worker/src/glassbox_sre_worker"
 
 [tool.pytest.ini_options]
 testpaths = [

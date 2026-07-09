@@ -37,3 +37,6 @@ This file is the running log for architectural and scope decisions. Add a dated 
 - 2026-07-09: Run local Postgres from the `pgvector/pgvector:pg16` image, because it enables the vector extension while preserving normal Postgres behavior for relational state.
 - 2026-07-09: Use a Redis list plus JSON-serialized Pydantic payloads for the Phase 0 alert queue, with `RPUSH` on ingestion and simple `LPOP` polling in the worker, because it is the smallest reliable queue abstraction needed to prove async ingestion without adding Celery or another worker framework.
 - 2026-07-09: Store queued alert messages as `AlertmanagerWebhook.model_dump_json(by_alias=True)`, because the same shared Pydantic schema can validate both API input and worker input.
+- 2026-07-09: Keep one root editable install for all internal packages instead of separate installs for `apps/api`, `apps/worker`, and `packages/core`, because a single setup command is less error-prone across repeated fresh clones.
+- 2026-07-09: Explicitly map `glassbox_sre`, `glassbox_sre_api`, and `glassbox_sre_worker` in `pyproject.toml`, because implicit multi-root package discovery installed the distribution but did not expose the import packages reliably.
+- 2026-07-09: Pin local setup to `pip<26` for now, because pip 26.1.2 hung during basic commands in this environment while pip 25.3 completed installs normally.
