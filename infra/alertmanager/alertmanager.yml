@@ -1,0 +1,17 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  receiver: glassbox-sre-webhook
+  group_by:
+    - alertname
+    - service
+  group_wait: 5s
+  group_interval: 15s
+  repeat_interval: 2m
+
+receivers:
+  - name: glassbox-sre-webhook
+    webhook_configs:
+      - url: http://host.docker.internal:8000/webhook/alert
+        send_resolved: true

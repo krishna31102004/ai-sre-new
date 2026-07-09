@@ -1,0 +1,14 @@
+groups:
+  - name: otel-demo-phase-0
+    interval: 15s
+    rules:
+      - alert: OTelDemoPaymentServiceErrors
+        expr: |
+          sum(rate(traces_span_metrics_calls_total{service_name="payment", status_code="STATUS_CODE_ERROR"}[1m])) > 0
+        for: 15s
+        labels:
+          severity: page
+          service: payment
+        annotations:
+          summary: "Payment service is returning errors in the OpenTelemetry demo."
+          description: "The OpenTelemetry demo payment service has non-zero error span calls over the last minute."

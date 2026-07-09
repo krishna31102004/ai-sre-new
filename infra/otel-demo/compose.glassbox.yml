@@ -1,0 +1,31 @@
+services:
+  prometheus:
+    command:
+      - --web.console.templates=/etc/prometheus/consoles
+      - --web.console.libraries=/etc/prometheus/console_libraries
+      - --storage.tsdb.retention.time=7d
+      - --config.file=/etc/prometheus/prometheus-config.yaml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+      - --web.route-prefix=/
+      - --web.enable-otlp-receiver
+      - --enable-feature=exemplar-storage
+    volumes:
+      - ../../prometheus/prometheus-config.yaml:/etc/prometheus/prometheus-config.yaml:ro
+      - ../../prometheus/rules:/etc/prometheus/rules:ro
+    depends_on:
+      alertmanager:
+        condition: service_started
+
+  alertmanager:
+    image: quay.io/prometheus/alertmanager:v0.29.0
+    container_name: glassbox-alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.listen-address=:9093
+    ports:
+      - "9093:9093"
+    volumes:
+      - ../../alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    restart: unless-stopped
