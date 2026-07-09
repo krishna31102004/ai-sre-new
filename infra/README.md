@@ -37,7 +37,7 @@ Start the demo with its observability stack and the Glassbox SRE alert overlay:
 
 ```bash
 docker compose \
-  --env-file infra/otel-demo/.env.demo \
+  --env-file infra/otel-demo/opentelemetry-demo/.env \
   --env-file infra/otel-demo/opentelemetry-demo/.env.override \
   --env-file infra/otel-demo/.env.glassbox \
   -f infra/otel-demo/opentelemetry-demo/compose.yaml \
@@ -99,5 +99,6 @@ PY
 
 Prometheus should fire `OTelDemoAdServiceErrors`, Alertmanager should POST to
 `http://host.docker.internal:8000/webhook/alert`, and the worker should print a
-stub incident brief for the `ad` service. Reset the flag by changing the
+stub incident brief for the `frontend` service. In the pinned upstream demo
+version, `adFailure` manifests as frontend HTTP 500s. Reset the flag by changing the
 `defaultVariant` above back to `off`.

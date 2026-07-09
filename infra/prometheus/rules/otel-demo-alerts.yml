@@ -4,11 +4,11 @@ groups:
     rules:
       - alert: OTelDemoAdServiceErrors
         expr: |
-          sum(rate(traces_span_metrics_calls_total{service_name="ad", status_code="STATUS_CODE_ERROR"}[5m])) > 0.01
+          sum(increase(http_server_duration_milliseconds_count{service_name="frontend", http_status_code="500"}[30s])) > 0
         for: 15s
         labels:
           severity: page
-          service: ad
+          service: frontend
         annotations:
-          summary: "Ad service is returning errors in the OpenTelemetry demo."
-          description: "The OpenTelemetry demo ad service has sustained error span calls over the last five minutes."
+          summary: "Frontend is returning 500s while the OpenTelemetry demo fault is active."
+          description: "The OpenTelemetry demo frontend is serving fresh HTTP 500 responses, which is the observable symptom produced by the `adFailure` fault in the pinned Phase 0 stack."
