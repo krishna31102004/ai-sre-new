@@ -7,20 +7,34 @@ from typing import NotRequired, TypedDict
 
 from glassbox_sre.commit_correlation import git_show_diff, rank_commit_candidates
 from glassbox_sre.config import Settings, get_settings
+from glassbox_sre.impact import (
+    PrometheusClient,
+    estimate_affected_endpoints,
+    estimate_affected_services,
+    estimate_frontend_http_impact_with_details,
+)
+from glassbox_sre.runbooks import (
+    generate_openai_embeddings,
+    rank_filtered_chunks_by_embedding,
+)
 from glassbox_sre.schemas import (
     AlertmanagerWebhook,
     CommitCorrelationFinding,
     CommitCorrelationResult,
     DeployRecord,
+    ImpactEstimate,
+    RunbookRetrievalFinding,
 )
 from glassbox_sre.storage import (
     create_investigation,
     init_db,
     load_deployments,
+    load_runbook_chunks_from_db,
     make_session_factory,
     save_findings,
     update_investigation_brief,
 )
+from glassbox_sre.synthesis import synthesize_incident_brief
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
@@ -42,6 +56,10 @@ class InvestigationState(TypedDict):
     alert_payload: AlertmanagerWebhook
     triage: NotRequired[TriageResult]
     commit_findings: NotRequired[list[CommitCorrelationFinding]]
+    runbook_findings: NotRequired[list[RunbookRetrievalFinding]]
+    impact: NotRequired[ImpactEstimate]
+    affected_services: NotRequired[list[str]]
+    affected_endpoints: NotRequired[list[str]]
     brief: NotRequired[str]
 
 
@@ -201,6 +219,81 @@ def _build_commit_correlation_node(settings: Settings, repo_root: Path):
     return commit_correlation_node
 
 
+def _build_runbook_retrieval_node(settings: Settings):
+    if not settings.openai_api_key:
+        raise RuntimeError(
+            "OPENAI_API_KEY must be set in .env before running the Phase 2 LangGraph worker."
+        )
+
+    session_factory = make_session_factory(settings.postgres_url)
+    init_db(session_factory)
+
+    def runbook_retrieval_node(state: InvestigationState) -> dict[str, list[RunbookRetrievalFinding]]:
+        payload = state["alert_payload"]
+        with session_factory() as session:
+            stored_chunks = load_runbook_chunks_from_db(session)
+        if not stored_chunks:
+            return {"runbook_findings": []}
+
+        query_text = " ".join(
+            [
+                payload.alerts[0].labels.get("alertname", ""),
+                payload.alerts[0].labels.get("service", ""),
+                payload.alerts[0].annotations.get("summary", ""),
+            ]
+        ).strip()
+        query_embedding = generate_openai_embeddings([query_text], settings)[0]
+        findings = rank_filtered_chunks_by_embedding(
+            payload,
+            stored_chunks,
+            query_embedding=query_embedding,
+        )
+        return {"runbook_findings": findings}
+
+    return runbook_retrieval_node
+
+
+def _build_impact_node(settings: Settings):
+    client = PrometheusClient()
+
+    def impact_node(state: InvestigationState) -> dict[str, ImpactEstimate | list[str]]:
+        payload = state["alert_payload"]
+        estimate, affected_services = estimate_frontend_http_impact_with_details(payload, client)
+        topology_services = estimate_affected_services(payload)
+        affected_endpoints = list(estimate_affected_endpoints(payload))
+        return {
+            "impact": estimate,
+            "affected_services": list(dict.fromkeys((*affected_services, *topology_services))),
+            "affected_endpoints": affected_endpoints,
+        }
+
+    return impact_node
+
+
+def _build_synthesis_node():
+    def synthesis_node(state: InvestigationState) -> dict[str, str]:
+        payload = state["alert_payload"]
+        triage = state["triage"]
+        findings = state.get("commit_findings", [])
+        runbook_findings = state.get("runbook_findings", [])
+        impact = state.get("impact")
+        affected_services = state.get("affected_services", [])
+        affected_endpoints = state.get("affected_endpoints", [])
+        brief = synthesize_incident_brief(
+            payload.status,
+            triage.alert_names[0] if triage.alert_names else payload.alerts[0].labels.get("alertname", "unknown-alert"),
+            ", ".join(affected_services or triage.affected_services or []),
+            findings[0] if findings else None,
+            runbook_findings[0] if runbook_findings else None,
+            impact,
+            list(affected_services or triage.affected_services or []),
+            affected_endpoints,
+        ).brief
+        return {"brief": brief}
+
+    return synthesis_node
+
+
 def brief_node(state: InvestigationState) -> dict[str, str]:
     payload = state["alert_payload"]
     triage = state["triage"]
@@ -243,6 +336,12 @@ def build_investigation_graph(
         [InvestigationState], dict[str, list[CommitCorrelationFinding]]
     ]
     | None = None,
+    runbook_retrieval_node: Callable[
+        [InvestigationState], dict[str, list[RunbookRetrievalFinding]]
+    ]
+    | None = None,
+    impact_node: Callable[[InvestigationState], dict[str, ImpactEstimate | list[str]]] | None = None,
+    synthesis_node: Callable[[InvestigationState], dict[str, str]] | None = None,
     repo_root: Path | None = None,
 ):
     resolved_settings = settings or get_settings()
@@ -256,11 +355,20 @@ def build_investigation_graph(
         commit_correlation_node
         or _build_commit_correlation_node(resolved_settings, resolved_repo_root),
     )
-    graph.add_node("brief", brief_node)
+    graph.add_node(
+        "runbook_retrieval",
+        runbook_retrieval_node or _build_runbook_retrieval_node(resolved_settings),
+    )
+    graph.add_node("impact_estimation", impact_node or _build_impact_node(resolved_settings))
+    graph.add_node("synthesis", synthesis_node or _build_synthesis_node())
     graph.set_entry_point("triage")
     graph.add_edge("triage", "commit_correlation")
-    graph.add_edge("commit_correlation", "brief")
-    graph.add_edge("brief", END)
+    graph.add_edge("triage", "runbook_retrieval")
+    graph.add_edge("triage", "impact_estimation")
+    graph.add_edge("commit_correlation", "synthesis")
+    graph.add_edge("runbook_retrieval", "synthesis")
+    graph.add_edge("impact_estimation", "synthesis")
+    graph.add_edge("synthesis", END)
     return graph.compile()
 
 

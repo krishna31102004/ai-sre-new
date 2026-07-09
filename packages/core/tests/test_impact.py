@@ -1,8 +1,12 @@
 from glassbox_sre.impact import (
     build_frontend_impact_estimate,
     classify_severity,
+    estimate_affected_endpoints,
+    estimate_affected_services,
     parse_prometheus_scalar,
+    p95_latency_ms_from_histogram,
 )
+from glassbox_sre.dependency_graph import default_service_dependency_graph
 from glassbox_sre.schemas import AlertmanagerWebhook
 
 
@@ -47,3 +51,18 @@ def test_severity_classification_boundaries() -> None:
     assert classify_severity(0.01, 10) == "page"
     assert classify_severity(0.25, 1) == "critical"
     assert classify_severity(0.01, 1000) == "critical"
+
+
+def test_affected_services_for_frontend_include_ad() -> None:
+    assert estimate_affected_services(_alert(), default_service_dependency_graph()) == (
+        "frontend",
+        "ad",
+    )
+
+
+def test_affected_endpoints_for_frontend_use_static_map() -> None:
+    assert estimate_affected_endpoints(_alert()) == ("/", "/api/products", "/api/ad")
+
+
+def test_p95_latency_parser_returns_none_without_samples() -> None:
+    assert p95_latency_ms_from_histogram({"data": {"result": []}}) is None

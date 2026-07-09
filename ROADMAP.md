@@ -63,8 +63,8 @@ Done means the MVP is complete: a real injected fault triggers an autonomous inv
 - [x] Add runbook ingestion pipeline.
 - [x] Chunk runbooks by section.
 - [x] Generate embeddings for runbook chunks.
-- [ ] Store runbook chunks and embeddings in Postgres with pgvector.
-- [ ] Add pgvector index strategy.
+- [x] Store runbook chunks and embeddings in Postgres with pgvector.
+- [x] Add pgvector index strategy.
 - [x] Implement deterministic tag filtering for runbooks.
 - [x] Implement embedding-based ranking within filtered candidates.
 - [x] Define Pydantic schema for runbook retrieval findings.
@@ -72,16 +72,16 @@ Done means the MVP is complete: a real injected fault triggers an autonomous inv
 - [x] Add tests for expected runbook retrieval on known alerts.
 - [x] Implement Prometheus client.
 - [x] Define metric queries for error rate, latency, and request volume.
-- [ ] Build service dependency graph representation.
-- [ ] Estimate affected services from dependency topology.
-- [ ] Estimate affected endpoints from telemetry labels where available.
+- [x] Build service dependency graph representation.
+- [x] Estimate affected services from dependency topology.
+- [x] Estimate affected endpoints from telemetry labels where available.
 - [x] Estimate affected users from request volume and error rate.
 - [x] Define severity classification logic.
 - [x] Ensure the LLM only narrates computed impact numbers.
-- [ ] Add parallel execution for commit, runbook, impact, and similar-incident investigators.
-- [ ] Add synthesis node for ranked evidence-backed hypotheses.
-- [ ] Add evidence citations to every incident-brief claim.
-- [ ] Run MVP end-to-end against at least one known `flagd` incident.
+- [x] Add parallel execution for commit, runbook, impact, and similar-incident investigators.
+- [x] Add synthesis node for ranked evidence-backed hypotheses.
+- [x] Add evidence citations to every incident-brief claim.
+- [x] Run MVP end-to-end against at least one known `flagd` incident.
 
 ## Phase 3: Real Slack Integration And Postmortem Generation
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import uuid
 from datetime import UTC, datetime
 from typing import Any
@@ -10,7 +11,7 @@ from glassbox_sre.schemas import (
     DeployRecord,
     RunbookChunk,
 )
-from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select
+from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 from sqlalchemy.types import JSON
@@ -88,6 +89,30 @@ def make_session_factory(database_url: str) -> sessionmaker[Session]:
 
 def init_db(session_factory: sessionmaker[Session]) -> None:
     Base.metadata.create_all(session_factory.kw["bind"])
+
+
+def ensure_runbook_vector_storage(session: Session, dimensions: int = 1536) -> None:
+    session.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+    session.execute(
+        text(
+            f"""
+            CREATE TABLE IF NOT EXISTS runbook_embeddings (
+                chunk_id text PRIMARY KEY REFERENCES runbook_chunks(chunk_id) ON DELETE CASCADE,
+                embedding vector({dimensions}) NOT NULL
+            )
+            """
+        )
+    )
+    session.execute(
+        text(
+            """
+            CREATE INDEX IF NOT EXISTS runbook_embeddings_embedding_idx
+            ON runbook_embeddings
+            USING ivfflat (embedding vector_cosine_ops)
+            WITH (lists = 1)
+            """
+        )
+    )
 
 
 def upsert_deployments(session: Session, deployments: list[DeployRecord]) -> None:
@@ -192,6 +217,25 @@ def upsert_runbook_chunks(
         session.add(row)
 
 
+def vector_literal(values: list[float]) -> str:
+    return "[" + ",".join(f"{value:.10f}" for value in values) + "]"
+
+
+def upsert_runbook_embeddings(session: Session, embeddings: dict[str, list[float]]) -> None:
+    for chunk_id, embedding in embeddings.items():
+        session.execute(
+            text(
+                """
+                INSERT INTO runbook_embeddings (chunk_id, embedding)
+                VALUES (:chunk_id, CAST(:embedding AS vector))
+                ON CONFLICT (chunk_id)
+                DO UPDATE SET embedding = EXCLUDED.embedding
+                """
+            ),
+            {"chunk_id": chunk_id, "embedding": vector_literal(embedding)},
+        )
+
+
 def load_runbook_chunks_from_db(session: Session) -> list[tuple[RunbookChunk, list[float]]]:
     rows = session.scalars(select(RunbookChunkRow).order_by(RunbookChunkRow.chunk_id)).all()
     return [
@@ -211,3 +255,7 @@ def load_runbook_chunks_from_db(session: Session) -> list[tuple[RunbookChunk, li
         )
         for row in rows
     ]
+
+
+def count_runbook_embeddings(session: Session) -> int:
+    return int(session.execute(text("SELECT count(*) FROM runbook_embeddings")).scalar_one())

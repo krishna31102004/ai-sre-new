@@ -161,7 +161,7 @@ def retrieve_runbook_chunks(
     ]
 
 
-def deterministic_embedding(text: str, dimensions: int = 64) -> list[float]:
+def deterministic_embedding(text: str, dimensions: int = 1536) -> list[float]:
     values = [0.0] * dimensions
     for token in re.findall(r"[A-Za-z0-9_]+", text.lower()):
         digest = hashlib.sha256(token.encode()).digest()

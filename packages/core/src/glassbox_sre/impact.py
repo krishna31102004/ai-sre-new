@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
+from glassbox_sre.dependency_graph import (
+    ServiceDependencyGraph,
+    affected_services_from_alert,
+    default_service_dependency_graph,
+)
 from glassbox_sre.schemas import AlertmanagerWebhook, EvidenceItem, ImpactEstimate
 
 
@@ -83,8 +88,52 @@ def estimate_frontend_http_impact(
     )
     error_query = (
         'sum(increase(http_server_duration_milliseconds_count{service_name="frontend",'
-        f'http_status_code="500"}}[{window}]))'
+        'http_status_code="500"}'
+        f'[{window}]))'
     )
     total_requests = client.query_scalar(total_query)
     error_requests = client.query_scalar(error_query)
     return build_frontend_impact_estimate(payload, total_requests, error_requests, window=window)
+
+
+def estimate_affected_services(
+    payload: AlertmanagerWebhook,
+    graph: ServiceDependencyGraph | None = None,
+) -> tuple[str, ...]:
+    resolved_graph = graph or default_service_dependency_graph()
+    first_alert = payload.alerts[0]
+    service = first_alert.labels.get("service") or first_alert.labels.get("service_name") or "unknown"
+    return affected_services_from_alert(service, resolved_graph)
+
+
+def estimate_affected_endpoints(payload: AlertmanagerWebhook) -> tuple[str, ...]:
+    first_alert = payload.alerts[0]
+    labels = first_alert.labels
+    annotations = first_alert.annotations
+    service = labels.get("service") or labels.get("service_name") or "unknown"
+    if service == "frontend":
+        return (
+            "/",
+            "/api/products",
+            "/api/ad",
+        )
+    endpoint = labels.get("endpoint") or labels.get("path") or annotations.get("path")
+    return (endpoint,) if endpoint else ()
+
+
+def p95_latency_ms_from_histogram(response: dict[str, Any]) -> float | None:
+    result = response.get("data", {}).get("result", [])
+    if not result:
+        return None
+    value = result[0].get("value", [None, None])[1]
+    return float(value) if value is not None else None
+
+
+def estimate_frontend_http_impact_with_details(
+    payload: AlertmanagerWebhook,
+    client: PrometheusClient,
+    window: str = "5m",
+) -> tuple[ImpactEstimate, tuple[str, ...]]:
+    estimate = estimate_frontend_http_impact(payload, client, window=window)
+    affected_services = estimate_affected_services(payload)
+    return estimate, affected_services
