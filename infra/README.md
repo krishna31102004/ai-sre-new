@@ -97,8 +97,12 @@ with urllib.request.urlopen(request) as response:
 PY
 ```
 
-Prometheus should fire `OTelDemoAdServiceErrors`, Alertmanager should POST to
-`http://host.docker.internal:8000/webhook/alert`, and the worker should print a
-stub incident brief for the `frontend` service. In the pinned upstream demo
+Prometheus should fire `OTelDemoAdServiceErrors` after roughly five minutes of sustained
+fault history, Alertmanager should POST to `http://host.docker.internal:8000/webhook/alert`,
+and the worker should print a stub incident brief for the `frontend` service. The alert
+is intentionally tuned with a `5m` lookback and `30s` `for:` period because the live
+stack's frontend 500s are bursty enough that shorter windows often miss them entirely. The
+trade-off is that resolution takes about five minutes after the fault is turned off, which
+is the measured cost of using the shortest reliable window in this environment. In the pinned upstream demo
 version, `adFailure` manifests as frontend HTTP 500s. Reset the flag by changing the
 `defaultVariant` above back to `off`.

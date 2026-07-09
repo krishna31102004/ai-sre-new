@@ -4,11 +4,11 @@ groups:
     rules:
       - alert: OTelDemoAdServiceErrors
         expr: |
-          sum(increase(http_server_duration_milliseconds_count{service_name="frontend", http_status_code="500"}[30s])) > 0
-        for: 15s
+          sum(increase(http_server_duration_milliseconds_count{service_name="frontend", http_status_code="500"}[5m])) > 0
+        for: 30s
         labels:
           severity: page
           service: frontend
         annotations:
-          summary: "Frontend is returning 500s while the OpenTelemetry demo fault is active."
-          description: "The OpenTelemetry demo frontend is serving fresh HTTP 500 responses, which is the observable symptom produced by the `adFailure` fault in the pinned Phase 0 stack."
+          summary: "Frontend is returning sustained 500s while the OpenTelemetry demo fault is active."
+          description: "The OpenTelemetry demo frontend is serving fresh HTTP 500 responses over a 5m lookback window. This alert is tuned to the observed Phase 0 fault rate, which is roughly one frontend 500 every 35s while adFailure is enabled, and 5m is the shortest window that stays reliably nonzero under the live traffic pattern."

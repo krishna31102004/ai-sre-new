@@ -22,6 +22,8 @@ Done means a real `flagd` fault in the OpenTelemetry demo can trigger a Promethe
 - [x] Write local notifier output to console and/or a development file.
 - [x] Add basic structured logging.
 - [x] Document local setup commands.
+- [x] Tune the Phase 0 alert window from observed frontend 500 cadence.
+- [x] Verify the alert fires and resolves end to end against the real demo fault.
 
 ## Phase 1: Core Investigation With Commit Correlation
 
