@@ -70,14 +70,14 @@ Done means the MVP is complete: a real injected fault triggers an autonomous inv
 - [x] Define Pydantic schema for runbook retrieval findings.
 - [x] Add tests for runbook tag filtering.
 - [x] Add tests for expected runbook retrieval on known alerts.
-- [ ] Implement Prometheus client.
-- [ ] Define metric queries for error rate, latency, and request volume.
+- [x] Implement Prometheus client.
+- [x] Define metric queries for error rate, latency, and request volume.
 - [ ] Build service dependency graph representation.
 - [ ] Estimate affected services from dependency topology.
 - [ ] Estimate affected endpoints from telemetry labels where available.
-- [ ] Estimate affected users from request volume and error rate.
-- [ ] Define severity classification logic.
-- [ ] Ensure the LLM only narrates computed impact numbers.
+- [x] Estimate affected users from request volume and error rate.
+- [x] Define severity classification logic.
+- [x] Ensure the LLM only narrates computed impact numbers.
 - [ ] Add parallel execution for commit, runbook, impact, and similar-incident investigators.
 - [ ] Add synthesis node for ranked evidence-backed hypotheses.
 - [ ] Add evidence citations to every incident-brief claim.
