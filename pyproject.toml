@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "glassbox-sre"
+version = "0.1.0"
+description = "Read-only, glass-box AI SRE incident investigation agent."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.116.0",
+  "uvicorn[standard]>=0.35.0",
+  "pydantic>=2.11.0",
+  "pydantic-settings>=2.10.0",
+  "redis>=6.2.0",
+  "sqlalchemy>=2.0.0",
+  "psycopg[binary]>=3.2.0",
+  "pgvector>=0.4.0",
+  "langgraph>=0.5.0",
+  "langchain-openai>=0.3.0",
+  "openai>=1.93.0",
+  "python-dotenv>=1.1.0",
+  "slack-bolt>=1.23.0",
+  "httpx>=0.28.0",
+  "structlog>=25.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.4.0",
+  "pytest-asyncio>=1.0.0",
+  "ruff>=0.12.0",
+  "mypy>=1.16.0"
+]
+
+[tool.setuptools.packages.find]
+where = [
+  "apps/api/src",
+  "apps/worker/src",
+  "packages/core/src"
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+  "apps/api/tests",
+  "apps/worker/tests",
+  "packages/core/tests"
+]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+warn_return_any = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = [
+  "apps/api/src",
+  "apps/worker/src",
+  "packages/core/src"
+]
