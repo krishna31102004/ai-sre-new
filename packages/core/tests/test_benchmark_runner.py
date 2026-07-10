@@ -9,7 +9,6 @@ from glassbox_sre.benchmark_runner import (
     run_replay_fast_scenario,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCENARIOS_DIR = REPO_ROOT / "scenarios" / "benchmark"
 RUNBOOK_ROOT = REPO_ROOT / "runbooks"

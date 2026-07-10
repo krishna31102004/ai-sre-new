@@ -1,10 +1,8 @@
-from datetime import UTC, datetime
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from pydantic import ValidationError
-
 from glassbox_sre.benchmark import (
     BenchmarkScenario,
     BenchmarkScenarioSet,
@@ -13,7 +11,7 @@ from glassbox_sre.benchmark import (
     validate_world_snapshot_shape,
 )
 from glassbox_sre.impact import classify_severity
-
+from pydantic import ValidationError
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BENCHMARK_SCENARIOS_DIR = REPO_ROOT / "scenarios" / "benchmark"
@@ -53,9 +51,7 @@ def test_benchmark_scenario_accepts_ground_truth_and_adds_top3_commit() -> None:
     scenario = BenchmarkScenario.model_validate(valid_scenario_payload())
 
     assert scenario.source_kind == ScenarioSourceKind.LIVE_CAPTURED
-    assert scenario.expected.bad_commit_top3_allowed == [
-        "41080eb518884c6aeede13111f8214a7c87db3fb"
-    ]
+    assert scenario.expected.bad_commit_top3_allowed == ["41080eb518884c6aeede13111f8214a7c87db3fb"]
     assert scenario.expected.impact.error_requests == 8
 
 

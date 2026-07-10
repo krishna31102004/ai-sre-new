@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from glassbox_sre.notification import ConsoleNotifier, IncidentBriefNotification, SlackNotifier, notifier_from_settings
+from glassbox_sre.notification import (
+    ConsoleNotifier,
+    IncidentBriefNotification,
+    SlackNotifier,
+    notifier_from_settings,
+)
 
 
 def test_console_notifier_returns_rendered_brief(tmp_path: Path) -> None:

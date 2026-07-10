@@ -6,7 +6,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
-    postgres_url: str = "postgresql+psycopg://glassbox_sre:glassbox_sre@localhost:15432/glassbox_sre"
+    postgres_url: str = (
+        "postgresql+psycopg://glassbox_sre:glassbox_sre@localhost:15432/glassbox_sre"
+    )
     openai_api_key: str | None = None
     openai_triage_model: str = "gpt-4.1-mini"
     openai_embedding_model: str = "text-embedding-3-small"

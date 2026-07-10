@@ -12,7 +12,6 @@ from glassbox_sre.schemas import (
     HypothesisValidationState,
 )
 
-
 SERVICE_PATH_HINTS = {
     "frontend": ("frontend", "ad", "recommendation"),
     "shipping": ("shipping",),
@@ -62,7 +61,9 @@ def candidate_deployments_for_alert(
 ) -> list[DeployRecord]:
     services = set(alert_service_names(payload))
     candidates = deployments_in_window(deployments, alert_start_time(payload), lookback=lookback)
-    service_matches = [deployment for deployment in candidates if deployment.service_name in services]
+    service_matches = [
+        deployment for deployment in candidates if deployment.service_name in services
+    ]
     return service_matches or candidates
 
 
@@ -107,8 +108,7 @@ def rank_commit_candidates(
         hints = SERVICE_PATH_HINTS.get(deployment.service_name, (deployment.service_name,))
         service_match = deployment.service_name in alert_services
         path_match = any(
-            any(hint in changed_path for hint in hints)
-            for changed_path in changed_paths
+            any(hint in changed_path for hint in hints) for changed_path in changed_paths
         )
         confidence = 0.35
         evidence: list[EvidenceItem] = [

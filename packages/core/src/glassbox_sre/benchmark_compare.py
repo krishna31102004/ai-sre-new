@@ -102,9 +102,7 @@ def write_comparison_artifacts(
 ) -> BenchmarkComparison:
     comparison = compare_evaluation_runs(before_dir, after_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "comparison.json").write_text(
-        comparison.model_dump_json(indent=2) + "\n"
-    )
+    (output_dir / "comparison.json").write_text(comparison.model_dump_json(indent=2) + "\n")
     (output_dir / "comparison.md").write_text(comparison_to_markdown(comparison))
     return comparison
 

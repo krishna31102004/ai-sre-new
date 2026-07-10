@@ -9,7 +9,6 @@ from glassbox_sre.benchmark_adapters import (
 )
 from glassbox_sre.notification import IncidentBriefNotification
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCENARIO_DIR = REPO_ROOT / "scenarios" / "benchmark" / "frontend-ad-failure-visible-500s"
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-import re
 import hashlib
 import math
+import re
 from pathlib import Path
+
+from openai import OpenAI
 
 from glassbox_sre.config import Settings, get_settings
 from glassbox_sre.schemas import (
@@ -13,7 +15,6 @@ from glassbox_sre.schemas import (
     RunbookMetadata,
     RunbookRetrievalFinding,
 )
-from openai import OpenAI
 
 
 def parse_runbook(path: Path) -> tuple[RunbookMetadata, str]:
@@ -99,11 +100,7 @@ def filter_runbook_chunks(
     alertname = tags["alertname"]
     symptoms = tags["symptoms"]
     assert isinstance(symptoms, set)
-    exact = [
-        chunk
-        for chunk in chunks
-        if chunk.service == service and chunk.alertname == alertname
-    ]
+    exact = [chunk for chunk in chunks if chunk.service == service and chunk.alertname == alertname]
     if exact:
         return exact
     alertname_matches = [chunk for chunk in chunks if chunk.alertname == alertname]
@@ -184,7 +181,14 @@ def cosine_similarity(left: list[float], right: list[float]) -> float:
 
 def embedding_text_for_chunk(chunk: RunbookChunk) -> str:
     return " ".join(
-        [chunk.title, chunk.section_heading, chunk.body, chunk.service, chunk.alertname, *chunk.symptoms]
+        [
+            chunk.title,
+            chunk.section_heading,
+            chunk.body,
+            chunk.service,
+            chunk.alertname,
+            *chunk.symptoms,
+        ]
     )
 
 
@@ -233,7 +237,9 @@ def rank_filtered_chunks_by_embedding(
     ]
 
 
-def generate_openai_embeddings(texts: list[str], settings: Settings | None = None) -> list[list[float]]:
+def generate_openai_embeddings(
+    texts: list[str], settings: Settings | None = None
+) -> list[list[float]]:
     resolved_settings = settings or get_settings()
     if not resolved_settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY must be set to generate runbook embeddings.")

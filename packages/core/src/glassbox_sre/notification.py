@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import ssl
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
-import ssl
 
 import certifi
 from slack_sdk import WebClient
@@ -31,7 +31,9 @@ class Notifier(Protocol):
     def send_incident_brief(self, notification: IncidentBriefNotification) -> NotificationReceipt:
         raise NotImplementedError
 
-    def send_resolution(self, notification: IncidentBriefNotification, thread_id: str | None) -> NotificationReceipt:
+    def send_resolution(
+        self, notification: IncidentBriefNotification, thread_id: str | None
+    ) -> NotificationReceipt:
         raise NotImplementedError
 
 
@@ -49,7 +51,9 @@ class ConsoleNotifier:
             destination=str(self.output_path) if self.output_path is not None else "stdout",
         )
 
-    def send_resolution(self, notification: IncidentBriefNotification, thread_id: str | None) -> NotificationReceipt:
+    def send_resolution(
+        self, notification: IncidentBriefNotification, thread_id: str | None
+    ) -> NotificationReceipt:
         return self.send_incident_brief(notification)
 
 
@@ -68,8 +72,14 @@ class SlackNotifier:
             channel=self.channel_id,
             text=notification.brief,
             blocks=[
-                {"type": "header", "text": {"type": "plain_text", "text": "Glassbox SRE incident brief"}},
-                {"type": "section", "text": {"type": "mrkdwn", "text": f"```{notification.brief}```"}},
+                {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": "Glassbox SRE incident brief"},
+                },
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": f"```{notification.brief}```"},
+                },
             ],
         )
         return NotificationReceipt(
@@ -79,7 +89,9 @@ class SlackNotifier:
             destination=self.channel_id,
         )
 
-    def send_resolution(self, notification: IncidentBriefNotification, thread_id: str | None) -> NotificationReceipt:
+    def send_resolution(
+        self, notification: IncidentBriefNotification, thread_id: str | None
+    ) -> NotificationReceipt:
         text = notification.brief
         response = self.client.chat_postMessage(
             channel=self.channel_id,

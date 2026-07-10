@@ -22,6 +22,7 @@ def default_service_dependency_graph() -> ServiceDependencyGraph:
     return ServiceDependencyGraph(edges={"frontend": ("ad",), "checkout": ("payment",)})
 
 
-def affected_services_from_alert(service_name: str, graph: ServiceDependencyGraph) -> tuple[str, ...]:
+def affected_services_from_alert(
+    service_name: str, graph: ServiceDependencyGraph
+) -> tuple[str, ...]:
     return (service_name, *graph.downstream(service_name))
-

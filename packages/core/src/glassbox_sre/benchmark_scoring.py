@@ -95,7 +95,8 @@ def summarize_scores(scores: list[ScenarioScore]) -> BenchmarkSummary:
         bad_commit_top1_accuracy=sum(score.bad_commit_top1 for score in scores) / scenario_count,
         bad_commit_top3_accuracy=sum(score.bad_commit_top3 for score in scores) / scenario_count,
         runbook_hit_rate=sum(score.runbook_hit for score in scores) / scenario_count,
-        runbook_section_hit_rate=sum(score.runbook_section_hit for score in scores) / scenario_count,
+        runbook_section_hit_rate=sum(score.runbook_section_hit for score in scores)
+        / scenario_count,
         impact_classification_accuracy=sum(score.impact_severity_correct for score in scores)
         / scenario_count,
         latency_p50_ms=float(median(latencies)),

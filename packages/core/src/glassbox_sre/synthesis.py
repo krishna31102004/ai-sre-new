@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from glassbox_sre.schemas import ImpactEstimate, CommitCorrelationFinding, RunbookRetrievalFinding
 from pydantic import BaseModel, Field
+
+from glassbox_sre.schemas import CommitCorrelationFinding, ImpactEstimate, RunbookRetrievalFinding
 
 
 class SynthesizedIncidentBrief(BaseModel):
@@ -43,9 +44,15 @@ def synthesize_incident_brief(
         commit_evidence = "; ".join(item.summary for item in suspect_commit.evidence)
         lines.extend(
             [
-                f"suspect commit: {suspect_commit.commit_sha[:12]} - {suspect_commit.commit_title} (evidence: {commit_evidence})",
+                (
+                    f"suspect commit: {suspect_commit.commit_sha[:12]} - "
+                    f"{suspect_commit.commit_title} (evidence: {commit_evidence})"
+                ),
                 f"confidence: {suspect_commit.confidence:.2f} (evidence: {commit_evidence})",
-                f"validation: {suspect_commit.validation_state.value} (evidence: {commit_evidence})",
+                (
+                    f"validation: {suspect_commit.validation_state.value} "
+                    f"(evidence: {commit_evidence})"
+                ),
             ]
         )
 
@@ -53,7 +60,10 @@ def synthesize_incident_brief(
         runbook_evidence = "; ".join(item.summary for item in runbook.evidence)
         lines.extend(
             [
-                f"runbook: {runbook.runbook_id} / {runbook.section_heading} (evidence: {runbook_evidence})",
+                (
+                    f"runbook: {runbook.runbook_id} / {runbook.section_heading} "
+                    f"(evidence: {runbook_evidence})"
+                ),
                 f"runbook score: {runbook.score:.2f} (evidence: {runbook_evidence})",
             ]
         )
@@ -61,7 +71,12 @@ def synthesize_incident_brief(
     if impact is not None:
         lines.extend(
             [
-                f"impact: error_rate={impact.error_rate:.4f}, affected_requests={impact.affected_requests:g}, severity={impact.severity} (evidence: {', '.join(item.summary for item in impact.evidence)})",
+                (
+                    f"impact: error_rate={impact.error_rate:.4f}, "
+                    f"affected_requests={impact.affected_requests:g}, "
+                    f"severity={impact.severity} "
+                    f"(evidence: {', '.join(item.summary for item in impact.evidence)})"
+                ),
             ]
         )
         if impact.latency_p95_ms is not None:

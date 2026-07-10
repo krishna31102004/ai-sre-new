@@ -61,6 +61,7 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = ["infra/otel-demo/opentelemetry-demo"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

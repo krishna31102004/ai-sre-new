@@ -10,11 +10,28 @@ from glassbox_sre.postmortems import Postmortem, timeline_from_events
 
 def render_postmortem_markdown(postmortem: Postmortem) -> str:
     lines = [
-        f"# {postmortem.title}", "", "## Summary", postmortem.summary, "", "## Impact", postmortem.impact,
-        "", "## Root Cause", postmortem.root_cause, "", "## Detection", postmortem.detection,
-        "", "## Resolution", postmortem.resolution, "", "## Timeline",
+        f"# {postmortem.title}",
+        "",
+        "## Summary",
+        postmortem.summary,
+        "",
+        "## Impact",
+        postmortem.impact,
+        "",
+        "## Root Cause",
+        postmortem.root_cause,
+        "",
+        "## Detection",
+        postmortem.detection,
+        "",
+        "## Resolution",
+        postmortem.resolution,
+        "",
+        "## Timeline",
     ]
-    lines.extend(f"- {entry.occurred_at.isoformat()} | {entry.summary}" for entry in postmortem.timeline)
+    lines.extend(
+        f"- {entry.occurred_at.isoformat()} | {entry.summary}" for entry in postmortem.timeline
+    )
     lines.extend(["", "## Evidence"])
     lines.extend(f"- {item}" for item in postmortem.evidence)
     lines.extend(["", "## Action Items"])
@@ -29,16 +46,23 @@ def generate_postmortem(
     timeline = timeline_from_events(events)
     narrative = (
         "This postmortem is grounded in the stored incident brief and persisted event timeline. "
-        "The evidence-cited brief below contains the computed impact, ranked suspect commit, and runbook match."
+        "The evidence-cited brief below contains the computed impact, ranked suspect "
+        "commit, and runbook match."
     )
     postmortem = Postmortem(
         incident_id=incident_id,
         title="Glassbox SRE incident postmortem",
         summary=narrative,
         impact="See the evidence-cited incident brief for computed impact.",
-        root_cause="See the evidence-cited suspect commit and injected-fault evidence in the incident brief.",
+        root_cause=(
+            "See the evidence-cited suspect commit and injected-fault evidence in the "
+            "incident brief."
+        ),
         detection="Prometheus Alertmanager delivered the alert webhook to Glassbox SRE.",
-        resolution="Recovery was confirmed from the resolved Alertmanager signal and configured recovery checks.",
+        resolution=(
+            "Recovery was confirmed from the resolved Alertmanager signal and configured "
+            "recovery checks."
+        ),
         timeline=timeline,
         evidence=[brief],
         action_items=[],

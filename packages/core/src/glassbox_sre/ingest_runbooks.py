@@ -1,7 +1,11 @@
 from pathlib import Path
 
 from glassbox_sre.config import get_settings
-from glassbox_sre.runbooks import embedding_text_for_chunk, generate_openai_embeddings, load_runbook_chunks
+from glassbox_sre.runbooks import (
+    embedding_text_for_chunk,
+    generate_openai_embeddings,
+    load_runbook_chunks,
+)
 from glassbox_sre.storage import (
     ensure_runbook_vector_storage,
     init_db,
@@ -19,8 +23,7 @@ def ingest_runbooks(runbook_root: Path) -> int:
         settings,
     )
     by_chunk_id = {
-        chunk.chunk_id: embedding
-        for chunk, embedding in zip(chunks, embeddings, strict=True)
+        chunk.chunk_id: embedding for chunk, embedding in zip(chunks, embeddings, strict=True)
     }
     session_factory = make_session_factory(settings.postgres_url)
     init_db(session_factory)

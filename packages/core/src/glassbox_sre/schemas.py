@@ -51,7 +51,9 @@ class CommitCorrelationFinding(BaseModel):
     @field_validator("commit_sha")
     @classmethod
     def commit_sha_must_look_like_git_sha(cls, value: str) -> str:
-        if len(value) < 7 or not all(character in "0123456789abcdef" for character in value.lower()):
+        if len(value) < 7 or not all(
+            character in "0123456789abcdef" for character in value.lower()
+        ):
             raise ValueError("commit_sha must be a hexadecimal Git SHA")
         return value
 

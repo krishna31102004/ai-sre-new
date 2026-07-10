@@ -1,3 +1,4 @@
+from glassbox_sre.dependency_graph import default_service_dependency_graph
 from glassbox_sre.impact import (
     build_frontend_impact_estimate,
     classify_severity,
@@ -5,10 +6,9 @@ from glassbox_sre.impact import (
     estimate_affected_endpoints,
     estimate_affected_services,
     observed_request_count,
-    parse_prometheus_scalar,
     p95_latency_ms_from_histogram,
+    parse_prometheus_scalar,
 )
-from glassbox_sre.dependency_graph import default_service_dependency_graph
 from glassbox_sre.schemas import AlertmanagerWebhook
 
 

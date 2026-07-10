@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from glassbox_sre.commit_correlation import (
@@ -9,7 +9,6 @@ from glassbox_sre.commit_correlation import (
     rank_commit_candidates,
 )
 from glassbox_sre.schemas import AlertmanagerWebhook, DeployRecord
-
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 GROUND_TRUTH_COMMIT = "41080eb518884c6aeede13111f8214a7c87db3fb"
@@ -43,7 +42,7 @@ def _alert_payload() -> AlertmanagerWebhook:
 
 def test_deployments_in_window_filters_by_alert_time() -> None:
     deployments = _deployments()
-    alert_time = datetime(2026, 7, 9, 18, 0, tzinfo=timezone.utc)
+    alert_time = datetime(2026, 7, 9, 18, 0, tzinfo=UTC)
 
     matches = deployments_in_window(deployments, alert_time)
 

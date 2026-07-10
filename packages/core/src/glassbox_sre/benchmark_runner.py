@@ -124,7 +124,9 @@ def run_replay_fast_scenario(
             scenario_dir / scenario.deploy_history_fixture
         ).load()
         commit_findings = rank_commit_candidates(alert, deployments, repo_root)
-        runbook_findings = retrieve_runbook_chunks(alert, load_runbook_chunks(runbook_root), limit=3)
+        runbook_findings = retrieve_runbook_chunks(
+            alert, load_runbook_chunks(runbook_root), limit=3
+        )
         impact_values = _impact_values_from_snapshot(scenario_dir / scenario.world_snapshot)
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,
@@ -175,7 +177,9 @@ def run_model_eval_scenario(
                 "deterministic_confidence": findings_by_sha.get(deployment.commit_sha).confidence
                 if deployment.commit_sha in findings_by_sha
                 else None,
-                "validation_state": findings_by_sha.get(deployment.commit_sha).validation_state.value
+                "validation_state": findings_by_sha.get(
+                    deployment.commit_sha
+                ).validation_state.value
                 if deployment.commit_sha in findings_by_sha
                 else "inconclusive",
                 "evidence": [
@@ -193,7 +197,9 @@ def run_model_eval_scenario(
             alert,
             candidate_context,
         )
-        runbook_findings = retrieve_runbook_chunks(alert, load_runbook_chunks(runbook_root), limit=3)
+        runbook_findings = retrieve_runbook_chunks(
+            alert, load_runbook_chunks(runbook_root), limit=3
+        )
         impact_values = _impact_values_from_snapshot(scenario_dir / scenario.world_snapshot)
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,

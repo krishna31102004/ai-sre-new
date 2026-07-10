@@ -40,7 +40,9 @@ class ScenarioGroundTruth(BaseModel):
     @field_validator("bad_commit_sha")
     @classmethod
     def commit_sha_must_look_like_git_sha(cls, value: str) -> str:
-        if len(value) < 7 or not all(character in "0123456789abcdef" for character in value.lower()):
+        if len(value) < 7 or not all(
+            character in "0123456789abcdef" for character in value.lower()
+        ):
             raise ValueError("bad_commit_sha must be a hexadecimal Git SHA")
         return value
 
@@ -85,7 +87,9 @@ class BenchmarkScenario(BaseModel):
     @model_validator(mode="after")
     def live_captured_requires_fault_flag(self) -> "BenchmarkScenario":
         if self.source_kind == ScenarioSourceKind.LIVE_CAPTURED and not self.fault_flag:
-            raise ValueError("live_captured scenarios must name the fault_flag used to capture them")
+            raise ValueError(
+                "live_captured scenarios must name the fault_flag used to capture them"
+            )
         return self
 
 

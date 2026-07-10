@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-import math
 import uuid
 from datetime import UTC, datetime
 from typing import Any
+
+from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select, text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
+from sqlalchemy.types import JSON
 
 from glassbox_sre.schemas import (
     AlertmanagerWebhook,
@@ -13,10 +17,6 @@ from glassbox_sre.schemas import (
     RunbookChunk,
     RunbookRetrievalFinding,
 )
-from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select, text
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
-from sqlalchemy.types import JSON
 
 
 class Base(DeclarativeBase):
@@ -33,7 +33,9 @@ class DeploymentRow(Base):
     deployment_id: Mapped[str] = mapped_column(String(120), primary_key=True)
     service_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
     environment: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
-    deployed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    deployed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     commit_sha: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
     commit_title: Mapped[str] = mapped_column(Text, nullable=False)
     repo_path: Mapped[str] = mapped_column(Text, nullable=False)
@@ -77,7 +79,9 @@ class IncidentEventRow(Base):
         ForeignKey("investigations.investigation_id"), nullable=False, index=True
     )
     event_type: Mapped[str] = mapped_column(String(80), nullable=False)
-    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    occurred_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     source: Mapped[str] = mapped_column(String(80), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     reference: Mapped[str | None] = mapped_column(Text)
@@ -242,47 +246,103 @@ def update_investigation_brief(session: Session, investigation_id: str, brief: s
 def add_incident_event(session: Session, event: Any) -> None:
     session.add(
         IncidentEventRow(
-            event_id=str(uuid.uuid4()), investigation_id=event.incident_id, event_type=event.event_type,
-            occurred_at=event.occurred_at, source=event.source, summary=event.summary,
-            reference=event.reference, metadata_json=event.metadata,
+            event_id=str(uuid.uuid4()),
+            investigation_id=event.incident_id,
+            event_type=event.event_type,
+            occurred_at=event.occurred_at,
+            source=event.source,
+            summary=event.summary,
+            reference=event.reference,
+            metadata_json=event.metadata,
         )
     )
 
 
 def save_notification_receipt(
-    session: Session, investigation_id: str, channel: str, external_id: str | None, destination: str | None
+    session: Session,
+    investigation_id: str,
+    channel: str,
+    external_id: str | None,
+    destination: str | None,
 ) -> None:
-    session.add(NotificationRow(
-        notification_id=str(uuid.uuid4()), investigation_id=investigation_id, channel=channel,
-        external_id=external_id, destination=destination, delivered_at=datetime.now(UTC),
-    ))
+    session.add(
+        NotificationRow(
+            notification_id=str(uuid.uuid4()),
+            investigation_id=investigation_id,
+            channel=channel,
+            external_id=external_id,
+            destination=destination,
+            delivered_at=datetime.now(UTC),
+        )
+    )
 
 
-def latest_open_investigation(session: Session, payload: AlertmanagerWebhook) -> InvestigationRow | None:
+def latest_open_investigation(
+    session: Session, payload: AlertmanagerWebhook
+) -> InvestigationRow | None:
     first = payload.alerts[0]
-    service = first.labels.get("service") or first.labels.get("service_name") or first.labels.get("job") or "unknown-service"
+    service = (
+        first.labels.get("service")
+        or first.labels.get("service_name")
+        or first.labels.get("job")
+        or "unknown-service"
+    )
     name = first.labels.get("alertname", "unknown-alert")
     return session.scalars(
-        select(InvestigationRow).where(
+        select(InvestigationRow)
+        .where(
             InvestigationRow.alert_name == name,
             InvestigationRow.service_name == service,
             InvestigationRow.alert_status == "firing",
-        ).order_by(InvestigationRow.created_at.desc())
+        )
+        .order_by(InvestigationRow.created_at.desc())
     ).first()
 
 
 def load_incident_events(session: Session, investigation_id: str) -> list[Any]:
     from glassbox_sre.event_log import IncidentEvent
-    rows = session.scalars(select(IncidentEventRow).where(IncidentEventRow.investigation_id == investigation_id).order_by(IncidentEventRow.occurred_at)).all()
-    return [IncidentEvent(incident_id=row.investigation_id, event_type=row.event_type, occurred_at=row.occurred_at, source=row.source, summary=row.summary, reference=row.reference, metadata=row.metadata_json) for row in rows]
+
+    rows = session.scalars(
+        select(IncidentEventRow)
+        .where(IncidentEventRow.investigation_id == investigation_id)
+        .order_by(IncidentEventRow.occurred_at)
+    ).all()
+    return [
+        IncidentEvent(
+            incident_id=row.investigation_id,
+            event_type=row.event_type,
+            occurred_at=row.occurred_at,
+            source=row.source,
+            summary=row.summary,
+            reference=row.reference,
+            metadata=row.metadata_json,
+        )
+        for row in rows
+    ]
 
 
 def latest_notification_thread(session: Session, investigation_id: str) -> str | None:
-    return session.scalars(select(NotificationRow.external_id).where(NotificationRow.investigation_id == investigation_id, NotificationRow.channel == "slack").order_by(NotificationRow.delivered_at)).first()
+    return session.scalars(
+        select(NotificationRow.external_id)
+        .where(
+            NotificationRow.investigation_id == investigation_id, NotificationRow.channel == "slack"
+        )
+        .order_by(NotificationRow.delivered_at)
+    ).first()
 
 
-def save_postmortem(session: Session, investigation_id: str, content: dict[str, Any], markdown: str) -> None:
-    session.add(PostmortemRow(postmortem_id=str(uuid.uuid4()), investigation_id=investigation_id, generated_at=datetime.now(UTC), content_json=content, markdown=markdown))
+def save_postmortem(
+    session: Session, investigation_id: str, content: dict[str, Any], markdown: str
+) -> None:
+    session.add(
+        PostmortemRow(
+            postmortem_id=str(uuid.uuid4()),
+            investigation_id=investigation_id,
+            generated_at=datetime.now(UTC),
+            content_json=content,
+            markdown=markdown,
+        )
+    )
 
 
 def upsert_runbook_chunks(
@@ -394,7 +454,10 @@ def rank_runbook_chunks_by_pgvector(
             evidence=[
                 EvidenceItem(
                     kind="runbook",
-                    summary=f"Matched runbook section {row['section_heading']} after tag filtering and pgvector cosine ranking.",
+                    summary=(
+                        f"Matched runbook section {row['section_heading']} after tag filtering "
+                        "and pgvector cosine ranking."
+                    ),
                     reference=row["chunk_id"],
                     metadata={
                         "runbook_id": row["runbook_id"],

@@ -1,12 +1,11 @@
 import pytest
-from pydantic import ValidationError
-
 from glassbox_sre.schemas import (
     AlertmanagerWebhook,
     CommitCorrelationFinding,
     EvidenceItem,
     HypothesisValidationState,
 )
+from pydantic import ValidationError
 
 
 def test_alertmanager_webhook_accepts_simplified_payload() -> None:
@@ -25,8 +24,10 @@ def test_alertmanager_webhook_accepts_simplified_payload() -> None:
 
     assert payload.status == "firing"
     assert payload.alerts[0].labels["service"] == "checkout"
-    assert payload.model_dump(by_alias=True)["alerts"][0]["startsAt"].isoformat().startswith(
-        "2026-07-09T12:00:00"
+    assert (
+        payload.model_dump(by_alias=True)["alerts"][0]["startsAt"]
+        .isoformat()
+        .startswith("2026-07-09T12:00:00")
     )
 
 

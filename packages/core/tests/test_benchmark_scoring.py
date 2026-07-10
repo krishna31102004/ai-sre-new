@@ -7,14 +7,9 @@ from glassbox_sre.benchmark_scoring import (
     summarize_scores,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCENARIO_PATH = (
-    REPO_ROOT
-    / "scenarios"
-    / "benchmark"
-    / "frontend-ad-failure-visible-500s"
-    / "scenario.json"
+    REPO_ROOT / "scenarios" / "benchmark" / "frontend-ad-failure-visible-500s" / "scenario.json"
 )
 
 

@@ -1,11 +1,10 @@
 import logging
 import signal
 import time
+from datetime import UTC, datetime
 from pathlib import Path
 
 from glassbox_sre.config import get_settings
-from datetime import UTC, datetime
-
 from glassbox_sre.event_log import IncidentEvent
 from glassbox_sre.notification import IncidentBriefNotification, notifier_from_settings
 from glassbox_sre.postmortem_generation import generate_postmortem, write_postmortem_markdown
@@ -20,8 +19,9 @@ from glassbox_sre.storage import (
     save_notification_receipt,
     save_postmortem,
 )
-from glassbox_sre_worker.graph import run_investigation_with_id
 from redis import Redis
+
+from glassbox_sre_worker.graph import run_investigation_with_id
 
 settings = get_settings()
 
@@ -61,8 +61,20 @@ def process_next_message() -> bool:
     session_factory = make_session_factory(settings.postgres_url)
     init_db(session_factory)
     with session_factory.begin() as session:
-        save_notification_receipt(session, investigation_id, receipt.channel, receipt.external_id, receipt.destination)
-        add_incident_event(session, IncidentEvent(incident_id=investigation_id, event_type="brief_delivered", occurred_at=datetime.now(UTC), source=receipt.channel, summary="Incident brief delivered.", reference=receipt.external_id))
+        save_notification_receipt(
+            session, investigation_id, receipt.channel, receipt.external_id, receipt.destination
+        )
+        add_incident_event(
+            session,
+            IncidentEvent(
+                incident_id=investigation_id,
+                event_type="brief_delivered",
+                occurred_at=datetime.now(UTC),
+                source=receipt.channel,
+                summary="Incident brief delivered.",
+                reference=receipt.external_id,
+            ),
+        )
     logger.info("processed alert webhook\n%s", receipt.rendered_message)
     return True
 
@@ -78,16 +90,32 @@ def _process_resolution(payload: AlertmanagerWebhook) -> bool:
             return True
         investigation_id = investigation.investigation_id
         thread_id = latest_notification_thread(session, investigation_id)
-        add_incident_event(session, IncidentEvent(
-            incident_id=investigation_id, event_type="resolved", occurred_at=datetime.now(UTC),
-            source="alertmanager", summary="Alertmanager reported the alert resolved."
-        ))
-        add_incident_event(session, IncidentEvent(
-            incident_id=investigation_id, event_type="recovery_confirmed", occurred_at=datetime.now(UTC),
-            source="worker", summary="Recovery confirmed by the resolved Alertmanager transition."
-        ))
+        add_incident_event(
+            session,
+            IncidentEvent(
+                incident_id=investigation_id,
+                event_type="resolved",
+                occurred_at=datetime.now(UTC),
+                source="alertmanager",
+                summary="Alertmanager reported the alert resolved.",
+            ),
+        )
+        add_incident_event(
+            session,
+            IncidentEvent(
+                incident_id=investigation_id,
+                event_type="recovery_confirmed",
+                occurred_at=datetime.now(UTC),
+                source="worker",
+                summary="Recovery confirmed by the resolved Alertmanager transition.",
+            ),
+        )
 
-    resolution_brief = "[incident resolved]\nstatus: resolved\nrecovery: Alertmanager resolved the frontend error alert after the configured Prometheus lookback window."
+    resolution_brief = (
+        "[incident resolved]\nstatus: resolved\n"
+        "recovery: Alertmanager resolved the frontend error alert after the "
+        "configured Prometheus lookback window."
+    )
     receipt = notifier.send_resolution(
         IncidentBriefNotification(
             incident_id=investigation_id,
@@ -99,23 +127,45 @@ def _process_resolution(payload: AlertmanagerWebhook) -> bool:
         thread_id,
     )
     with session_factory.begin() as session:
-        save_notification_receipt(session, investigation_id, receipt.channel, receipt.external_id, receipt.destination)
-        add_incident_event(session, IncidentEvent(
-            incident_id=investigation_id, event_type="brief_delivered", occurred_at=datetime.now(UTC),
-            source=receipt.channel, summary="Resolution update delivered.", reference=receipt.external_id
-        ))
+        save_notification_receipt(
+            session, investigation_id, receipt.channel, receipt.external_id, receipt.destination
+        )
+        add_incident_event(
+            session,
+            IncidentEvent(
+                incident_id=investigation_id,
+                event_type="brief_delivered",
+                occurred_at=datetime.now(UTC),
+                source=receipt.channel,
+                summary="Resolution update delivered.",
+                reference=receipt.external_id,
+            ),
+        )
         events = load_incident_events(session, investigation_id)
         brief = investigation.final_brief or "[investigation brief]\nNo stored brief available."
 
     postmortem = generate_postmortem(investigation_id, events, brief, settings)
     output_path = write_postmortem_markdown(postmortem, Path("artifacts/postmortems"))
     with session_factory.begin() as session:
-        save_postmortem(session, investigation_id, postmortem.model_dump(mode="json"), postmortem.markdown)
-        add_incident_event(session, IncidentEvent(
-            incident_id=investigation_id, event_type="postmortem_generated", occurred_at=datetime.now(UTC),
-            source="worker", summary="Grounded postmortem generated.", reference=str(output_path)
-        ))
-    logger.info("processed resolved alert webhook\n%s\npostmortem: %s", receipt.rendered_message, output_path)
+        save_postmortem(
+            session, investigation_id, postmortem.model_dump(mode="json"), postmortem.markdown
+        )
+        add_incident_event(
+            session,
+            IncidentEvent(
+                incident_id=investigation_id,
+                event_type="postmortem_generated",
+                occurred_at=datetime.now(UTC),
+                source="worker",
+                summary="Grounded postmortem generated.",
+                reference=str(output_path),
+            ),
+        )
+    logger.info(
+        "processed resolved alert webhook\n%s\npostmortem: %s",
+        receipt.rendered_message,
+        output_path,
+    )
     return True
 
 

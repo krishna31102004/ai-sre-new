@@ -28,7 +28,9 @@ def _frontend_alert() -> AlertmanagerWebhook:
                         "severity": "page",
                     },
                     "annotations": {
-                        "summary": "Frontend is returning sustained 500s while adFailure is active.",
+                        "summary": (
+                            "Frontend is returning sustained 500s while adFailure is active."
+                        ),
                     },
                     "startsAt": "2026-07-09T18:30:45Z",
                 }
@@ -49,7 +51,9 @@ def _frontend_product_catalog_alert() -> AlertmanagerWebhook:
                         "severity": "page",
                     },
                     "annotations": {
-                        "summary": "Frontend product pages are failing during product catalog lookup.",
+                        "summary": (
+                            "Frontend product pages are failing during product catalog lookup."
+                        ),
                     },
                     "startsAt": "2026-07-10T10:33:54Z",
                 }
@@ -105,8 +109,7 @@ def test_runbook_retrieval_includes_product_catalog_for_frontend_originated_aler
 def test_embedding_ranking_runs_within_tag_filtered_candidates() -> None:
     chunks = load_runbook_chunks(RUNBOOK_ROOT)
     chunk_embeddings = [
-        (chunk, deterministic_embedding(embedding_text_for_chunk(chunk)))
-        for chunk in chunks
+        (chunk, deterministic_embedding(embedding_text_for_chunk(chunk))) for chunk in chunks
     ]
 
     findings = rank_filtered_chunks_by_embedding(_frontend_alert(), chunk_embeddings)

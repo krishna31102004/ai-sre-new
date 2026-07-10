@@ -1,13 +1,14 @@
 import json
 import logging
 import os
-from datetime import UTC, datetime
 from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import NotRequired, TypedDict
 
 from glassbox_sre.commit_correlation import git_show_diff, rank_commit_candidates
 from glassbox_sre.config import Settings, get_settings
+from glassbox_sre.event_log import IncidentEvent
 from glassbox_sre.impact import (
     PrometheusClient,
     estimate_affected_endpoints,
@@ -22,7 +23,6 @@ from glassbox_sre.schemas import (
     AlertmanagerWebhook,
     CommitCorrelationFinding,
     CommitCorrelationResult,
-    DeployRecord,
     ImpactEstimate,
     RunbookRetrievalFinding,
 )
@@ -37,7 +37,6 @@ from glassbox_sre.storage import (
     save_findings,
     update_investigation_brief,
 )
-from glassbox_sre.event_log import IncidentEvent
 from glassbox_sre.synthesis import synthesize_incident_brief
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -232,7 +231,9 @@ def _build_runbook_retrieval_node(settings: Settings):
     session_factory = make_session_factory(settings.postgres_url)
     init_db(session_factory)
 
-    def runbook_retrieval_node(state: InvestigationState) -> dict[str, list[RunbookRetrievalFinding]]:
+    def runbook_retrieval_node(
+        state: InvestigationState,
+    ) -> dict[str, list[RunbookRetrievalFinding]]:
         payload = state["alert_payload"]
         with session_factory() as session:
             stored_chunks = load_runbook_chunks_from_db(session)
@@ -247,7 +248,9 @@ def _build_runbook_retrieval_node(settings: Settings):
             ]
         ).strip()
         query_embedding = generate_openai_embeddings([query_text], settings)[0]
-        candidate_chunks = filter_runbook_chunks(payload, [chunk for chunk, _embedding in stored_chunks])
+        candidate_chunks = filter_runbook_chunks(
+            payload, [chunk for chunk, _embedding in stored_chunks]
+        )
         with session_factory() as session:
             findings = rank_runbook_chunks_by_pgvector(
                 session,
@@ -299,7 +302,9 @@ def _build_synthesis_node():
         affected_endpoints = state.get("affected_endpoints", [])
         brief = synthesize_incident_brief(
             payload.status,
-            triage.alert_names[0] if triage.alert_names else payload.alerts[0].labels.get("alertname", "unknown-alert"),
+            triage.alert_names[0]
+            if triage.alert_names
+            else payload.alerts[0].labels.get("alertname", "unknown-alert"),
             ", ".join(affected_services or triage.affected_services or []),
             findings[0] if findings else None,
             runbook_findings[0] if runbook_findings else None,
@@ -354,11 +359,10 @@ def build_investigation_graph(
         [InvestigationState], dict[str, list[CommitCorrelationFinding]]
     ]
     | None = None,
-    runbook_retrieval_node: Callable[
-        [InvestigationState], dict[str, list[RunbookRetrievalFinding]]
-    ]
+    runbook_retrieval_node: Callable[[InvestigationState], dict[str, list[RunbookRetrievalFinding]]]
     | None = None,
-    impact_node: Callable[[InvestigationState], dict[str, ImpactEstimate | list[str]]] | None = None,
+    impact_node: Callable[[InvestigationState], dict[str, ImpactEstimate | list[str]]]
+    | None = None,
     synthesis_node: Callable[[InvestigationState], dict[str, str]] | None = None,
     repo_root: Path | None = None,
 ):
@@ -390,15 +394,27 @@ def build_investigation_graph(
     return graph.compile()
 
 
-def run_investigation_with_id(payload: AlertmanagerWebhook, settings: Settings | None = None) -> tuple[str, str]:
+def run_investigation_with_id(
+    payload: AlertmanagerWebhook, settings: Settings | None = None
+) -> tuple[str, str]:
     resolved_settings = settings or get_settings()
     session_factory = make_session_factory(resolved_settings.postgres_url)
     init_db(session_factory)
     with session_factory.begin() as session:
         investigation_id = create_investigation(session, payload)
-        # The event table has a foreign key but no ORM relationship, so make the parent durable first.
+        # The event table has a foreign key but no ORM relationship.
+        # Make the parent durable first.
         session.flush()
-        add_incident_event(session, IncidentEvent(incident_id=investigation_id, event_type="investigation_started", occurred_at=datetime.now(UTC), source="worker", summary="LangGraph investigation started."))
+        add_incident_event(
+            session,
+            IncidentEvent(
+                incident_id=investigation_id,
+                event_type="investigation_started",
+                occurred_at=datetime.now(UTC),
+                source="worker",
+                summary="LangGraph investigation started.",
+            ),
+        )
 
     graph = build_investigation_graph(resolved_settings)
     result = graph.invoke({"alert_payload": payload})
@@ -413,7 +429,16 @@ def run_investigation_with_id(payload: AlertmanagerWebhook, settings: Settings |
             ("runbook_retrieval_completed", "Runbook retrieval investigator completed."),
             ("impact_estimation_completed", "Impact estimation investigator completed."),
         ):
-            add_incident_event(session, IncidentEvent(incident_id=investigation_id, event_type=event_type, occurred_at=now, source="worker", summary=summary))
+            add_incident_event(
+                session,
+                IncidentEvent(
+                    incident_id=investigation_id,
+                    event_type=event_type,
+                    occurred_at=now,
+                    source="worker",
+                    summary=summary,
+                ),
+            )
     return investigation_id, brief
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
+
 from glassbox_sre.dependency_graph import (
     ServiceDependencyGraph,
     affected_services_from_alert,
@@ -57,7 +58,9 @@ def build_frontend_impact_estimate(
     error_query: str | None = None,
 ) -> ImpactEstimate:
     first_alert = payload.alerts[0]
-    service = first_alert.labels.get("service") or first_alert.labels.get("service_name") or "unknown"
+    service = (
+        first_alert.labels.get("service") or first_alert.labels.get("service_name") or "unknown"
+    )
     error_rate = error_requests / total_requests if total_requests else 0.0
     severity = classify_severity(error_rate, error_requests)
     return ImpactEstimate(
@@ -72,7 +75,9 @@ def build_frontend_impact_estimate(
         evidence=[
             EvidenceItem(
                 kind="metric",
-                summary=f"Computed {error_requests:g} frontend 500s out of {total_requests:g} requests.",
+                summary=(
+                    f"Computed {error_requests:g} frontend 500s out of {total_requests:g} requests."
+                ),
                 reference="prometheus:http_server_duration_milliseconds_count",
                 metadata={
                     "window": window,
@@ -136,7 +141,9 @@ def estimate_affected_services(
 ) -> tuple[str, ...]:
     resolved_graph = graph or default_service_dependency_graph()
     first_alert = payload.alerts[0]
-    service = first_alert.labels.get("service") or first_alert.labels.get("service_name") or "unknown"
+    service = (
+        first_alert.labels.get("service") or first_alert.labels.get("service_name") or "unknown"
+    )
     return affected_services_from_alert(service, resolved_graph)
 
 
