@@ -43,6 +43,12 @@ def test_seed_deployments_round_trip_in_database(tmp_path) -> None:
     ]
 
 
+def test_session_factory_enables_connection_pre_ping(tmp_path) -> None:
+    session_factory = make_session_factory(f"sqlite:///{tmp_path / 'glassbox.db'}")
+
+    assert session_factory.kw["bind"].pool._pre_ping is True
+
+
 def test_runbook_chunks_round_trip_in_database(tmp_path) -> None:
     session_factory = make_session_factory(f"sqlite:///{tmp_path / 'glassbox.db'}")
     init_db(session_factory)

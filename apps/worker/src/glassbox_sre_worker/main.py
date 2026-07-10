@@ -20,6 +20,7 @@ from glassbox_sre.storage import (
     save_postmortem,
 )
 from redis import Redis
+from sqlalchemy.exc import OperationalError
 
 from glassbox_sre_worker.graph import run_investigation_with_id
 
@@ -32,6 +33,17 @@ redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
 notifier = notifier_from_settings(settings.slack_bot_token, settings.slack_channel_id)
 running = True
 WORKER_HEARTBEAT_KEY = "glassbox:worker:heartbeat"
+DB_RETRY_BACKOFF_SECONDS = 3
+CONNECTION_ERROR_MARKERS = (
+    "connection reset",
+    "connection refused",
+    "connection unexpectedly",
+    "consuming input failed",
+    "could not connect",
+    "server closed the connection",
+    "ssl syscall",
+    "terminating connection",
+)
 
 
 def write_heartbeat() -> None:
@@ -49,7 +61,42 @@ def process_next_message() -> bool:
     if raw_message is None:
         return False
 
-    payload = AlertmanagerWebhook.model_validate_json(raw_message)
+    try:
+        payload = AlertmanagerWebhook.model_validate_json(raw_message)
+    except Exception:
+        logger.exception("discarding invalid alert message from Redis queue")
+        return True
+
+    for attempt in range(2):
+        try:
+            return _process_payload(payload)
+        except OperationalError as error:
+            if not _is_transient_connection_error(error):
+                logger.exception("discarding alert after non-retryable database operational error")
+                return True
+            if attempt == 0:
+                logger.warning(
+                    "transient database connection failure; retrying alert once in %s seconds",
+                    DB_RETRY_BACKOFF_SECONDS,
+                    exc_info=True,
+                )
+                time.sleep(DB_RETRY_BACKOFF_SECONDS)
+                continue
+            logger.exception("discarding alert after transient database retry failed")
+            return True
+        except Exception:
+            logger.exception("discarding alert after non-retryable processing error")
+            return True
+
+    return True
+
+
+def _is_transient_connection_error(error: OperationalError) -> bool:
+    message = str(error).lower()
+    return any(marker in message for marker in CONNECTION_ERROR_MARKERS)
+
+
+def _process_payload(payload: AlertmanagerWebhook) -> bool:
     if payload.status == "resolved":
         return _process_resolution(payload)
 

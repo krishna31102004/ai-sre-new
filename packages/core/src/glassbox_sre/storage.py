@@ -140,7 +140,8 @@ class RunbookChunkRow(Base):
 
 
 def make_session_factory(database_url: str) -> sessionmaker[Session]:
-    engine = create_engine(database_url)
+    # Detect stale pooled connections before a query is handed to the worker.
+    engine = create_engine(database_url, pool_pre_ping=True)
     return sessionmaker(engine)
 
 
