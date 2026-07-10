@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"ShippingRateErrors","service":"checkout","severity":"ticket"},"annotations":{"summary":"Shipping estimates are timing out intermittently.","description":"Checkout shipping rate calls have sparse failures and latency."},"startsAt":"2026-07-10T15:06:44Z"}]}

@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-shipping-timeout-benign","service_name":"shipping","environment":"otel-demo-local","deployed_at":"2026-07-10T14:41:12Z","commit_sha":"bbeffa5af88fff717132855600fd25170fa5284a","commit_title":"Seed shipping-benign-zone-labels benchmark note","repo_path":"scenarios/benchmark/shipping-benign-zone-labels/change.md"},
+  {"deployment_id":"bench-shipping-timeout-bad","service_name":"shipping","environment":"otel-demo-local","deployed_at":"2026-07-10T14:52:38Z","commit_sha":"a821fc677045eda179e3317d594645d1a18b5a94","commit_title":"Seed shipping-rate-timeout benchmark note","repo_path":"scenarios/benchmark/shipping-rate-timeout/bad-change.md"},
+  {"deployment_id":"bench-shipping-timeout-payment","service_name":"payment","environment":"otel-demo-local","deployed_at":"2026-07-10T14:57:25Z","commit_sha":"f7927bcb6b901c812c358a38217ececfdcbceda6","commit_title":"Seed payment receipt logging distractor","repo_path":"scenarios/benchmark/payment-benign-receipt-logging/change.md"},
+  {"deployment_id":"bench-shipping-timeout-cart","service_name":"cart","environment":"otel-demo-local","deployed_at":"2026-07-10T15:01:11Z","commit_sha":"8527cb5a6bcec7455eeee2047fcf6663732ada53","commit_title":"Seed cart-benign-cookie-cleanup benchmark note","repo_path":"scenarios/benchmark/cart-benign-cookie-cleanup/change.md"}
+]

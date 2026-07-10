@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-image-slow-alt","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T17:38:22Z","commit_sha":"1f88fac4e7cf44ca0cf592007e47f2f1571f4a94","commit_title":"Seed image-benign-alt-fallback benchmark note","repo_path":"scenarios/benchmark/image-benign-alt-fallback/change.md"},
+  {"deployment_id":"bench-image-slow-bad","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T17:47:09Z","commit_sha":"f81b7e7e67a87119e2bc4e409d552877b2cf48f2","commit_title":"Seed image-slow-load benchmark note","repo_path":"scenarios/benchmark/image-slow-load/bad-change.md"},
+  {"deployment_id":"bench-image-slow-copy","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T17:51:41Z","commit_sha":"bcc8aa3223072d6c66fcebeea7bc65bb04d5e6cd","commit_title":"Seed frontend banner copy distractor","repo_path":"scenarios/benchmark/frontend-benign-banner-copy/change.md"},
+  {"deployment_id":"bench-image-slow-catalog","service_name":"product-catalog","environment":"otel-demo-local","deployed_at":"2026-07-10T17:55:33Z","commit_sha":"700abd2fecd553fcd63e5851949b61bfa322e360","commit_title":"Seed catalog pagination distractor","repo_path":"scenarios/benchmark/product-catalog-benign-pagination/change.md"}
+]

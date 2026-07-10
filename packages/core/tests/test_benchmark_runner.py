@@ -34,10 +34,10 @@ class FakeModelClient:
         )
 
 
-def test_discover_scenario_paths_finds_initial_five() -> None:
+def test_discover_scenario_paths_finds_initial_scenario_corpus() -> None:
     paths = discover_scenario_paths(SCENARIOS_DIR)
 
-    assert len(paths) == 5
+    assert len(paths) == 15
     assert all(path.name == "scenario.json" for path in paths)
 
 
@@ -70,9 +70,9 @@ def test_run_replay_fast_benchmark_writes_structured_artifacts(tmp_path: Path) -
     summary_markdown = (output_dir / "summary.md").read_text()
 
     assert manifest["mode"] == "replay-fast"
-    assert manifest["scenario_count"] == 5
-    assert summary["scenario_count"] == 5
-    assert len(results) == 5
+    assert manifest["scenario_count"] == 15
+    assert summary["scenario_count"] == 15
+    assert len(results) == 15
     assert "Bad commit top-1 accuracy" in summary_markdown
 
 
@@ -93,7 +93,7 @@ def test_run_model_eval_benchmark_writes_token_usage_with_mocked_model(tmp_path:
     assert summary["bad_commit_top1_accuracy"] == 1.0
     assert summary["root_cause_precision"] is None
     assert summary["unavailable_metrics"]["root_cause_precision"] == "evaluator output missing"
-    assert summary["input_tokens"] == 500
-    assert summary["output_tokens"] == 125
-    assert summary["total_tokens"] == 625
-    assert "Total tokens: 625" in summary_markdown
+    assert summary["input_tokens"] == 1500
+    assert summary["output_tokens"] == 375
+    assert summary["total_tokens"] == 1875
+    assert "Total tokens: 1875" in summary_markdown

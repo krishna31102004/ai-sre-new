@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-kafka-lag-benign","service_name":"checkout","environment":"otel-demo-local","deployed_at":"2026-07-10T19:01:10Z","commit_sha":"7e1d2bbd58978a9fa8ec2c37cfbc8c4741cb5d33","commit_title":"Seed kafka-benign-consumer-metrics benchmark note","repo_path":"scenarios/benchmark/kafka-benign-consumer-metrics/change.md"},
+  {"deployment_id":"bench-kafka-lag-bad","service_name":"checkout","environment":"otel-demo-local","deployed_at":"2026-07-10T19:08:46Z","commit_sha":"a5608ff58f03bfaa972d862deb20c320c16b1114","commit_title":"Seed kafka-checkout-queue-lag benchmark note","repo_path":"scenarios/benchmark/kafka-checkout-queue-lag/bad-change.md"},
+  {"deployment_id":"bench-kafka-lag-payment","service_name":"payment","environment":"otel-demo-local","deployed_at":"2026-07-10T19:14:28Z","commit_sha":"6b19fe933ba472eb9cb4cb3e29bad33ed2536dc7","commit_title":"Seed payment card label distractor","repo_path":"scenarios/benchmark/payment-benign-card-brand-label/change.md"},
+  {"deployment_id":"bench-kafka-lag-email","service_name":"email","environment":"otel-demo-local","deployed_at":"2026-07-10T19:18:04Z","commit_sha":"9e38e5b3b35a796f233262d6b872dad7274aba5c","commit_title":"Seed email template distractor benchmark note","repo_path":"scenarios/benchmark/email-benign-template-copy/change.md"}
+]

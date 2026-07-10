@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"RecommendationErrors","service":"frontend","severity":"page"},"annotations":{"summary":"Frontend recommendation widgets are intermittently failing with rising latency.","description":"Recommendation cache memory growth is suspected but frontend sees the symptom."},"startsAt":"2026-07-10T16:22:03Z"}]}

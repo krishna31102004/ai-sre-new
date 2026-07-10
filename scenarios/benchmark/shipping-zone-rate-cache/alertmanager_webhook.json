@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"ShippingRateErrors","service":"checkout","severity":"page"},"annotations":{"summary":"Checkout shipping estimates are failing for some regions.","description":"Shipping zone-rate cache lookups are returning invalid estimates."},"startsAt":"2026-07-10T14:18:09Z"}]}

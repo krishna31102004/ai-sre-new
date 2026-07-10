@@ -123,7 +123,7 @@ def test_validate_world_snapshot_shape_requires_core_sections() -> None:
 def test_committed_benchmark_scenario_manifests_are_valid() -> None:
     scenario_paths = sorted(BENCHMARK_SCENARIOS_DIR.glob("*/scenario.json"))
 
-    assert len(scenario_paths) == 5
+    assert len(scenario_paths) == 15
 
     scenario_ids = set()
     for scenario_path in scenario_paths:
@@ -166,4 +166,14 @@ def test_committed_benchmark_scenario_manifests_are_valid() -> None:
         "frontend-ad-failure-visible-500s",
         "frontend-product-catalog-latency",
         "frontend-product-catalog-unavailable",
+        "cart-checkout-failure",
+        "cart-price-staleness",
+        "shipping-zone-rate-cache",
+        "shipping-rate-timeout",
+        "recommendation-cache-leak",
+        "recommendation-timeout",
+        "image-slow-load",
+        "image-cdn-errors",
+        "kafka-checkout-queue-lag",
+        "kafka-email-consumer-errors",
     }

@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-reco-timeout-benign","service_name":"recommendation","environment":"otel-demo-local","deployed_at":"2026-07-10T16:47:23Z","commit_sha":"12ec93f8bb2ad212745bc651c45d4413f67554b7","commit_title":"Seed recommendation-benign-ranking-copy benchmark note","repo_path":"scenarios/benchmark/recommendation-benign-ranking-copy/change.md"},
+  {"deployment_id":"bench-reco-timeout-bad","service_name":"recommendation","environment":"otel-demo-local","deployed_at":"2026-07-10T16:55:08Z","commit_sha":"a44d68f362896a4c4c8075ecb4196241a033462b","commit_title":"Seed recommendation-timeout benchmark note","repo_path":"scenarios/benchmark/recommendation-timeout/bad-change.md"},
+  {"deployment_id":"bench-reco-timeout-frontend","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T17:02:44Z","commit_sha":"d56b8b31b4944ee3eda1b7173d431115d808ce6e","commit_title":"Seed frontend accessibility distractor","repo_path":"scenarios/benchmark/frontend-benign-accessibility-labels/change.md"},
+  {"deployment_id":"bench-reco-timeout-catalog","service_name":"product-catalog","environment":"otel-demo-local","deployed_at":"2026-07-10T17:06:10Z","commit_sha":"582281ad6dd8939a824736256958c9f1895ab7d4","commit_title":"Seed catalog alt text distractor","repo_path":"scenarios/benchmark/product-catalog-benign-image-alt-text/change.md"}
+]

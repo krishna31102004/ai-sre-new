@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"ImageLoadErrors","service":"frontend","severity":"page"},"annotations":{"summary":"Product image requests are failing through the frontend.","description":"Image CDN URL rewrites are returning 5xx responses."},"startsAt":"2026-07-10T18:44:19Z"}]}

@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"CartCheckoutErrors","service":"checkout","severity":"ticket"},"annotations":{"summary":"Sparse cart validation failures are appearing during checkout.","description":"Cart price validation intermittently fails after a cache deploy."},"startsAt":"2026-07-10T13:02:17Z"}]}

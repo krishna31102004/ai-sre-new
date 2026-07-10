@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"CartCheckoutErrors","service":"checkout","severity":"page"},"annotations":{"summary":"Checkout failures increased during cart validation.","description":"Checkout requests fail when cart validation rejects stale rows."},"startsAt":"2026-07-10T12:14:22Z"}]}

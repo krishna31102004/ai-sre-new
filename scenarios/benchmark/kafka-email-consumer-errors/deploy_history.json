@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-kafka-email-benign","service_name":"email","environment":"otel-demo-local","deployed_at":"2026-07-10T19:45:22Z","commit_sha":"9e38e5b3b35a796f233262d6b872dad7274aba5c","commit_title":"Seed email template distractor benchmark note","repo_path":"scenarios/benchmark/email-benign-template-copy/change.md"},
+  {"deployment_id":"bench-kafka-email-checkout","service_name":"checkout","environment":"otel-demo-local","deployed_at":"2026-07-10T19:51:39Z","commit_sha":"7e1d2bbd58978a9fa8ec2c37cfbc8c4741cb5d33","commit_title":"Seed kafka-benign-consumer-metrics benchmark note","repo_path":"scenarios/benchmark/kafka-benign-consumer-metrics/change.md"},
+  {"deployment_id":"bench-kafka-email-bad","service_name":"email","environment":"otel-demo-local","deployed_at":"2026-07-10T19:58:11Z","commit_sha":"6bb59b78910a981ceb7828ddee5ff2f8bce2f76d","commit_title":"Seed kafka-email-consumer-errors benchmark note","repo_path":"scenarios/benchmark/kafka-email-consumer-errors/bad-change.md"},
+  {"deployment_id":"bench-kafka-email-payment","service_name":"payment","environment":"otel-demo-local","deployed_at":"2026-07-10T20:02:57Z","commit_sha":"f7927bcb6b901c812c358a38217ececfdcbceda6","commit_title":"Seed payment receipt logging distractor","repo_path":"scenarios/benchmark/payment-benign-receipt-logging/change.md"}
+]

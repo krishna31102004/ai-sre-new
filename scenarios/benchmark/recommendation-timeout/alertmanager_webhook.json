@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"RecommendationErrors","service":"frontend","severity":"page"},"annotations":{"summary":"Frontend recommendation errors are elevated.","description":"Recommendation client calls are timing out."},"startsAt":"2026-07-10T17:13:51Z"}]}

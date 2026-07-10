@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-shipping-cache-benign","service_name":"shipping","environment":"otel-demo-local","deployed_at":"2026-07-10T13:58:13Z","commit_sha":"bbeffa5af88fff717132855600fd25170fa5284a","commit_title":"Seed shipping-benign-zone-labels benchmark note","repo_path":"scenarios/benchmark/shipping-benign-zone-labels/change.md"},
+  {"deployment_id":"bench-shipping-cache-bad","service_name":"shipping","environment":"otel-demo-local","deployed_at":"2026-07-10T14:04:55Z","commit_sha":"7f989b87ae9a1e52b780a6560ee2142ef8cbc713","commit_title":"Seed shipping-zone-rate-cache benchmark note","repo_path":"scenarios/benchmark/shipping-zone-rate-cache/bad-change.md"},
+  {"deployment_id":"bench-shipping-cache-cart","service_name":"cart","environment":"otel-demo-local","deployed_at":"2026-07-10T14:07:46Z","commit_sha":"8527cb5a6bcec7455eeee2047fcf6663732ada53","commit_title":"Seed cart-benign-cookie-cleanup benchmark note","repo_path":"scenarios/benchmark/cart-benign-cookie-cleanup/change.md"},
+  {"deployment_id":"bench-shipping-cache-currency","service_name":"currency","environment":"otel-demo-local","deployed_at":"2026-07-10T14:11:35Z","commit_sha":"85d3251f45338bb89d0e4194baf2cdac472c14e3","commit_title":"Seed currency deploy distractor scenario","repo_path":"scenarios/otel-demo/currency/exchange-rounding.md"}
+]

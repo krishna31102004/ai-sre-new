@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-cart-stale-benign","service_name":"cart","environment":"otel-demo-local","deployed_at":"2026-07-10T12:42:06Z","commit_sha":"8527cb5a6bcec7455eeee2047fcf6663732ada53","commit_title":"Seed cart-benign-cookie-cleanup benchmark note","repo_path":"scenarios/benchmark/cart-benign-cookie-cleanup/change.md"},
+  {"deployment_id":"bench-cart-stale-bad","service_name":"cart","environment":"otel-demo-local","deployed_at":"2026-07-10T12:49:31Z","commit_sha":"cc0efffc2dbd5d651ed7b1948e9db42163780d2f","commit_title":"Seed cart-price-staleness benchmark note","repo_path":"scenarios/benchmark/cart-price-staleness/bad-change.md"},
+  {"deployment_id":"bench-cart-stale-payment","service_name":"payment","environment":"otel-demo-local","deployed_at":"2026-07-10T12:52:14Z","commit_sha":"f7927bcb6b901c812c358a38217ececfdcbceda6","commit_title":"Seed payment receipt logging distractor","repo_path":"scenarios/benchmark/payment-benign-receipt-logging/change.md"},
+  {"deployment_id":"bench-cart-stale-frontend","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T12:57:40Z","commit_sha":"d56b8b31b4944ee3eda1b7173d431115d808ce6e","commit_title":"Seed frontend accessibility distractor","repo_path":"scenarios/benchmark/frontend-benign-accessibility-labels/change.md"}
+]

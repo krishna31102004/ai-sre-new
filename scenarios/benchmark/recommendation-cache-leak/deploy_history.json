@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-reco-cache-frontend","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T15:59:36Z","commit_sha":"1f88fac4e7cf44ca0cf592007e47f2f1571f4a94","commit_title":"Seed image-benign-alt-fallback benchmark note","repo_path":"scenarios/benchmark/image-benign-alt-fallback/change.md"},
+  {"deployment_id":"bench-reco-cache-benign","service_name":"recommendation","environment":"otel-demo-local","deployed_at":"2026-07-10T16:05:17Z","commit_sha":"12ec93f8bb2ad212745bc651c45d4413f67554b7","commit_title":"Seed recommendation-benign-ranking-copy benchmark note","repo_path":"scenarios/benchmark/recommendation-benign-ranking-copy/change.md"},
+  {"deployment_id":"bench-reco-cache-bad","service_name":"recommendation","environment":"otel-demo-local","deployed_at":"2026-07-10T16:09:42Z","commit_sha":"bdee60d6abfb2b8d09bf4033587c5f0de2aaeb48","commit_title":"Seed recommendation-cache-leak benchmark note","repo_path":"scenarios/benchmark/recommendation-cache-leak/bad-change.md"},
+  {"deployment_id":"bench-reco-cache-ad","service_name":"ad","environment":"otel-demo-local","deployed_at":"2026-07-10T16:14:55Z","commit_sha":"41080eb518884c6aeede13111f8214a7c87db3fb","commit_title":"Seed frontend ad failure ground truth scenario","repo_path":"scenarios/otel-demo/frontend/ad-failure-visible-500s.md"}
+]

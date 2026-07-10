@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"ImageLoadErrors","service":"frontend","severity":"info"},"annotations":{"summary":"Product image latency is elevated without clear HTTP 500 volume.","description":"Image transformation endpoint latency increased after a frontend deploy."},"startsAt":"2026-07-10T18:01:37Z"}]}

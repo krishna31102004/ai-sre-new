@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"KafkaQueueErrors","service":"email","severity":"page"},"annotations":{"summary":"Email consumer errors are elevated after checkout events.","description":"Notification consumer rejects events due to template schema mismatch."},"startsAt":"2026-07-10T20:10:05Z"}]}

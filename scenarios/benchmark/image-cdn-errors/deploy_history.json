@@ -1,0 +1,6 @@
+[
+  {"deployment_id":"bench-image-cdn-alt","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T18:17:44Z","commit_sha":"1f88fac4e7cf44ca0cf592007e47f2f1571f4a94","commit_title":"Seed image-benign-alt-fallback benchmark note","repo_path":"scenarios/benchmark/image-benign-alt-fallback/change.md"},
+  {"deployment_id":"bench-image-cdn-bad","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T18:29:03Z","commit_sha":"243aa8d7e9b568126b2452a1859eca0ec463a241","commit_title":"Seed image-cdn-errors benchmark note","repo_path":"scenarios/benchmark/image-cdn-errors/bad-change.md"},
+  {"deployment_id":"bench-image-cdn-accessibility","service_name":"frontend","environment":"otel-demo-local","deployed_at":"2026-07-10T18:33:28Z","commit_sha":"d56b8b31b4944ee3eda1b7173d431115d808ce6e","commit_title":"Seed frontend accessibility distractor","repo_path":"scenarios/benchmark/frontend-benign-accessibility-labels/change.md"},
+  {"deployment_id":"bench-image-cdn-currency","service_name":"currency","environment":"otel-demo-local","deployed_at":"2026-07-10T18:38:57Z","commit_sha":"85d3251f45338bb89d0e4194baf2cdac472c14e3","commit_title":"Seed currency deploy distractor scenario","repo_path":"scenarios/otel-demo/currency/exchange-rounding.md"}
+]

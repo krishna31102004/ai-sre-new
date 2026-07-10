@@ -1,0 +1,1 @@
+{"status":"firing","alerts":[{"labels":{"alertname":"KafkaQueueErrors","service":"checkout","severity":"info"},"annotations":{"summary":"Checkout event queue lag is rising without visible HTTP errors.","description":"Kafka producer batching appears inefficient after checkout deploy."},"startsAt":"2026-07-10T19:24:12Z"}]}

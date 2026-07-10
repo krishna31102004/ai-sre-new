@@ -116,7 +116,7 @@ Done means the project can run a repeatable benchmark of synthetic incidents wit
 - [x] Define benchmark scenario schema.
 - [x] Create ground-truth labels for fault flag, bad commit, expected runbook, impact class, and expected root cause.
 - [x] Script at least 5 initial synthetic scenarios.
-- [ ] Expand toward 20-40 total scenarios as supported functionality grows.
+- [x] Expand toward 20-40 total scenarios as supported functionality grows.
 - [x] Add scenario runner that can trigger or replay incidents headlessly.
 - [x] Capture world snapshots where live telemetry would make results non-deterministic.
 - [ ] Run the LangGraph investigation in evaluation mode.
