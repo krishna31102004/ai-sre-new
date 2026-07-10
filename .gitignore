@@ -36,6 +36,7 @@ artifacts/
 
 # Frontend build tooling
 node_modules/
+*.tsbuildinfo
 
 # Docker/local infra
 docker-compose.override.yml
