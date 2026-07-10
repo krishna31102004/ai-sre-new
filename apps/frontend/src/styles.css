@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply m-0 min-w-[320px] bg-canvas font-sans antialiased; }
+  h1 { @apply text-2xl font-semibold tracking-normal text-slate-50; }
+  h2 { @apply text-lg font-semibold text-slate-100; }
+  th { @apply px-4 py-3 font-medium; }
+  td { @apply px-4 py-3; }
+  button:disabled { @apply cursor-not-allowed opacity-50; }
+}
+
+@layer components {
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.14em] text-cyan-400; }
+  .badge { @apply inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium; }
+  .badge-green { @apply bg-emerald-400/10 text-emerald-300 ring-1 ring-inset ring-emerald-400/25; }
+  .badge-red { @apply bg-red-400/10 text-red-300 ring-1 ring-inset ring-red-400/25; }
+  .badge-amber { @apply bg-amber-400/10 text-amber-200 ring-1 ring-inset ring-amber-400/25; }
+  .badge-slate { @apply bg-slate-500/10 text-slate-300 ring-1 ring-inset ring-slate-500/25; }
+  .label { @apply mb-1 block text-xs uppercase tracking-wide text-slate-500; }
+  .detail-grid { @apply grid grid-cols-[minmax(120px,0.3fr)_1fr] gap-x-5 gap-y-3; }
+  .detail-grid dt { @apply text-slate-500; }
+  .detail-grid dd { @apply m-0 break-words; }
+  .evidence { @apply max-h-48 overflow-auto whitespace-pre-wrap rounded bg-slate-950/70 p-3 text-xs text-slate-300; }
+  .link-button { @apply inline-flex items-center gap-2 rounded border border-line px-3 py-2 text-slate-200 hover:border-cyan-500 hover:text-cyan-300; }
+  .icon-button { @apply inline-flex h-9 w-9 items-center justify-center rounded border border-line text-slate-300 hover:border-cyan-500 hover:text-cyan-300; }
+  .control-button { @apply min-w-24 rounded px-3 py-2 text-sm font-medium transition; }
+  .control-on { @apply bg-red-500/15 text-red-200 hover:bg-red-500/25; }
+  .control-off { @apply bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25; }
+  .toast { @apply fixed bottom-5 right-5 flex items-center gap-2 rounded border px-4 py-3 text-sm shadow-xl; }
+  .toast-success { @apply border-emerald-800 bg-emerald-950 text-emerald-100; }
+  .toast-error { @apply border-red-800 bg-red-950 text-red-100; }
+}
+
+@keyframes highlight-new { from { background-color: rgba(34, 211, 238, 0.18); } to { background-color: transparent; } }
+.new-row { animation: highlight-new 2.2s ease-out; }
+details[open] summary svg { transform: rotate(180deg); }

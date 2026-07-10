@@ -34,5 +34,8 @@ artifacts/
 .idea/
 .vscode/
 
+# Frontend build tooling
+node_modules/
+
 # Docker/local infra
 docker-compose.override.yml

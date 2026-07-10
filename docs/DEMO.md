@@ -22,6 +22,15 @@ Confirm `.env` has an `OPENAI_API_KEY`. Slack is optional: leave
 `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` blank to print the brief locally, or
 provide both values to deliver into the configured Slack channel.
 
+Build the browser dashboard once before starting the API (Node.js 20+):
+
+```bash
+cd apps/frontend
+npm install
+npm run build
+cd ../..
+```
+
 ## 2. Start Infrastructure
 
 ```bash

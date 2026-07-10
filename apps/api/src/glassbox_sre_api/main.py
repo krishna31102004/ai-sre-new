@@ -10,6 +10,8 @@ from typing import Annotated, Any, Literal
 import httpx
 from fastapi import FastAPI, HTTPException, status
 from fastapi import Path as ApiPath
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from glassbox_sre.config import get_settings
 from glassbox_sre.schemas import AlertmanagerWebhook
 from glassbox_sre.storage import (
@@ -34,6 +36,9 @@ redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
 WORKER_HEARTBEAT_KEY = "glassbox:worker:heartbeat"
 SUPPORTED_FAULT_FLAGS = frozenset({"adFailure", "paymentFailure", "productCatalogFailure"})
 ARTIFACTS_ROOT = Path("artifacts/evaluations")
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
+FRONTEND_DIST = REPOSITORY_ROOT / "apps" / "frontend" / "dist"
+FRONTEND_ASSETS = FRONTEND_DIST / "assets"
 
 RUNBOOK_PATTERN = re.compile(
     r"^runbook:\s*(?P<runbook_id>.+?)\s*/\s*(?P<section>.+?)(?:\s+\(evidence:|$)",
@@ -293,3 +298,22 @@ def set_fault(flag_name: str, request: FaultVariantRequest) -> dict[str, str]:
 @app.get("/api/benchmark/latest")
 def get_latest_benchmark() -> dict[str, Any]:
     return _latest_model_eval_summary()
+
+
+app.mount(
+    "/assets",
+    StaticFiles(directory=FRONTEND_ASSETS, check_dir=False),
+    name="frontend-assets",
+)
+
+
+@app.get("/{frontend_path:path}", include_in_schema=False)
+def serve_frontend(frontend_path: str) -> FileResponse:
+    """Serve the built SPA only after every API route has had a chance to match."""
+    del frontend_path
+    if not (FRONTEND_DIST / "index.html").is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="frontend build not found; run npm run build in apps/frontend",
+        )
+    return FileResponse(FRONTEND_DIST / "index.html")

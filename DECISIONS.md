@@ -123,3 +123,5 @@ This file is the running log for architectural and scope decisions. Add a dated 
 - 2026-07-10: Use `glassbox:worker:heartbeat` as a Redis key with a 30-second expiry, because the worker can publish liveness every poll while the API reports a simple, bounded heartbeat age.
 - 2026-07-10: Restrict the flagd proxy to `adFailure`, `paymentFailure`, and `productCatalogFailure`, because the dashboard must not expose an arbitrary flag write surface.
 - 2026-07-10: Store a LangSmith URL only when a configured root trace yields one, because tracing and trace-link lookup must degrade without affecting investigation execution when credentials are absent or LangSmith is unavailable.
+- 2026-07-10: Build the Phase 6 dashboard as a Vite React SPA using React Router and Tailwind CSS, because Vite keeps the client build small and direct while React Router cleanly maps the operational list, detail, status, and benchmark views.
+- 2026-07-10: Serve the generated dashboard from FastAPI only after registered API routes, because a single local origin avoids CORS setup while preserving the existing webhook and `/api/*` behavior.

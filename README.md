@@ -186,6 +186,20 @@ pytest
 Tests marked `@pytest.mark.live` are opt-in because they require live
 infrastructure or external credentials.
 
+### Dashboard Build
+
+The FastAPI service serves the built React dashboard at `http://localhost:8000`.
+Build it once after installing Node.js 20+:
+
+```bash
+cd apps/frontend
+npm install
+npm run build
+```
+
+Then start the API from the repository root as shown below. During frontend
+development, `npm run dev` provides Vite hot reloading on its own local port.
+
 ## Run The Full Demo
 
 The concise, interview-ready walkthrough is [docs/DEMO.md](docs/DEMO.md).

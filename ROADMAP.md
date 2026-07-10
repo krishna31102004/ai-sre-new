@@ -174,13 +174,13 @@ Done means the repo is cloneable, understandable, demoable, and resume defensibl
 
 ### Frontend
 
-- [ ] React SPA scaffold in `apps/frontend/` with Tailwind CSS dark theme
-- [ ] FastAPI serves built frontend at `GET /` via static files + catch-all
-- [ ] Investigations list page: table, 5s auto-refresh, row highlight on new
-- [ ] Investigation detail page: full brief, per-investigator findings, Slack/LangSmith links
-- [ ] System status + fault trigger panel: health indicators, on/off buttons per fault flag
-- [ ] Benchmark results page: model-eval summary table + key finding callout
-- [ ] Client-side routing (React Router) between all four pages
+- [x] React SPA scaffold in `apps/frontend/` with Tailwind CSS dark theme
+- [x] FastAPI serves built frontend at `GET /` via static files + catch-all
+- [x] Investigations list page: table, 5s auto-refresh, row highlight on new
+- [x] Investigation detail page: full brief, per-investigator findings, Slack/LangSmith links
+- [x] System status + fault trigger panel: health indicators, on/off buttons per fault flag
+- [x] Benchmark results page: model-eval summary table + key finding callout
+- [x] Client-side routing (React Router) between all four pages
 
 ### Integration and polish
 
