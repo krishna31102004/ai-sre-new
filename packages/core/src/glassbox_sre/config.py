@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     slack_signing_secret: str | None = None
     slack_app_token: str | None = None
     slack_channel_id: str | None = None
+    flagd_feature_api_url: str = "http://localhost:18080/feature/api"
     alert_queue_name: str = "glassbox:alerts"
     worker_poll_interval_seconds: float = 1.0
     log_level: str = "INFO"

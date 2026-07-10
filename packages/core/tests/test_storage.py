@@ -19,6 +19,8 @@ from glassbox_sre.storage import (
     upsert_deployments,
     upsert_runbook_chunks,
 )
+from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.orm import sessionmaker
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -86,3 +88,29 @@ def test_investigation_is_flushed_before_its_first_event(tmp_path) -> None:
                 summary="started",
             ),
         )
+
+
+def test_init_db_adds_langsmith_trace_url_to_existing_investigations_table(tmp_path) -> None:
+    engine = create_engine(f"sqlite:///{tmp_path / 'legacy.db'}")
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                CREATE TABLE investigations (
+                    investigation_id VARCHAR(36) PRIMARY KEY,
+                    alert_status VARCHAR(40) NOT NULL,
+                    alert_name VARCHAR(160) NOT NULL,
+                    service_name VARCHAR(120) NOT NULL,
+                    started_at DATETIME NOT NULL,
+                    created_at DATETIME NOT NULL,
+                    final_brief TEXT,
+                    payload_json JSON NOT NULL
+                )
+                """
+            )
+        )
+
+    init_db(sessionmaker(engine))
+
+    columns = {column["name"] for column in inspect(engine).get_columns("investigations")}
+    assert "langsmith_trace_url" in columns

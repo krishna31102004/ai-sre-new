@@ -4,7 +4,7 @@ import os
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import NotRequired, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 from glassbox_sre.commit_correlation import git_show_diff, rank_commit_candidates
 from glassbox_sre.config import Settings, get_settings
@@ -36,11 +36,13 @@ from glassbox_sre.storage import (
     rank_runbook_chunks_by_pgvector,
     save_findings,
     update_investigation_brief,
+    update_investigation_trace_url,
 )
 from glassbox_sre.synthesis import synthesize_incident_brief
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
+from langsmith import Client, traceable
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -73,6 +75,56 @@ def _configure_langsmith(settings: Settings) -> None:
         os.environ.setdefault("LANGSMITH_API_KEY", settings.langsmith_api_key)
     if settings.langsmith_project:
         os.environ.setdefault("LANGSMITH_PROJECT", settings.langsmith_project)
+
+
+def _langsmith_enabled(settings: Settings) -> bool:
+    return bool(
+        settings.langsmith_api_key
+        and settings.langsmith_project
+        and settings.langsmith_tracing is not None
+        and settings.langsmith_tracing.lower() in {"1", "true", "yes"}
+    )
+
+
+def _invoke_graph_with_optional_trace(
+    graph: Any,
+    payload: AlertmanagerWebhook,
+    settings: Settings,
+    investigation_id: str,
+) -> tuple[dict[str, object], str | None]:
+    """Run the graph under one named LangSmith root span when tracing is configured."""
+    invoke = graph.invoke
+    graph_input = {"alert_payload": payload}
+    graph_config = {
+        "run_name": "glassbox-sre-investigation",
+        "metadata": {"investigation_id": investigation_id},
+    }
+    if not _langsmith_enabled(settings):
+        return invoke(graph_input, config=graph_config), None
+
+    client = Client(api_key=settings.langsmith_api_key)
+    run_holder: dict[str, object] = {}
+
+    @traceable(
+        name="glassbox-sre-investigation",
+        run_type="chain",
+        client=client,
+        project_name=settings.langsmith_project,
+    )
+    def traced_invoke(run_tree: object | None = None) -> dict[str, object]:
+        if run_tree is not None:
+            run_holder["run_tree"] = run_tree
+        return invoke(graph_input, config=graph_config)
+
+    result = traced_invoke()
+    run_tree = run_holder.get("run_tree")
+    if run_tree is None:
+        return result, None
+    try:
+        return result, client.get_run_url(run=run_tree, project_name=settings.langsmith_project)
+    except Exception as error:  # Trace delivery must never fail an investigation.
+        logger.warning("could not resolve LangSmith trace URL: %s", error)
+        return result, None
 
 
 def _extract_alert_names(payload: AlertmanagerWebhook) -> list[str]:
@@ -417,11 +469,17 @@ def run_investigation_with_id(
         )
 
     graph = build_investigation_graph(resolved_settings)
-    result = graph.invoke({"alert_payload": payload})
+    result, trace_url = _invoke_graph_with_optional_trace(
+        graph,
+        payload,
+        resolved_settings,
+        investigation_id,
+    )
     brief = result["brief"]
     with session_factory.begin() as session:
         save_findings(session, investigation_id, result.get("commit_findings", []))
         update_investigation_brief(session, investigation_id, brief)
+        update_investigation_trace_url(session, investigation_id, trace_url)
         now = datetime.now(UTC)
         for event_type, summary in (
             ("triage_completed", "Triage node completed."),

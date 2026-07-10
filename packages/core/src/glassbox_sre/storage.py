@@ -4,7 +4,17 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select, text
+from sqlalchemy import (
+    DateTime,
+    Float,
+    ForeignKey,
+    String,
+    Text,
+    create_engine,
+    inspect,
+    select,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 from sqlalchemy.types import JSON
@@ -52,6 +62,7 @@ class InvestigationRow(Base):
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     final_brief: Mapped[str | None] = mapped_column(Text)
+    langsmith_trace_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     payload_json: Mapped[dict[str, Any]] = mapped_column(json_type(), nullable=False)
 
 
@@ -134,7 +145,14 @@ def make_session_factory(database_url: str) -> sessionmaker[Session]:
 
 
 def init_db(session_factory: sessionmaker[Session]) -> None:
-    Base.metadata.create_all(session_factory.kw["bind"])
+    engine = session_factory.kw["bind"]
+    Base.metadata.create_all(engine)
+    existing_columns = {column["name"] for column in inspect(engine).get_columns("investigations")}
+    if "langsmith_trace_url" not in existing_columns:
+        with engine.begin() as connection:
+            connection.execute(
+                text("ALTER TABLE investigations ADD COLUMN langsmith_trace_url VARCHAR(2048)")
+            )
 
 
 def ensure_runbook_vector_storage(session: Session, dimensions: int = 1536) -> None:
@@ -209,6 +227,7 @@ def create_investigation(session: Session, payload: AlertmanagerWebhook) -> str:
             started_at=first_alert.starts_at,
             created_at=datetime.now(UTC),
             final_brief=None,
+            langsmith_trace_url=None,
             payload_json=payload.model_dump(mode="json", by_alias=True),
         )
     )
@@ -241,6 +260,17 @@ def update_investigation_brief(session: Session, investigation_id: str, brief: s
     if row is None:
         raise ValueError(f"unknown investigation_id={investigation_id}")
     row.final_brief = brief
+
+
+def update_investigation_trace_url(
+    session: Session, investigation_id: str, trace_url: str | None
+) -> None:
+    if trace_url is None:
+        return
+    row = session.get(InvestigationRow, investigation_id)
+    if row is None:
+        raise ValueError(f"unknown investigation_id={investigation_id}")
+    row.langsmith_trace_url = trace_url
 
 
 def add_incident_event(session: Session, event: Any) -> None:

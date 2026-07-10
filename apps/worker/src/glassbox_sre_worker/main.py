@@ -31,6 +31,11 @@ logger = logging.getLogger(__name__)
 redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
 notifier = notifier_from_settings(settings.slack_bot_token, settings.slack_channel_id)
 running = True
+WORKER_HEARTBEAT_KEY = "glassbox:worker:heartbeat"
+
+
+def write_heartbeat() -> None:
+    redis_client.set(WORKER_HEARTBEAT_KEY, str(time.time()), ex=30)
 
 
 def _handle_shutdown(signum: int, _frame: object) -> None:
@@ -180,6 +185,7 @@ def main() -> None:
     )
 
     while running:
+        write_heartbeat()
         processed = process_next_message()
         if not processed:
             time.sleep(settings.worker_poll_interval_seconds)

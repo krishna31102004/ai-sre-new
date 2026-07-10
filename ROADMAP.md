@@ -156,7 +156,43 @@ Done means the repo is cloneable, understandable, demoable, and resume defensibl
 - [x] Review repository for unnecessary generated files or local secrets.
 - [x] Create final resume bullet with real measured numbers.
 
-## Optional Phase 6: Go Synthetic Traffic Component
+## Phase 6: React Dashboard and LangSmith Tracing
+
+**Done state**: a browser tab at `http://localhost:8000` shows a live, auto-refreshing investigation dashboard with fault trigger controls, and every investigation run produces a real LangSmith trace URL when configured.
+
+### Backend API additions
+
+- [x] `GET /api/investigations` endpoint (last 20, reverse chronological)
+- [x] `GET /api/investigations/{id}` endpoint (full detail + findings)
+- [x] `GET /api/health` endpoint (API, worker heartbeat, Postgres, Redis)
+- [x] `GET /api/fault/{flag_name}` endpoint (read current flagd state)
+- [x] `POST /api/fault/{flag_name}` endpoint (flip flagd fault flag)
+- [x] `GET /api/benchmark/latest` endpoint (latest model-eval summary JSON)
+- [x] Add `langsmith_trace_url` nullable column to investigations table
+- [x] Worker populates `langsmith_trace_url` when LangSmith env vars present
+- [x] Tests for all new endpoints
+
+### Frontend
+
+- [ ] React SPA scaffold in `apps/frontend/` with Tailwind CSS dark theme
+- [ ] FastAPI serves built frontend at `GET /` via static files + catch-all
+- [ ] Investigations list page: table, 5s auto-refresh, row highlight on new
+- [ ] Investigation detail page: full brief, per-investigator findings, Slack/LangSmith links
+- [ ] System status + fault trigger panel: health indicators, on/off buttons per fault flag
+- [ ] Benchmark results page: model-eval summary table + key finding callout
+- [ ] Client-side routing (React Router) between all four pages
+
+### Integration and polish
+
+- [ ] Fault trigger panel reads real current flag state from flagd, not assumed
+- [ ] New investigation row appears within 60s of fault trigger without terminal interaction
+- [ ] LangSmith tracing wired: each graph node appears as named step with input/output
+- [ ] LangSmith degrades gracefully when env vars absent
+- [ ] `docs/DEMO.md` updated with browser-only demo script
+- [ ] All 54 existing tests still pass
+- [ ] OTel submodule untouched throughout
+
+## Optional Phase 7: Go Synthetic Traffic Component
 
 Done means a small Go service improves the realism of traffic or telemetry generation without becoming a second main project.
 

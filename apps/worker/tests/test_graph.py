@@ -7,6 +7,7 @@ from glassbox_sre.schemas import (
     ImpactEstimate,
     RunbookRetrievalFinding,
 )
+from glassbox_sre_worker import graph as worker_graph
 from glassbox_sre_worker.graph import TriageResult, build_investigation_graph
 
 
@@ -160,3 +161,45 @@ def test_graph_returns_brief_with_mocked_triage_node() -> None:
     assert result["brief"].startswith("[investigation brief]")
     assert "runbook: otel-demo.frontend-ad-failure / Signals" in result["brief"]
     assert "impact: error_rate=0.0300, affected_requests=9, severity=page" in result["brief"]
+
+
+def test_optional_langsmith_trace_returns_url_when_configured(monkeypatch) -> None:
+    class FakeGraph:
+        def invoke(self, _input, config):
+            assert config["run_name"] == "glassbox-sre-investigation"
+            return {"brief": "fixture brief"}
+
+    class FakeClient:
+        def __init__(self, api_key: str) -> None:
+            assert api_key == "test-key"
+
+        def get_run_url(self, *, run, project_name: str) -> str:
+            assert run is not None
+            assert project_name == "glassbox-test"
+            return "https://smith.langchain.com/trace/test"
+
+    def fake_traceable(**_kwargs):
+        def decorator(function):
+            def wrapped():
+                return function(run_tree=object())
+
+            return wrapped
+
+        return decorator
+
+    monkeypatch.setattr(worker_graph, "Client", FakeClient)
+    monkeypatch.setattr(worker_graph, "traceable", fake_traceable)
+    result, trace_url = worker_graph._invoke_graph_with_optional_trace(
+        FakeGraph(),
+        _fixture_alert_payload(),
+        Settings(
+            openai_api_key="test-key",
+            langsmith_api_key="test-key",
+            langsmith_project="glassbox-test",
+            langsmith_tracing="true",
+        ),
+        "investigation-1",
+    )
+
+    assert result == {"brief": "fixture brief"}
+    assert trace_url == "https://smith.langchain.com/trace/test"
