@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import UTC, datetime
 from collections.abc import Callable
 from pathlib import Path
 from typing import NotRequired, TypedDict
@@ -26,6 +27,7 @@ from glassbox_sre.schemas import (
     RunbookRetrievalFinding,
 )
 from glassbox_sre.storage import (
+    add_incident_event,
     create_investigation,
     init_db,
     load_deployments,
@@ -35,6 +37,7 @@ from glassbox_sre.storage import (
     save_findings,
     update_investigation_brief,
 )
+from glassbox_sre.event_log import IncidentEvent
 from glassbox_sre.synthesis import synthesize_incident_brief
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -387,12 +390,15 @@ def build_investigation_graph(
     return graph.compile()
 
 
-def run_investigation(payload: AlertmanagerWebhook, settings: Settings | None = None) -> str:
+def run_investigation_with_id(payload: AlertmanagerWebhook, settings: Settings | None = None) -> tuple[str, str]:
     resolved_settings = settings or get_settings()
     session_factory = make_session_factory(resolved_settings.postgres_url)
     init_db(session_factory)
     with session_factory.begin() as session:
         investigation_id = create_investigation(session, payload)
+        # The event table has a foreign key but no ORM relationship, so make the parent durable first.
+        session.flush()
+        add_incident_event(session, IncidentEvent(incident_id=investigation_id, event_type="investigation_started", occurred_at=datetime.now(UTC), source="worker", summary="LangGraph investigation started."))
 
     graph = build_investigation_graph(resolved_settings)
     result = graph.invoke({"alert_payload": payload})
@@ -400,4 +406,16 @@ def run_investigation(payload: AlertmanagerWebhook, settings: Settings | None = 
     with session_factory.begin() as session:
         save_findings(session, investigation_id, result.get("commit_findings", []))
         update_investigation_brief(session, investigation_id, brief)
-    return brief
+        now = datetime.now(UTC)
+        for event_type, summary in (
+            ("triage_completed", "Triage node completed."),
+            ("commit_correlation_completed", "Commit-correlation investigator completed."),
+            ("runbook_retrieval_completed", "Runbook retrieval investigator completed."),
+            ("impact_estimation_completed", "Impact estimation investigator completed."),
+        ):
+            add_incident_event(session, IncidentEvent(incident_id=investigation_id, event_type=event_type, occurred_at=now, source="worker", summary=summary))
+    return investigation_id, brief
+
+
+def run_investigation(payload: AlertmanagerWebhook, settings: Settings | None = None) -> str:
+    return run_investigation_with_id(payload, settings)[1]

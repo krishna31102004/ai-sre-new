@@ -89,25 +89,25 @@ Done means the local notifier can be replaced by a real Slack Bolt notifier and 
 
 - [ ] Configure Slack Bolt app in development mode.
 - [x] Define notifier interface shared by local stub and Slack implementation.
-- [ ] Implement Slack notifier behind the same notifier interface as the local stub.
-- [ ] Post Block Kit incident briefs to Slack.
+- [x] Implement Slack notifier behind the same notifier interface as the local stub.
+- [x] Post Block Kit incident briefs to Slack.
 - [ ] Add Slack thread updates for investigation progress.
 - [ ] Verify Slack request signature handling for interactive or command routes.
 - [x] Define incident event log schema.
-- [ ] Persist graph node events, tool results, Slack posts, and timestamps.
-- [ ] Define resolution signal source for local demos.
-- [ ] Detect recovery from Prometheus metrics or fault flag state.
+- [x] Persist graph node events, tool results, Slack posts, and timestamps.
+- [x] Define resolution signal source for local demos.
+- [x] Detect recovery from Prometheus metrics or fault flag state.
 - [x] Define Pydantic postmortem schema.
-- [ ] Create Markdown postmortem template.
-- [ ] Assemble timeline from hard event timestamps.
-- [ ] Ground summary, impact, root cause, and action items in stored evidence.
-- [ ] Generate structured postmortem through validated LLM output.
-- [ ] Store postmortem JSON in Postgres.
-- [ ] Store postmortem Markdown in the repo or configured output directory.
+- [x] Create Markdown postmortem template.
+- [x] Assemble timeline from hard event timestamps.
+- [x] Ground summary, impact, root cause, and action items in stored evidence.
+- [x] Generate structured postmortem through validated output.
+- [x] Store postmortem JSON in Postgres.
+- [x] Store postmortem Markdown in the configured output directory.
 - [ ] Add Slack command or button to request postmortem generation.
-- [ ] Add tests for postmortem schema validation.
-- [ ] Add tests that generated postmortem timelines use stored events.
-- [ ] Demo alert-to-brief-to-resolution-to-postmortem flow.
+- [x] Add tests for postmortem schema validation.
+- [x] Add tests that generated postmortem timelines use stored events.
+- [x] Demo alert-to-brief-to-resolution-to-postmortem flow.
 
 ## Phase 4: Evaluation Harness
 

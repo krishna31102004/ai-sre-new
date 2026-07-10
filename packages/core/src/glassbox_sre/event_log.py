@@ -19,6 +19,8 @@ class IncidentEvent(BaseModel):
         "brief_delivered",
         "resolved",
         "postmortem_generated",
+        "slack_posted",
+        "recovery_confirmed",
     ]
     occurred_at: datetime
     source: str

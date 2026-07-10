@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from glassbox_sre.postmortem_generation import render_postmortem_markdown
 from glassbox_sre.postmortems import Postmortem, PostmortemActionItem, timeline_from_events
 from glassbox_sre.event_log import IncidentEvent
 
@@ -32,3 +33,4 @@ def test_postmortem_schema_accepts_blame_free_grounded_output() -> None:
     )
 
     assert postmortem.timeline[0].event_type == "alert_received"
+    assert "# Frontend ad failure" in render_postmortem_markdown(postmortem)

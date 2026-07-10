@@ -22,6 +22,7 @@ dependencies = [
   "openai>=1.93.0",
   "python-dotenv>=1.1.0",
   "slack-bolt>=1.23.0",
+  "certifi>=2025.0.0",
   "httpx>=0.28.0",
   "structlog>=25.0.0"
 ]

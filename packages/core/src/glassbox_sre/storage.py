@@ -69,6 +69,46 @@ class FindingRow(Base):
     reasoning: Mapped[str] = mapped_column(Text, nullable=False)
 
 
+class IncidentEventRow(Base):
+    __tablename__ = "incident_events"
+
+    event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    investigation_id: Mapped[str] = mapped_column(
+        ForeignKey("investigations.investigation_id"), nullable=False, index=True
+    )
+    event_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    source: Mapped[str] = mapped_column(String(80), nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    reference: Mapped[str | None] = mapped_column(Text)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(json_type(), default=dict)
+
+
+class NotificationRow(Base):
+    __tablename__ = "incident_notifications"
+
+    notification_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    investigation_id: Mapped[str] = mapped_column(
+        ForeignKey("investigations.investigation_id"), nullable=False, index=True
+    )
+    channel: Mapped[str] = mapped_column(String(40), nullable=False)
+    external_id: Mapped[str | None] = mapped_column(String(120))
+    destination: Mapped[str | None] = mapped_column(String(160))
+    delivered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class PostmortemRow(Base):
+    __tablename__ = "postmortems"
+
+    postmortem_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    investigation_id: Mapped[str] = mapped_column(
+        ForeignKey("investigations.investigation_id"), nullable=False, unique=True, index=True
+    )
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    content_json: Mapped[dict[str, Any]] = mapped_column(json_type(), nullable=False)
+    markdown: Mapped[str] = mapped_column(Text, nullable=False)
+
+
 class RunbookChunkRow(Base):
     __tablename__ = "runbook_chunks"
 
@@ -197,6 +237,52 @@ def update_investigation_brief(session: Session, investigation_id: str, brief: s
     if row is None:
         raise ValueError(f"unknown investigation_id={investigation_id}")
     row.final_brief = brief
+
+
+def add_incident_event(session: Session, event: Any) -> None:
+    session.add(
+        IncidentEventRow(
+            event_id=str(uuid.uuid4()), investigation_id=event.incident_id, event_type=event.event_type,
+            occurred_at=event.occurred_at, source=event.source, summary=event.summary,
+            reference=event.reference, metadata_json=event.metadata,
+        )
+    )
+
+
+def save_notification_receipt(
+    session: Session, investigation_id: str, channel: str, external_id: str | None, destination: str | None
+) -> None:
+    session.add(NotificationRow(
+        notification_id=str(uuid.uuid4()), investigation_id=investigation_id, channel=channel,
+        external_id=external_id, destination=destination, delivered_at=datetime.now(UTC),
+    ))
+
+
+def latest_open_investigation(session: Session, payload: AlertmanagerWebhook) -> InvestigationRow | None:
+    first = payload.alerts[0]
+    service = first.labels.get("service") or first.labels.get("service_name") or first.labels.get("job") or "unknown-service"
+    name = first.labels.get("alertname", "unknown-alert")
+    return session.scalars(
+        select(InvestigationRow).where(
+            InvestigationRow.alert_name == name,
+            InvestigationRow.service_name == service,
+            InvestigationRow.alert_status == "firing",
+        ).order_by(InvestigationRow.created_at.desc())
+    ).first()
+
+
+def load_incident_events(session: Session, investigation_id: str) -> list[Any]:
+    from glassbox_sre.event_log import IncidentEvent
+    rows = session.scalars(select(IncidentEventRow).where(IncidentEventRow.investigation_id == investigation_id).order_by(IncidentEventRow.occurred_at)).all()
+    return [IncidentEvent(incident_id=row.investigation_id, event_type=row.event_type, occurred_at=row.occurred_at, source=row.source, summary=row.summary, reference=row.reference, metadata=row.metadata_json) for row in rows]
+
+
+def latest_notification_thread(session: Session, investigation_id: str) -> str | None:
+    return session.scalars(select(NotificationRow.external_id).where(NotificationRow.investigation_id == investigation_id, NotificationRow.channel == "slack").order_by(NotificationRow.delivered_at)).first()
+
+
+def save_postmortem(session: Session, investigation_id: str, content: dict[str, Any], markdown: str) -> None:
+    session.add(PostmortemRow(postmortem_id=str(uuid.uuid4()), investigation_id=investigation_id, generated_at=datetime.now(UTC), content_json=content, markdown=markdown))
 
 
 def upsert_runbook_chunks(

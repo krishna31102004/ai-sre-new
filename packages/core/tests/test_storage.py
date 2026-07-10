@@ -1,5 +1,8 @@
 from pathlib import Path
+from datetime import UTC, datetime
 
+from glassbox_sre.event_log import IncidentEvent
+from glassbox_sre.schemas import AlertmanagerWebhook
 from glassbox_sre.runbooks import deterministic_embedding, embedding_text_for_chunk, load_runbook_chunks
 from glassbox_sre.seed_data import load_seed_deployments
 from glassbox_sre.storage import (
@@ -9,6 +12,8 @@ from glassbox_sre.storage import (
     make_session_factory,
     upsert_deployments,
     upsert_runbook_chunks,
+    add_incident_event,
+    create_investigation,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -49,3 +54,18 @@ def test_runbook_chunks_round_trip_in_database(tmp_path) -> None:
 
     assert stored
     assert any(chunk.runbook_id == "otel-demo.frontend-ad-failure" for chunk, _ in stored)
+
+
+def test_investigation_is_flushed_before_its_first_event(tmp_path) -> None:
+    session_factory = make_session_factory(f"sqlite:///{tmp_path / 'glassbox.db'}")
+    init_db(session_factory)
+    payload = AlertmanagerWebhook.model_validate(
+        {"status": "firing", "alerts": [{"labels": {"alertname": "test", "service": "frontend"}, "startsAt": "2026-07-09T12:00:00Z"}]}
+    )
+    with session_factory.begin() as session:
+        investigation_id = create_investigation(session, payload)
+        session.flush()
+        add_incident_event(session, IncidentEvent(
+            incident_id=investigation_id, event_type="investigation_started", occurred_at=datetime.now(UTC),
+            source="worker", summary="started"
+        ))
