@@ -30,7 +30,7 @@ docker compose -f infra/docker/docker-compose.yml up -d postgres redis
 docker compose \
   --env-file infra/otel-demo/opentelemetry-demo/.env \
   --env-file infra/otel-demo/opentelemetry-demo/.env.override \
-  --env-file infra/otel-demo/.env.glassbox \
+  --env-file infra/otel-demo/glassbox.env \
   -f infra/otel-demo/opentelemetry-demo/compose.yaml \
   -f infra/otel-demo/compose.glassbox.yml \
   up -d
