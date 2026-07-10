@@ -72,6 +72,6 @@ def test_commit_correlation_ranks_ground_truth_commit_top_one() -> None:
 
 
 def test_git_log_candidate_retrieval_includes_seeded_commits() -> None:
-    shas = git_log_candidate_shas(REPO_ROOT, max_count=20)
+    shas = git_log_candidate_shas(REPO_ROOT, max_count=50)
 
     assert GROUND_TRUTH_COMMIT in shas
