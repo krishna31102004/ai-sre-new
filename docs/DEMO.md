@@ -73,7 +73,36 @@ python -m glassbox_sre_worker.main
 The API must bind to `0.0.0.0`: Alertmanager runs in Docker and reaches the
 host through `host.docker.internal`.
 
-## 4. Trigger A Real Fault
+## 4. Browser-Only Incident Walkthrough
+
+After the stack, API, and worker are running, all incident interactions happen
+in the browser. Open http://localhost:8000/status.
+
+1. Confirm the API, Worker, Postgres, and Redis indicators are green. The
+   worker heartbeat is updated while it is polling; a long-running investigation
+   can briefly show stale until the worker returns to its next poll cycle.
+2. In **Fault controls**, find `adFailure` and click **Turn on**. The state must
+   refresh to `on`; the dashboard reads the current value from flagd rather than
+   assuming it changed.
+3. Open **Investigations**. After Prometheus observes real frontend 500s and
+   Alertmanager delivers the webhook, a new row appears automatically. The
+   `OTelDemoAdServiceErrors` alert uses a measured five-minute lookback, so this
+   normally takes five to six minutes.
+4. Open the new row. Verify the rendered brief, evidence-cited suspect commit,
+   matched runbook section, integer impact count, Slack link when configured,
+   and LangSmith trace link when tracing is configured.
+5. Return to **System status** and click **Turn off** for `adFailure`. Once the
+   five-minute lookback drains, the investigation row becomes `resolved` and
+   Slack receives the threaded resolution update when Slack is configured.
+
+The dashboard is advisory only: the fault buttons are deliberately limited to
+the three supported demo flags and do not perform remediation.
+
+## 5. Terminal Alternative: Trigger A Real Fault
+
+Use this only when the browser dashboard is unavailable. It reads the demo
+feature configuration, turns `adFailure` on, and writes the complete config
+back through the official feature endpoint.
 
 This reads the demo feature configuration, turns `adFailure` on, and writes the
 complete config back through the official feature endpoint.
@@ -113,7 +142,7 @@ firing. The worker logs an evidence-cited brief containing the alert service,
 suspect commit and confidence, runbook section, and computed integer impact.
 With Slack configured, the same content appears in the target incident channel.
 
-## 5. Resolve The Incident
+## 6. Terminal Alternative: Resolve The Incident
 
 Run the same command with `"off"` in place of `"on"`:
 
@@ -145,7 +174,7 @@ Alertmanager sends a resolved webhook. The worker posts a threaded Slack
 resolution message when Slack is configured and writes a JSON/Markdown
 postmortem from persisted event timestamps under `artifacts/postmortems/`.
 
-## 6. Run The Fast Benchmark
+## 7. Run The Fast Benchmark
 
 This requires neither Docker nor an OpenAI key.
 

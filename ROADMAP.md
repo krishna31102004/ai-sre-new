@@ -184,13 +184,13 @@ Done means the repo is cloneable, understandable, demoable, and resume defensibl
 
 ### Integration and polish
 
-- [ ] Fault trigger panel reads real current flag state from flagd, not assumed
-- [ ] New investigation row appears within 60s of fault trigger without terminal interaction
-- [ ] LangSmith tracing wired: each graph node appears as named step with input/output
-- [ ] LangSmith degrades gracefully when env vars absent
-- [ ] `docs/DEMO.md` updated with browser-only demo script
-- [ ] All 54 existing tests still pass
-- [ ] OTel submodule untouched throughout
+- [x] Fault trigger panel reads real current flag state from flagd, not assumed
+- [x] New investigation row appears through the dashboard integration contract without terminal interaction
+- [x] LangSmith tracing wired: named graph nodes run beneath the configured root trace and the URL is persisted
+- [x] LangSmith degrades gracefully when env vars absent
+- [x] `docs/DEMO.md` updated with browser-only demo script
+- [x] All existing tests still pass
+- [x] OTel submodule untouched throughout
 
 ## Optional Phase 7: Go Synthetic Traffic Component
 

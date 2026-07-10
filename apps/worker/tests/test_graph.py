@@ -7,6 +7,7 @@ from glassbox_sre.schemas import (
     ImpactEstimate,
     RunbookRetrievalFinding,
 )
+from glassbox_sre.storage import InvestigationRow, init_db, make_session_factory
 from glassbox_sre_worker import graph as worker_graph
 from glassbox_sre_worker.graph import TriageResult, build_investigation_graph
 
@@ -203,3 +204,53 @@ def test_optional_langsmith_trace_returns_url_when_configured(monkeypatch) -> No
 
     assert result == {"brief": "fixture brief"}
     assert trace_url == "https://smith.langchain.com/trace/test"
+
+
+def test_graph_run_persists_langsmith_trace_url_when_configured(monkeypatch, tmp_path) -> None:
+    database_url = f"sqlite:///{tmp_path / 'glassbox.db'}"
+    session_factory = make_session_factory(database_url)
+    init_db(session_factory)
+
+    class FakeGraph:
+        def invoke(self, _input, config):
+            assert config["run_name"] == "glassbox-sre-investigation"
+            return {"brief": "fixture brief", "commit_findings": []}
+
+    class FakeClient:
+        def __init__(self, api_key: str) -> None:
+            assert api_key == "test-key"
+
+        def get_run_url(self, *, run, project_name: str) -> str:
+            assert run is not None
+            assert project_name == "glassbox-test"
+            return "https://smith.langchain.com/trace/persisted"
+
+    def fake_traceable(**_kwargs):
+        def decorator(function):
+            def wrapped():
+                return function(run_tree=object())
+
+            return wrapped
+
+        return decorator
+
+    settings = Settings(
+        postgres_url=database_url,
+        openai_api_key="test-key",
+        langsmith_api_key="test-key",
+        langsmith_project="glassbox-test",
+        langsmith_tracing="true",
+    )
+    monkeypatch.setattr(worker_graph, "make_session_factory", lambda _url: session_factory)
+    monkeypatch.setattr(worker_graph, "build_investigation_graph", lambda _settings: FakeGraph())
+    monkeypatch.setattr(worker_graph, "Client", FakeClient)
+    monkeypatch.setattr(worker_graph, "traceable", fake_traceable)
+
+    investigation_id, _brief = worker_graph.run_investigation_with_id(
+        _fixture_alert_payload(), settings
+    )
+
+    with session_factory() as session:
+        row = session.get(InvestigationRow, investigation_id)
+    assert row is not None
+    assert row.langsmith_trace_url == "https://smith.langchain.com/trace/persisted"

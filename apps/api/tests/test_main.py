@@ -41,6 +41,9 @@ class FakeRedis:
         self.queue.append(value)
         return len(self.queue)
 
+    def lpop(self, _key: str) -> str | None:
+        return self.queue.pop(0) if self.queue else None
+
 
 class FakeResponse:
     def __init__(self, payload: dict[str, object]) -> None:
