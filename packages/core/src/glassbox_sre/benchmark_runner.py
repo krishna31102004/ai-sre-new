@@ -45,14 +45,7 @@ def run_replay_fast_scenario(
         impact_values = _impact_values_from_snapshot(scenario_dir / scenario.world_snapshot)
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,
-            root_cause_id=(
-                scenario.expected.root_cause_id
-                if commit_findings
-                and commit_findings[0].commit_sha == scenario.expected.bad_commit_sha
-                else _predicted_root_cause_from_commit(commit_findings[0].commit_sha)
-                if commit_findings
-                else None
-            ),
+            root_cause_id=None,
             ranked_commit_shas=[finding.commit_sha for finding in commit_findings],
             runbook_ids=[finding.runbook_id for finding in runbook_findings],
             runbook_sections=[finding.section_heading for finding in runbook_findings],
@@ -63,6 +56,9 @@ def run_replay_fast_scenario(
                 impact_values["affected_requests"],
             ),
             latency_ms=(time.perf_counter() - started) * 1000,
+            unavailable_metrics={
+                "root_cause": "not wired in replay-fast mode",
+            },
         )
     except Exception as exc:
         prediction = BenchmarkPrediction(
@@ -126,10 +122,6 @@ def _impact_values_from_snapshot(snapshot_path: Path) -> dict[str, int]:
     }
 
 
-def _predicted_root_cause_from_commit(commit_sha: str) -> str:
-    return f"commit:{commit_sha}"
-
-
 def _manifest(run_id: str, repo_root: Path, scenario_paths: list[Path]) -> dict[str, object]:
     return {
         "run_id": run_id,
@@ -156,8 +148,8 @@ def _summary_markdown(
         "- Mode: `replay-fast`",
         f"- Scenario count: {summary.scenario_count}",
         f"- Failed runs: {summary.failed_runs}",
-        f"- Root-cause precision: {summary.root_cause_precision:.3f}",
-        f"- Root-cause recall: {summary.root_cause_recall:.3f}",
+        f"- Root-cause precision: {_format_metric(summary.root_cause_precision, summary.unavailable_metrics.get('root_cause_precision'))}",
+        f"- Root-cause recall: {_format_metric(summary.root_cause_recall, summary.unavailable_metrics.get('root_cause_recall'))}",
         f"- Bad commit top-1 accuracy: {summary.bad_commit_top1_accuracy:.3f}",
         f"- Bad commit top-3 accuracy: {summary.bad_commit_top3_accuracy:.3f}",
         f"- Runbook hit rate: {summary.runbook_hit_rate:.3f}",
@@ -185,5 +177,13 @@ def _summary_markdown(
     return "\n".join(lines) + "\n"
 
 
-def _mark(value: bool) -> str:
+def _mark(value: bool | None) -> str:
+    if value is None:
+        return "n/a"
     return "pass" if value else "fail"
+
+
+def _format_metric(value: float | None, reason: str | None = None) -> str:
+    if value is None:
+        return f"n/a ({reason or 'not available'})"
+    return f"{value:.3f}"

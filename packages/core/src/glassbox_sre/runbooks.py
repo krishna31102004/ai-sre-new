@@ -106,14 +106,19 @@ def filter_runbook_chunks(
     ]
     if exact:
         return exact
+    alertname_matches = [chunk for chunk in chunks if chunk.alertname == alertname]
+    if alertname_matches:
+        return alertname_matches
     service_matches = [chunk for chunk in chunks if chunk.service == service]
-    if service_matches:
-        return service_matches
-    return [
+    symptom_matches = [
         chunk
         for chunk in chunks
         if symptoms.intersection(set(chunk.symptoms) | {chunk.fault_flag or ""})
     ]
+    if service_matches or symptom_matches:
+        merged = {chunk.chunk_id: chunk for chunk in [*service_matches, *symptom_matches]}
+        return list(merged.values())
+    return []
 
 
 def lexical_score(query_terms: set[str], chunk: RunbookChunk) -> float:

@@ -37,6 +37,27 @@ def _frontend_alert() -> AlertmanagerWebhook:
     )
 
 
+def _frontend_product_catalog_alert() -> AlertmanagerWebhook:
+    return AlertmanagerWebhook.model_validate(
+        {
+            "status": "firing",
+            "alerts": [
+                {
+                    "labels": {
+                        "alertname": "ProductCatalogErrors",
+                        "service": "frontend",
+                        "severity": "page",
+                    },
+                    "annotations": {
+                        "summary": "Frontend product pages are failing during product catalog lookup.",
+                    },
+                    "startsAt": "2026-07-10T10:33:54Z",
+                }
+            ],
+        }
+    )
+
+
 def test_runbook_frontmatter_parses_metadata_tags() -> None:
     metadata, body = parse_runbook(RUNBOOK_ROOT / "otel-demo/frontend-ad-failure.md")
 
@@ -71,6 +92,14 @@ def test_runbook_retrieval_returns_frontend_ad_failure_for_known_alert() -> None
 
     assert findings[0].runbook_id == "otel-demo.frontend-ad-failure"
     assert findings[0].evidence[0].reference.startswith("otel-demo.frontend-ad-failure:")
+
+
+def test_runbook_retrieval_includes_product_catalog_for_frontend_originated_alert() -> None:
+    chunks = load_runbook_chunks(RUNBOOK_ROOT)
+
+    findings = retrieve_runbook_chunks(_frontend_product_catalog_alert(), chunks)
+
+    assert findings[0].runbook_id == "otel-demo.product-catalog-errors"
 
 
 def test_embedding_ranking_runs_within_tag_filtered_candidates() -> None:

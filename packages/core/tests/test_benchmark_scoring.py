@@ -103,3 +103,30 @@ def test_summarize_scores_reports_honest_rates_and_latency() -> None:
     assert summary.runbook_hit_rate == 0.5
     assert summary.impact_classification_accuracy == 0.5
     assert summary.latency_p50_ms == 20.0
+
+
+def test_summarize_scores_reports_unavailable_root_cause_as_none() -> None:
+    scenario = load_benchmark_scenario(SCENARIO_PATH)
+    score = score_prediction(
+        scenario,
+        BenchmarkPrediction(
+            scenario_id=scenario.id,
+            root_cause_id=None,
+            ranked_commit_shas=["41080eb518884c6aeede13111f8214a7c87db3fb"],
+            runbook_ids=["otel-demo.frontend-ad-failure"],
+            runbook_sections=["Summary"],
+            impact_severity="ticket",
+            latency_ms=12.0,
+            unavailable_metrics={"root_cause": "not wired in replay-fast mode"},
+        ),
+    )
+
+    summary = summarize_scores([score])
+
+    assert score.root_cause_correct is None
+    assert summary.root_cause_precision is None
+    assert summary.root_cause_recall is None
+    assert summary.unavailable_metrics == {
+        "root_cause_precision": "evaluator output missing",
+        "root_cause_recall": "evaluator output missing",
+    }
