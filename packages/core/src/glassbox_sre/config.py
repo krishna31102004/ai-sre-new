@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     langsmith_project: str | None = "glassbox-sre-dev"
     slack_bot_token: str | None = None
     slack_signing_secret: str | None = None
+    slack_app_token: str | None = None
+    slack_channel_id: str | None = None
     alert_queue_name: str = "glassbox:alerts"
     worker_poll_interval_seconds: float = 1.0
     log_level: str = "INFO"

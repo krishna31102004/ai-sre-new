@@ -88,16 +88,16 @@ Done means the MVP is complete: a real injected fault triggers an autonomous inv
 Done means the local notifier can be replaced by a real Slack Bolt notifier and an incident resolution signal can trigger a structured, blameless postmortem generated from captured evidence and event logs, saved as JSON and Markdown.
 
 - [ ] Configure Slack Bolt app in development mode.
-- [ ] Define notifier interface shared by local stub and Slack implementation.
+- [x] Define notifier interface shared by local stub and Slack implementation.
 - [ ] Implement Slack notifier behind the same notifier interface as the local stub.
 - [ ] Post Block Kit incident briefs to Slack.
 - [ ] Add Slack thread updates for investigation progress.
 - [ ] Verify Slack request signature handling for interactive or command routes.
-- [ ] Define incident event log schema.
+- [x] Define incident event log schema.
 - [ ] Persist graph node events, tool results, Slack posts, and timestamps.
 - [ ] Define resolution signal source for local demos.
 - [ ] Detect recovery from Prometheus metrics or fault flag state.
-- [ ] Define Pydantic postmortem schema.
+- [x] Define Pydantic postmortem schema.
 - [ ] Create Markdown postmortem template.
 - [ ] Assemble timeline from hard event timestamps.
 - [ ] Ground summary, impact, root cause, and action items in stored evidence.

@@ -3,6 +3,7 @@ import signal
 import time
 
 from glassbox_sre.config import get_settings
+from glassbox_sre.notification import ConsoleNotifier, IncidentBriefNotification
 from glassbox_sre.schemas import AlertmanagerWebhook
 from glassbox_sre_worker.graph import run_investigation
 from redis import Redis
@@ -13,6 +14,7 @@ logging.basicConfig(level=settings.log_level)
 logger = logging.getLogger(__name__)
 
 redis_client = Redis.from_url(settings.redis_url, decode_responses=True)
+notifier = ConsoleNotifier()
 running = True
 
 
@@ -29,7 +31,16 @@ def process_next_message() -> bool:
 
     payload = AlertmanagerWebhook.model_validate_json(raw_message)
     brief = run_investigation(payload, settings)
-    logger.info("processed alert webhook\n%s", brief)
+    receipt = notifier.send_incident_brief(
+        IncidentBriefNotification(
+            incident_id=payload.alerts[0].labels.get("alertname", "unknown-alert"),
+            alert_name=payload.alerts[0].labels.get("alertname", "unknown-alert"),
+            status=payload.status,
+            service_name=payload.alerts[0].labels.get("service", "unknown-service"),
+            brief=brief,
+        )
+    )
+    logger.info("processed alert webhook\n%s", receipt.rendered_message)
     return True
 
 
