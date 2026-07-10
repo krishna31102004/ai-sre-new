@@ -94,6 +94,7 @@ def _process_resolution(payload: AlertmanagerWebhook) -> bool:
             logger.warning("received resolved alert with no matching firing investigation")
             return True
         investigation_id = investigation.investigation_id
+        stored_brief = investigation.final_brief
         thread_id = latest_notification_thread(session, investigation_id)
         add_incident_event(
             session,
@@ -147,7 +148,7 @@ def _process_resolution(payload: AlertmanagerWebhook) -> bool:
             ),
         )
         events = load_incident_events(session, investigation_id)
-        brief = investigation.final_brief or "[investigation brief]\nNo stored brief available."
+        brief = stored_brief or "[investigation brief]\nNo stored brief available."
 
     postmortem = generate_postmortem(investigation_id, events, brief, settings)
     output_path = write_postmortem_markdown(postmortem, Path("artifacts/postmortems"))
