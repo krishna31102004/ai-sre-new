@@ -8,7 +8,7 @@ from typing import Protocol
 from uuid import uuid4
 
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from glassbox_sre.benchmark import BenchmarkScenario, load_benchmark_scenario
 from glassbox_sre.benchmark_adapters import FixtureDeployHistoryRepository
@@ -19,7 +19,12 @@ from glassbox_sre.benchmark_scoring import (
     score_prediction,
     summarize_scores,
 )
-from glassbox_sre.commit_correlation import git_show_diff, rank_commit_candidates
+from glassbox_sre.commit_correlation import (
+    alert_start_time,
+    deployments_in_window,
+    git_show_diff,
+    rank_commit_candidates,
+)
 from glassbox_sre.config import Settings, get_settings
 from glassbox_sre.impact import classify_severity
 from glassbox_sre.runbooks import load_runbook_chunks, retrieve_runbook_chunks
@@ -27,9 +32,16 @@ from glassbox_sre.schemas import AlertmanagerWebhook
 
 
 class ModelEvalResult(BaseModel):
-    root_cause_id: str
-    ranked_commit_shas: list[str] = Field(min_length=1)
+    root_cause_id: str | None = None
+    ranked_commit_shas: list[str] = Field(default_factory=list)
     reasoning: str
+
+    @field_validator("reasoning", mode="before")
+    @classmethod
+    def normalize_reasoning(cls, value: object) -> str:
+        if isinstance(value, list):
+            return " ".join(str(item) for item in value)
+        return str(value)
 
 
 class ModelClient(Protocol):
@@ -66,7 +78,8 @@ class OpenAIModelEvalClient:
                         "You are evaluating a read-only SRE benchmark scenario. "
                         "Use only the alert and candidate deploy evidence. Rank commits by "
                         "which diff best explains the incident. Return strict JSON with "
-                        "root_cause_id, ranked_commit_shas, and reasoning."
+                        "ranked_commit_shas and reasoning. Include root_cause_id only if "
+                        "you can name a stable root-cause label from the provided evidence."
                     ),
                 },
                 {
@@ -158,17 +171,28 @@ def run_model_eval_scenario(
             scenario_dir / scenario.deploy_history_fixture
         ).load()
         deterministic_findings = rank_commit_candidates(alert, deployments, repo_root)
+        findings_by_sha = {finding.commit_sha: finding for finding in deterministic_findings}
         candidate_context = [
             {
-                "commit_sha": finding.commit_sha,
-                "commit_title": finding.commit_title,
-                "service_name": finding.service_name,
-                "deterministic_confidence": finding.confidence,
-                "validation_state": finding.validation_state.value,
-                "evidence": [item.model_dump(mode="json") for item in finding.evidence],
-                "diff": git_show_diff(finding.commit_sha, repo_root, max_chars=1800),
+                "commit_sha": deployment.commit_sha,
+                "commit_title": deployment.commit_title,
+                "service_name": deployment.service_name,
+                "deployed_at": deployment.deployed_at.isoformat(),
+                "deterministic_confidence": findings_by_sha.get(deployment.commit_sha).confidence
+                if deployment.commit_sha in findings_by_sha
+                else None,
+                "validation_state": findings_by_sha.get(deployment.commit_sha).validation_state.value
+                if deployment.commit_sha in findings_by_sha
+                else "inconclusive",
+                "evidence": [
+                    item.model_dump(mode="json")
+                    for item in findings_by_sha.get(deployment.commit_sha).evidence
+                ]
+                if deployment.commit_sha in findings_by_sha
+                else [],
+                "diff": git_show_diff(deployment.commit_sha, repo_root, max_chars=1800),
             }
-            for finding in deterministic_findings
+            for deployment in deployments_in_window(deployments, alert_start_time(alert))
         ]
         model_result, token_usage = model_client.evaluate_commit_candidates(
             scenario,
@@ -179,7 +203,7 @@ def run_model_eval_scenario(
         impact_values = _impact_values_from_snapshot(scenario_dir / scenario.world_snapshot)
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,
-            root_cause_id=model_result.root_cause_id,
+            root_cause_id=None,
             ranked_commit_shas=model_result.ranked_commit_shas,
             runbook_ids=[finding.runbook_id for finding in runbook_findings],
             runbook_sections=[finding.section_heading for finding in runbook_findings],
@@ -193,6 +217,9 @@ def run_model_eval_scenario(
             input_tokens=token_usage["input_tokens"],
             output_tokens=token_usage["output_tokens"],
             total_tokens=token_usage["total_tokens"],
+            unavailable_metrics={
+                "root_cause": "evaluator output missing",
+            },
         )
     except Exception as exc:
         prediction = BenchmarkPrediction(

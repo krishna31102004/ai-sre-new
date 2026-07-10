@@ -91,7 +91,8 @@ def test_run_model_eval_benchmark_writes_token_usage_with_mocked_model(tmp_path:
 
     assert manifest["mode"] == "model-eval"
     assert summary["bad_commit_top1_accuracy"] == 1.0
-    assert summary["root_cause_precision"] == 1.0
+    assert summary["root_cause_precision"] is None
+    assert summary["unavailable_metrics"]["root_cause_precision"] == "evaluator output missing"
     assert summary["input_tokens"] == 500
     assert summary["output_tokens"] == 125
     assert summary["total_tokens"] == 625
