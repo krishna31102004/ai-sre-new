@@ -120,11 +120,11 @@ Done means the project can run a repeatable benchmark of synthetic incidents wit
 - [ ] Add scenario runner that can trigger or replay incidents headlessly.
 - [x] Capture world snapshots where live telemetry would make results non-deterministic.
 - [ ] Run the LangGraph investigation in evaluation mode.
-- [ ] Score root-cause identification precision and recall.
-- [ ] Score bad-commit top-1 and top-3 accuracy.
-- [ ] Score runbook retrieval hit rate.
-- [ ] Score impact classification accuracy.
-- [ ] Measure end-to-end latency p50 and p95.
+- [x] Score root-cause identification precision and recall.
+- [x] Score bad-commit top-1 and top-3 accuracy.
+- [x] Score runbook retrieval hit rate.
+- [x] Score impact classification accuracy.
+- [x] Measure end-to-end latency p50 and p95.
 - [ ] Save evaluation outputs as structured artifacts.
 - [ ] Add regression comparison between evaluation runs.
 - [ ] Add generator/evaluator critic node if not already present.
