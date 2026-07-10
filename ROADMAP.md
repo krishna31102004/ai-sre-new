@@ -118,7 +118,7 @@ Done means the project can run a repeatable benchmark of synthetic incidents wit
 - [x] Script at least 5 initial synthetic scenarios.
 - [ ] Expand toward 20-40 total scenarios as supported functionality grows.
 - [ ] Add scenario runner that can trigger or replay incidents headlessly.
-- [ ] Capture world snapshots where live telemetry would make results non-deterministic.
+- [x] Capture world snapshots where live telemetry would make results non-deterministic.
 - [ ] Run the LangGraph investigation in evaluation mode.
 - [ ] Score root-cause identification precision and recall.
 - [ ] Score bad-commit top-1 and top-3 accuracy.
