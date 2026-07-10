@@ -14,8 +14,8 @@ from glassbox_sre.impact import (
     estimate_frontend_http_impact_with_details,
 )
 from glassbox_sre.runbooks import (
+    filter_runbook_chunks,
     generate_openai_embeddings,
-    rank_filtered_chunks_by_embedding,
 )
 from glassbox_sre.schemas import (
     AlertmanagerWebhook,
@@ -31,6 +31,7 @@ from glassbox_sre.storage import (
     load_deployments,
     load_runbook_chunks_from_db,
     make_session_factory,
+    rank_runbook_chunks_by_pgvector,
     save_findings,
     update_investigation_brief,
 )
@@ -243,10 +244,24 @@ def _build_runbook_retrieval_node(settings: Settings):
             ]
         ).strip()
         query_embedding = generate_openai_embeddings([query_text], settings)[0]
-        findings = rank_filtered_chunks_by_embedding(
-            payload,
-            stored_chunks,
-            query_embedding=query_embedding,
+        candidate_chunks = filter_runbook_chunks(payload, [chunk for chunk, _embedding in stored_chunks])
+        with session_factory() as session:
+            findings = rank_runbook_chunks_by_pgvector(
+                session,
+                [chunk.chunk_id for chunk in candidate_chunks],
+                query_embedding,
+                limit=len(candidate_chunks),
+            )
+        logger.info(
+            "runbook pgvector scores: %s",
+            [
+                {
+                    "chunk_id": finding.chunk_id,
+                    "section": finding.section_heading,
+                    "similarity": round(finding.score, 6),
+                }
+                for finding in findings
+            ],
         )
         return {"runbook_findings": findings}
 

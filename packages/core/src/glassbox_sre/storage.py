@@ -9,7 +9,9 @@ from glassbox_sre.schemas import (
     AlertmanagerWebhook,
     CommitCorrelationFinding,
     DeployRecord,
+    EvidenceItem,
     RunbookChunk,
+    RunbookRetrievalFinding,
 )
 from sqlalchemy import DateTime, Float, ForeignKey, String, Text, create_engine, select, text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -259,3 +261,62 @@ def load_runbook_chunks_from_db(session: Session) -> list[tuple[RunbookChunk, li
 
 def count_runbook_embeddings(session: Session) -> int:
     return int(session.execute(text("SELECT count(*) FROM runbook_embeddings")).scalar_one())
+
+
+def rank_runbook_chunks_by_pgvector(
+    session: Session,
+    chunk_ids: list[str],
+    query_embedding: list[float],
+    limit: int = 3,
+) -> list[RunbookRetrievalFinding]:
+    if not chunk_ids:
+        return []
+    rows = session.execute(
+        text(
+            """
+            SELECT
+                c.chunk_id,
+                c.runbook_id,
+                c.title,
+                c.section_heading,
+                c.body,
+                c.service_name,
+                c.alertname,
+                1 - (e.embedding <=> CAST(:query_embedding AS vector)) AS similarity
+            FROM runbook_chunks c
+            JOIN runbook_embeddings e ON e.chunk_id = c.chunk_id
+            WHERE c.chunk_id = ANY(:chunk_ids)
+            ORDER BY e.embedding <=> CAST(:query_embedding AS vector)
+            LIMIT :limit
+            """
+        ),
+        {
+            "chunk_ids": chunk_ids,
+            "query_embedding": vector_literal(query_embedding),
+            "limit": limit,
+        },
+    ).mappings()
+    return [
+        RunbookRetrievalFinding(
+            runbook_id=row["runbook_id"],
+            chunk_id=row["chunk_id"],
+            title=row["title"],
+            section_heading=row["section_heading"],
+            service=row["service_name"],
+            alertname=row["alertname"],
+            score=float(row["similarity"]),
+            evidence=[
+                EvidenceItem(
+                    kind="runbook",
+                    summary=f"Matched runbook section {row['section_heading']} after tag filtering and pgvector cosine ranking.",
+                    reference=row["chunk_id"],
+                    metadata={
+                        "runbook_id": row["runbook_id"],
+                        "pgvector_cosine_similarity": float(row["similarity"]),
+                    },
+                )
+            ],
+            summary=row["body"].splitlines()[0],
+        )
+        for row in rows
+    ]

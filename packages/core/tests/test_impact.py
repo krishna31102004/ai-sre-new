@@ -1,8 +1,10 @@
 from glassbox_sre.impact import (
     build_frontend_impact_estimate,
     classify_severity,
+    counter_delta_query,
     estimate_affected_endpoints,
     estimate_affected_services,
+    observed_request_count,
     parse_prometheus_scalar,
     p95_latency_ms_from_histogram,
 )
@@ -42,6 +44,22 @@ def test_impact_estimate_uses_computed_numbers_only() -> None:
     assert estimate.affected_requests == 9
     assert estimate.severity == "page"
     assert estimate.evidence[0].kind == "metric"
+
+
+def test_observed_request_count_rounds_prometheus_counter_noise_to_integer() -> None:
+    assert observed_request_count(4.60388) == 5
+    assert observed_request_count(0.0) == 0
+
+
+def test_counter_delta_query_uses_raw_counter_delta_not_increase() -> None:
+    query = counter_delta_query(
+        'http_server_duration_milliseconds_count{service_name="frontend"}',
+        "5m",
+    )
+
+    assert "max_over_time" in query
+    assert "min_over_time" in query
+    assert "increase(" not in query
 
 
 def test_severity_classification_boundaries() -> None:

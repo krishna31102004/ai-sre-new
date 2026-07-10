@@ -99,10 +99,10 @@ class RunbookRetrievalFinding(BaseModel):
 class ImpactEstimate(BaseModel):
     service_name: str
     window: str
-    total_requests: float = Field(ge=0.0)
-    error_requests: float = Field(ge=0.0)
+    total_requests: int = Field(ge=0)
+    error_requests: int = Field(ge=0)
     error_rate: float = Field(ge=0.0, le=1.0)
-    affected_requests: float = Field(ge=0.0)
+    affected_requests: int = Field(ge=0)
     severity: Literal["critical", "page", "ticket", "info"]
     latency_p95_ms: float | None = Field(default=None, ge=0.0)
     evidence: list[EvidenceItem] = Field(min_length=1)

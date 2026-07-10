@@ -22,6 +22,19 @@ def parse_prometheus_scalar(response: dict[str, Any]) -> float:
     return float(result[0]["value"][1])
 
 
+def counter_delta_query(metric_selector: str, window: str) -> str:
+    return (
+        f"sum(max_over_time({metric_selector}[{window}]) "
+        f"- min_over_time({metric_selector}[{window}]))"
+    )
+
+
+def observed_request_count(raw_delta: float) -> int:
+    if raw_delta <= 0:
+        return 0
+    return int(round(raw_delta))
+
+
 def classify_severity(error_rate: float, affected_requests: float) -> str:
     if error_rate >= 0.25 or affected_requests >= 1000:
         return "critical"
@@ -34,10 +47,14 @@ def classify_severity(error_rate: float, affected_requests: float) -> str:
 
 def build_frontend_impact_estimate(
     payload: AlertmanagerWebhook,
-    total_requests: float,
-    error_requests: float,
+    total_requests: int,
+    error_requests: int,
     window: str = "5m",
     latency_p95_ms: float | None = None,
+    raw_total_delta: float | None = None,
+    raw_error_delta: float | None = None,
+    total_query: str | None = None,
+    error_query: str | None = None,
 ) -> ImpactEstimate:
     first_alert = payload.alerts[0]
     service = first_alert.labels.get("service") or first_alert.labels.get("service_name") or "unknown"
@@ -57,7 +74,14 @@ def build_frontend_impact_estimate(
                 kind="metric",
                 summary=f"Computed {error_requests:g} frontend 500s out of {total_requests:g} requests.",
                 reference="prometheus:http_server_duration_milliseconds_count",
-                metadata={"window": window, "latency_p95_ms": latency_p95_ms},
+                metadata={
+                    "window": window,
+                    "latency_p95_ms": latency_p95_ms,
+                    "raw_total_delta": raw_total_delta,
+                    "raw_error_delta": raw_error_delta,
+                    "total_query": total_query,
+                    "error_query": error_query,
+                },
             )
         ],
     )
@@ -82,18 +106,28 @@ def estimate_frontend_http_impact(
     client: PrometheusClient,
     window: str = "5m",
 ) -> ImpactEstimate:
-    total_query = (
-        'sum(increase(http_server_duration_milliseconds_count{service_name="frontend"}'
-        f"[{window}]))"
+    total_query = counter_delta_query(
+        'http_server_duration_milliseconds_count{service_name="frontend"}',
+        window,
     )
-    error_query = (
-        'sum(increase(http_server_duration_milliseconds_count{service_name="frontend",'
-        'http_status_code="500"}'
-        f'[{window}]))'
+    error_query = counter_delta_query(
+        'http_server_duration_milliseconds_count{service_name="frontend",http_status_code="500"}',
+        window,
     )
-    total_requests = client.query_scalar(total_query)
-    error_requests = client.query_scalar(error_query)
-    return build_frontend_impact_estimate(payload, total_requests, error_requests, window=window)
+    raw_total_delta = client.query_scalar(total_query)
+    raw_error_delta = client.query_scalar(error_query)
+    total_requests = observed_request_count(raw_total_delta)
+    error_requests = observed_request_count(raw_error_delta)
+    return build_frontend_impact_estimate(
+        payload,
+        total_requests,
+        error_requests,
+        window=window,
+        raw_total_delta=raw_total_delta,
+        raw_error_delta=raw_error_delta,
+        total_query=total_query,
+        error_query=error_query,
+    )
 
 
 def estimate_affected_services(
