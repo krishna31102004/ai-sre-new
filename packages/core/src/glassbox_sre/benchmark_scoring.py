@@ -9,14 +9,12 @@ from glassbox_sre.benchmark import BenchmarkScenario
 
 class BenchmarkPrediction(BaseModel):
     scenario_id: str
-    root_cause_id: str | None = None
     ranked_commit_shas: list[str] = Field(default_factory=list)
     runbook_ids: list[str] = Field(default_factory=list)
     runbook_sections: list[str] = Field(default_factory=list)
     impact_severity: str | None = None
     latency_ms: float = Field(ge=0.0)
     error: str | None = None
-    unavailable_metrics: dict[str, str] = Field(default_factory=dict)
     input_tokens: int = Field(default=0, ge=0)
     output_tokens: int = Field(default=0, ge=0)
     total_tokens: int = Field(default=0, ge=0)
@@ -24,7 +22,6 @@ class BenchmarkPrediction(BaseModel):
 
 class ScenarioScore(BaseModel):
     scenario_id: str
-    root_cause_correct: bool | None
     bad_commit_top1: bool
     bad_commit_top3: bool
     runbook_hit: bool
@@ -32,7 +29,6 @@ class ScenarioScore(BaseModel):
     impact_severity_correct: bool
     latency_ms: float
     error: str | None = None
-    unavailable_metrics: dict[str, str] = Field(default_factory=dict)
     input_tokens: int = Field(default=0, ge=0)
     output_tokens: int = Field(default=0, ge=0)
     total_tokens: int = Field(default=0, ge=0)
@@ -41,8 +37,6 @@ class ScenarioScore(BaseModel):
 class BenchmarkSummary(BaseModel):
     scenario_count: int
     failed_runs: int
-    root_cause_precision: float | None
-    root_cause_recall: float | None
     bad_commit_top1_accuracy: float
     bad_commit_top3_accuracy: float
     runbook_hit_rate: float
@@ -50,7 +44,6 @@ class BenchmarkSummary(BaseModel):
     impact_classification_accuracy: float
     latency_p50_ms: float
     latency_p95_ms: float
-    unavailable_metrics: dict[str, str] = Field(default_factory=dict)
     input_tokens: int = Field(default=0, ge=0)
     output_tokens: int = Field(default=0, ge=0)
     total_tokens: int = Field(default=0, ge=0)
@@ -62,14 +55,8 @@ def score_prediction(
 ) -> ScenarioScore:
     expected = scenario.expected
     ranked_commits = prediction.ranked_commit_shas
-    root_cause_correct = (
-        None
-        if prediction.root_cause_id is None
-        else prediction.root_cause_id == expected.root_cause_id
-    )
     return ScenarioScore(
         scenario_id=scenario.id,
-        root_cause_correct=root_cause_correct,
         bad_commit_top1=bool(ranked_commits) and ranked_commits[0] == expected.bad_commit_sha,
         bad_commit_top3=expected.bad_commit_sha in ranked_commits[:3],
         runbook_hit=expected.runbook_id in prediction.runbook_ids[:3],
@@ -80,7 +67,6 @@ def score_prediction(
         impact_severity_correct=prediction.impact_severity == expected.impact.severity,
         latency_ms=prediction.latency_ms,
         error=prediction.error,
-        unavailable_metrics=prediction.unavailable_metrics,
         input_tokens=prediction.input_tokens,
         output_tokens=prediction.output_tokens,
         total_tokens=prediction.total_tokens,
@@ -93,8 +79,6 @@ def summarize_scores(scores: list[ScenarioScore]) -> BenchmarkSummary:
         return BenchmarkSummary(
             scenario_count=0,
             failed_runs=0,
-            root_cause_precision=None,
-            root_cause_recall=None,
             bad_commit_top1_accuracy=0.0,
             bad_commit_top3_accuracy=0.0,
             runbook_hit_rate=0.0,
@@ -104,22 +88,10 @@ def summarize_scores(scores: list[ScenarioScore]) -> BenchmarkSummary:
             latency_p95_ms=0.0,
         )
 
-    available_root_causes = [score for score in scores if score.root_cause_correct is not None]
-    correct_root_causes = sum(score.root_cause_correct is True for score in available_root_causes)
-    unavailable_metrics: dict[str, str] = {}
-    if not available_root_causes:
-        unavailable_metrics["root_cause_precision"] = "evaluator output missing"
-        unavailable_metrics["root_cause_recall"] = "evaluator output missing"
     latencies = sorted(score.latency_ms for score in scores)
     return BenchmarkSummary(
         scenario_count=scenario_count,
         failed_runs=sum(score.error is not None for score in scores),
-        root_cause_precision=(
-            correct_root_causes / len(available_root_causes) if available_root_causes else None
-        ),
-        root_cause_recall=(
-            correct_root_causes / len(available_root_causes) if available_root_causes else None
-        ),
         bad_commit_top1_accuracy=sum(score.bad_commit_top1 for score in scores) / scenario_count,
         bad_commit_top3_accuracy=sum(score.bad_commit_top3 for score in scores) / scenario_count,
         runbook_hit_rate=sum(score.runbook_hit for score in scores) / scenario_count,
@@ -128,7 +100,6 @@ def summarize_scores(scores: list[ScenarioScore]) -> BenchmarkSummary:
         / scenario_count,
         latency_p50_ms=float(median(latencies)),
         latency_p95_ms=_percentile(latencies, 0.95),
-        unavailable_metrics=unavailable_metrics,
         input_tokens=sum(score.input_tokens for score in scores),
         output_tokens=sum(score.output_tokens for score in scores),
         total_tokens=sum(score.total_tokens for score in scores),

@@ -111,7 +111,7 @@ Done means the local notifier can be replaced by a real Slack Bolt notifier and 
 
 ## Phase 4: Evaluation Harness
 
-Done means the project can run a repeatable benchmark of synthetic incidents with ground truth and report honest metrics for root-cause accuracy, commit ranking, runbook retrieval, impact classification, and latency.
+Done means the project can run a repeatable benchmark of synthetic incidents with ground truth and report honest metrics for commit ranking, runbook retrieval, impact classification, and latency.
 
 - [x] Define benchmark scenario schema.
 - [x] Create ground-truth labels for fault flag, bad commit, expected runbook, impact class, and expected root cause.
@@ -119,18 +119,18 @@ Done means the project can run a repeatable benchmark of synthetic incidents wit
 - [x] Expand toward 20-40 total scenarios as supported functionality grows.
 - [x] Add scenario runner that can trigger or replay incidents headlessly.
 - [x] Capture world snapshots where live telemetry would make results non-deterministic.
-- [ ] Run the LangGraph investigation in evaluation mode.
-- [x] Score root-cause identification precision and recall.
+- [x] Run the investigation in evaluation mode.
+- [x] Descope separate root-cause precision and recall from the summary.
 - [x] Score bad-commit top-1 and top-3 accuracy.
 - [x] Score runbook retrieval hit rate.
 - [x] Score impact classification accuracy.
 - [x] Measure end-to-end latency p50 and p95.
 - [x] Save evaluation outputs as structured artifacts.
-- [ ] Add regression comparison between evaluation runs.
-- [ ] Add generator/evaluator critic node if not already present.
-- [ ] Make critic output measurable in evaluation logs.
-- [ ] Document benchmark methodology and limitations.
-- [ ] Publish initial honest benchmark table in the README.
+- [x] Add regression comparison between evaluation runs.
+- [x] Defer generator/evaluator critic node to a later agent-quality phase.
+- [x] Defer measurable critic output to the same later agent-quality phase.
+- [x] Defer benchmark methodology and limitations documentation to Phase 5.
+- [x] Defer the README benchmark table to Phase 5.
 
 ## Phase 5: Polish, Tracing, Documentation, And Open Source Readiness
 

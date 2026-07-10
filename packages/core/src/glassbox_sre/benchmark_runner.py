@@ -32,7 +32,6 @@ from glassbox_sre.schemas import AlertmanagerWebhook
 
 
 class ModelEvalResult(BaseModel):
-    root_cause_id: str | None = None
     ranked_commit_shas: list[str] = Field(default_factory=list)
     reasoning: str
 
@@ -78,8 +77,7 @@ class OpenAIModelEvalClient:
                         "You are evaluating a read-only SRE benchmark scenario. "
                         "Use only the alert and candidate deploy evidence. Rank commits by "
                         "which diff best explains the incident. Return strict JSON with "
-                        "ranked_commit_shas and reasoning. Include root_cause_id only if "
-                        "you can name a stable root-cause label from the provided evidence."
+                        "ranked_commit_shas and reasoning."
                     ),
                 },
                 {
@@ -130,7 +128,6 @@ def run_replay_fast_scenario(
         impact_values = _impact_values_from_snapshot(scenario_dir / scenario.world_snapshot)
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,
-            root_cause_id=None,
             ranked_commit_shas=[finding.commit_sha for finding in commit_findings],
             runbook_ids=[finding.runbook_id for finding in runbook_findings],
             runbook_sections=[finding.section_heading for finding in runbook_findings],
@@ -141,9 +138,6 @@ def run_replay_fast_scenario(
                 impact_values["affected_requests"],
             ),
             latency_ms=(time.perf_counter() - started) * 1000,
-            unavailable_metrics={
-                "root_cause": "not wired in replay-fast mode",
-            },
         )
     except Exception as exc:
         prediction = BenchmarkPrediction(
@@ -203,7 +197,6 @@ def run_model_eval_scenario(
         impact_values = _impact_values_from_snapshot(scenario_dir / scenario.world_snapshot)
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,
-            root_cause_id=None,
             ranked_commit_shas=model_result.ranked_commit_shas,
             runbook_ids=[finding.runbook_id for finding in runbook_findings],
             runbook_sections=[finding.section_heading for finding in runbook_findings],
@@ -217,9 +210,6 @@ def run_model_eval_scenario(
             input_tokens=token_usage["input_tokens"],
             output_tokens=token_usage["output_tokens"],
             total_tokens=token_usage["total_tokens"],
-            unavailable_metrics={
-                "root_cause": "evaluator output missing",
-            },
         )
     except Exception as exc:
         prediction = BenchmarkPrediction(
@@ -359,8 +349,6 @@ def _summary_markdown(
         f"- Mode: `{mode}`",
         f"- Scenario count: {summary.scenario_count}",
         f"- Failed runs: {summary.failed_runs}",
-        f"- Root-cause precision: {_format_metric(summary.root_cause_precision, summary.unavailable_metrics.get('root_cause_precision'))}",
-        f"- Root-cause recall: {_format_metric(summary.root_cause_recall, summary.unavailable_metrics.get('root_cause_recall'))}",
         f"- Bad commit top-1 accuracy: {summary.bad_commit_top1_accuracy:.3f}",
         f"- Bad commit top-3 accuracy: {summary.bad_commit_top3_accuracy:.3f}",
         f"- Runbook hit rate: {summary.runbook_hit_rate:.3f}",
@@ -374,14 +362,13 @@ def _summary_markdown(
         "",
         "## Per Scenario",
         "",
-        "| Scenario | Root Cause | Commit@1 | Commit@3 | Runbook | Impact | Error |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| Scenario | Commit@1 | Commit@3 | Runbook | Impact | Error |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     for score in scores:
         lines.append(
             "| "
             f"{score.scenario_id} | "
-            f"{_mark(score.root_cause_correct)} | "
             f"{_mark(score.bad_commit_top1)} | "
             f"{_mark(score.bad_commit_top3)} | "
             f"{_mark(score.runbook_hit)} | "
@@ -395,9 +382,3 @@ def _mark(value: bool | None) -> str:
     if value is None:
         return "n/a"
     return "pass" if value else "fail"
-
-
-def _format_metric(value: float | None, reason: str | None = None) -> str:
-    if value is None:
-        return f"n/a ({reason or 'not available'})"
-    return f"{value:.3f}"

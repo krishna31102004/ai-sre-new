@@ -19,7 +19,6 @@ class FakeModelClient:
     def evaluate_commit_candidates(self, scenario, alert, candidates):
         return (
             ModelEvalResult(
-                root_cause_id=scenario.expected.root_cause_id,
                 ranked_commit_shas=[
                     scenario.expected.bad_commit_sha,
                     *[
@@ -91,8 +90,7 @@ def test_run_model_eval_benchmark_writes_token_usage_with_mocked_model(tmp_path:
 
     assert manifest["mode"] == "model-eval"
     assert summary["bad_commit_top1_accuracy"] == 1.0
-    assert summary["root_cause_precision"] is None
-    assert summary["unavailable_metrics"]["root_cause_precision"] == "evaluator output missing"
+    assert "root_cause_precision" not in summary
     assert summary["input_tokens"] == 1500
     assert summary["output_tokens"] == 375
     assert summary["total_tokens"] == 1875
