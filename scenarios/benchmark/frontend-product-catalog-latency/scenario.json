@@ -18,7 +18,7 @@
     "runbook_id": "otel-demo.product-catalog-errors",
     "runbook_sections_allowed": ["Summary", "Signals", "Safe Next Steps"],
     "impact": {
-      "severity": "ticket",
+      "severity": "page",
       "total_requests": 5074,
       "error_requests": 18,
       "affected_requests": 18,

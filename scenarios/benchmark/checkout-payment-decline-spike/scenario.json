@@ -18,7 +18,7 @@
     "runbook_id": "otel-demo.checkout-payment-failure",
     "runbook_sections_allowed": ["Summary", "Signals", "Safe Next Steps"],
     "impact": {
-      "severity": "ticket",
+      "severity": "page",
       "total_requests": 4186,
       "error_requests": 29,
       "affected_requests": 29,

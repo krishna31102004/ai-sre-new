@@ -12,6 +12,7 @@ from glassbox_sre.benchmark import (
     load_benchmark_scenario,
     validate_world_snapshot_shape,
 )
+from glassbox_sre.impact import classify_severity
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -153,6 +154,11 @@ def test_committed_benchmark_scenario_manifests_are_valid() -> None:
         assert snapshot_path.is_file()
 
         validate_world_snapshot_shape(json.loads(snapshot_path.read_text()))
+        expected_impact = scenario.expected.impact
+        assert (
+            classify_severity(expected_impact.error_rate, expected_impact.affected_requests)
+            == expected_impact.severity
+        )
 
     assert scenario_ids == {
         "checkout-payment-decline-spike",
