@@ -25,6 +25,7 @@ venv/
 logs/
 tmp/
 data/
+artifacts/
 *.sqlite
 *.db
 

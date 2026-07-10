@@ -1,6 +1,9 @@
 # Infrastructure
 
-Placeholder for Docker Compose files, Prometheus rules, Alertmanager config, and OpenTelemetry demo wiring.
+This directory owns Glassbox SRE's Docker services, Prometheus/Alertmanager
+configuration, and the thin overlay around the pinned OpenTelemetry Astronomy
+Shop demo. The demo itself remains an external git submodule; never edit files
+under `infra/otel-demo/opentelemetry-demo/`.
 
 ## Local Core Services
 
@@ -60,7 +63,7 @@ Start the API in one terminal:
 
 ```bash
 source .venv/bin/activate
-uvicorn glassbox_sre_api.main:app --host 127.0.0.1 --port 8000
+uvicorn glassbox_sre_api.main:app --host 0.0.0.0 --port 8000
 ```
 
 Start the worker in another terminal:
@@ -99,7 +102,8 @@ PY
 
 Prometheus should fire `OTelDemoAdServiceErrors` after roughly five minutes of sustained
 fault history, Alertmanager should POST to `http://host.docker.internal:8000/webhook/alert`,
-and the worker should print a stub incident brief for the `frontend` service. The alert
+and the worker should print the evidence-cited incident brief for the `frontend` service
+(and post it to Slack when configured). The alert
 is intentionally tuned with a `5m` lookback and `30s` `for:` period because the live
 stack's frontend 500s are bursty enough that shorter windows often miss them entirely. The
 trade-off is that resolution takes about five minutes after the fault is turned off, which

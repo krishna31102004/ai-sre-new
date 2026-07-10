@@ -141,20 +141,20 @@ Done means the repo is cloneable, understandable, demoable, and resume defensibl
 - [ ] Add `/incident postmortem` command.
 - [ ] Improve LangSmith trace naming and metadata.
 - [ ] Ensure every graph node and tool call is traceable.
-- [ ] Add architecture diagram.
-- [ ] Write README with project purpose, architecture, setup, demo flow, benchmark results, and limitations.
-- [ ] Include ITBench context without overclaiming production readiness.
-- [ ] Document read-only scope and remediation boundary.
+- [x] Add architecture diagram.
+- [x] Write README with project purpose, architecture, setup, demo flow, benchmark results, and limitations.
+- [x] Include ITBench context without overclaiming production readiness.
+- [x] Document read-only scope and remediation boundary.
 - [ ] Design structured `propose_remediation` output without wiring mutating actions.
-- [ ] Add final test suite instructions.
+- [x] Add final test suite instructions.
 - [ ] Add example incident brief screenshots or saved outputs.
 - [ ] Add example postmortem output.
-- [ ] Record a short demo script or checklist.
-- [ ] Check secrets handling and `.env.example`.
-- [ ] Check license choice.
-- [ ] Check contributor-oriented setup instructions if open sourcing.
-- [ ] Review repository for unnecessary generated files or local secrets.
-- [ ] Create final resume bullet with real measured numbers.
+- [x] Record a short demo script or checklist.
+- [x] Check secrets handling and `.env.example`.
+- [x] Check license choice.
+- [x] Check contributor-oriented setup instructions if open sourcing.
+- [x] Review repository for unnecessary generated files or local secrets.
+- [x] Create final resume bullet with real measured numbers.
 
 ## Optional Phase 6: Go Synthetic Traffic Component
 
