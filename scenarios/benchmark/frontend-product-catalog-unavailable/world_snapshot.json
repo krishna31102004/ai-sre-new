@@ -1,0 +1,28 @@
+{
+  "captured_at": "2026-07-10T10:39:22Z",
+  "prometheus": {
+    "window": "5m",
+    "queries": [
+      {
+        "name": "frontend_total_requests",
+        "query": "max_over_time(http_server_duration_milliseconds_count{service_name=\"frontend\"}[5m]) - min_over_time(http_server_duration_milliseconds_count{service_name=\"frontend\"}[5m])",
+        "value": 3911
+      },
+      {
+        "name": "frontend_500_requests",
+        "query": "max_over_time(http_server_duration_milliseconds_count{service_name=\"frontend\", http_status_code=\"500\"}[5m]) - min_over_time(http_server_duration_milliseconds_count{service_name=\"frontend\", http_status_code=\"500\"}[5m])",
+        "value": 112
+      }
+    ]
+  },
+  "service_graph": {
+    "frontend": ["product-catalog"]
+  },
+  "evidence": [
+    {
+      "kind": "metric",
+      "summary": "Synthetic snapshot: 112 frontend errors out of 3911 frontend requests over five minutes.",
+      "reference": "snapshot:frontend_500_requests"
+    }
+  ]
+}

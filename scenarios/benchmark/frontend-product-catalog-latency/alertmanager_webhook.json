@@ -1,0 +1,17 @@
+{
+  "status": "firing",
+  "alerts": [
+    {
+      "labels": {
+        "alertname": "ProductCatalogErrors",
+        "service": "frontend",
+        "severity": "ticket"
+      },
+      "annotations": {
+        "summary": "Frontend product pages have elevated catalog-related latency and intermittent errors.",
+        "description": "Product page requests are slower and occasionally failing after catalog enrichment changes."
+      },
+      "startsAt": "2026-07-10T11:47:19Z"
+    }
+  ]
+}

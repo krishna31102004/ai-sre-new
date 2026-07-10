@@ -1,0 +1,20 @@
+[
+  {
+    "deployment_id": "bench-payment-decline-currency-distractor",
+    "service_name": "currency",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T08:51:45Z",
+    "commit_sha": "85d3251f45338bb89d0e4194baf2cdac472c14e3",
+    "commit_title": "Seed currency deploy distractor scenario",
+    "repo_path": "scenarios/otel-demo/currency/exchange-rounding.md"
+  },
+  {
+    "deployment_id": "bench-payment-decline-bad",
+    "service_name": "payment",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T09:02:19Z",
+    "commit_sha": "6f4eb04dd963bb455de1062e7867dc6551f0cacd",
+    "commit_title": "Seed checkout payment decline scenario",
+    "repo_path": "scenarios/benchmark/checkout-payment-decline-spike/bad-change.md"
+  }
+]

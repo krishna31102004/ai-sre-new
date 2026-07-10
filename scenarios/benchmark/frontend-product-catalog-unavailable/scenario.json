@@ -1,0 +1,30 @@
+{
+  "id": "frontend-product-catalog-unavailable",
+  "title": "Frontend product catalog unavailable",
+  "source_kind": "synthetic_replay",
+  "description": "Synthetic replay fixture for frontend product page failures caused by a product-catalog deploy that fails closed.",
+  "fault_flag": "productCatalogFailure",
+  "alert_fixture": "alertmanager_webhook.json",
+  "world_snapshot": "world_snapshot.json",
+  "deploy_history_fixture": "deploy_history.json",
+  "expected": {
+    "root_cause_id": "product_catalog_fail_closed",
+    "bad_commit_sha": "4908b73670e8ea64550f2ebe200863bfe6311c8d",
+    "bad_commit_top3_allowed": [
+      "4908b73670e8ea64550f2ebe200863bfe6311c8d"
+    ],
+    "service": "frontend",
+    "affected_services": ["frontend", "product-catalog"],
+    "runbook_id": "otel-demo.product-catalog-errors",
+    "runbook_sections_allowed": ["Summary", "Signals", "Safe Next Steps"],
+    "impact": {
+      "severity": "page",
+      "total_requests": 3911,
+      "error_requests": 112,
+      "affected_requests": 112,
+      "error_rate": 0.02864
+    }
+  },
+  "tags": ["otel-demo", "frontend", "product-catalog", "http-500"],
+  "provenance": "Synthetic replay based on the OTel demo productCatalogFailure fault path; telemetry values are plausible fixtures, not live-captured measurements."
+}

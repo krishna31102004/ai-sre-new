@@ -1,0 +1,20 @@
+[
+  {
+    "deployment_id": "bench-catalog-unavailable-bad",
+    "service_name": "product-catalog",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T10:12:31Z",
+    "commit_sha": "4908b73670e8ea64550f2ebe200863bfe6311c8d",
+    "commit_title": "Seed product catalog unavailable scenario",
+    "repo_path": "scenarios/benchmark/frontend-product-catalog-unavailable/bad-change.md"
+  },
+  {
+    "deployment_id": "bench-catalog-unavailable-shipping-distractor",
+    "service_name": "shipping",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T10:17:03Z",
+    "commit_sha": "8aaf682f6cc1c3ccc34efe766518a630cae926d8",
+    "commit_title": "Seed shipping deploy distractor scenario",
+    "repo_path": "scenarios/otel-demo/shipping/zone-rate-cache.md"
+  }
+]

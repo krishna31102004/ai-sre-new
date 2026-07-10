@@ -1,0 +1,17 @@
+{
+  "status": "firing",
+  "alerts": [
+    {
+      "labels": {
+        "alertname": "ProductCatalogErrors",
+        "service": "frontend",
+        "severity": "page"
+      },
+      "annotations": {
+        "summary": "Frontend product pages are failing while catalog lookups are unavailable.",
+        "description": "Product catalog lookup errors are surfacing as frontend HTTP 500 responses."
+      },
+      "startsAt": "2026-07-10T10:33:54Z"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "deployment_id": "bench-catalog-latency-currency-distractor",
+    "service_name": "currency",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T11:19:14Z",
+    "commit_sha": "85d3251f45338bb89d0e4194baf2cdac472c14e3",
+    "commit_title": "Seed currency deploy distractor scenario",
+    "repo_path": "scenarios/otel-demo/currency/exchange-rounding.md"
+  },
+  {
+    "deployment_id": "bench-catalog-latency-bad",
+    "service_name": "product-catalog",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T11:31:08Z",
+    "commit_sha": "5147f682cd479f434e8c5417f44bf0ce90fb4268",
+    "commit_title": "Seed product catalog latency scenario",
+    "repo_path": "scenarios/benchmark/frontend-product-catalog-latency/bad-change.md"
+  }
+]

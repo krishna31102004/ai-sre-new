@@ -1,0 +1,29 @@
+[
+  {
+    "deployment_id": "bench-ad-shipping-distractor",
+    "service_name": "shipping",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T06:18:00Z",
+    "commit_sha": "8aaf682f6cc1c3ccc34efe766518a630cae926d8",
+    "commit_title": "Seed shipping deploy distractor scenario",
+    "repo_path": "scenarios/otel-demo/shipping/zone-rate-cache.md"
+  },
+  {
+    "deployment_id": "bench-ad-frontend-bad",
+    "service_name": "frontend",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T06:42:00Z",
+    "commit_sha": "41080eb518884c6aeede13111f8214a7c87db3fb",
+    "commit_title": "Seed frontend ad failure ground truth scenario",
+    "repo_path": "scenarios/otel-demo/frontend/ad-failure-visible-500s.md"
+  },
+  {
+    "deployment_id": "bench-ad-currency-distractor",
+    "service_name": "currency",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T06:50:00Z",
+    "commit_sha": "85d3251f45338bb89d0e4194baf2cdac472c14e3",
+    "commit_title": "Seed currency deploy distractor scenario",
+    "repo_path": "scenarios/otel-demo/currency/exchange-rounding.md"
+  }
+]

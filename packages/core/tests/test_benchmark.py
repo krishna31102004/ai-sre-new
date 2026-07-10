@@ -1,4 +1,6 @@
 from datetime import UTC, datetime
+import json
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -7,8 +9,13 @@ from glassbox_sre.benchmark import (
     BenchmarkScenario,
     BenchmarkScenarioSet,
     ScenarioSourceKind,
+    load_benchmark_scenario,
     validate_world_snapshot_shape,
 )
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+BENCHMARK_SCENARIOS_DIR = REPO_ROOT / "scenarios" / "benchmark"
 
 
 def valid_scenario_payload() -> dict[str, object]:
@@ -110,3 +117,30 @@ def test_validate_world_snapshot_shape_requires_core_sections() -> None:
 
     with pytest.raises(ValueError, match="world snapshot missing required keys"):
         validate_world_snapshot_shape({"captured_at": "2026-07-10T06:59:00Z"})
+
+
+def test_committed_benchmark_scenario_manifests_are_valid() -> None:
+    scenario_paths = sorted(BENCHMARK_SCENARIOS_DIR.glob("*/scenario.json"))
+
+    assert len(scenario_paths) == 5
+
+    scenario_ids = set()
+    for scenario_path in scenario_paths:
+        scenario = load_benchmark_scenario(scenario_path)
+        scenario_ids.add(scenario.id)
+        scenario_dir = scenario_path.parent
+
+        assert (scenario_dir / scenario.alert_fixture).is_file()
+        assert (scenario_dir / scenario.deploy_history_fixture).is_file()
+        snapshot_path = scenario_dir / scenario.world_snapshot
+        assert snapshot_path.is_file()
+
+        validate_world_snapshot_shape(json.loads(snapshot_path.read_text()))
+
+    assert scenario_ids == {
+        "checkout-payment-decline-spike",
+        "checkout-payment-timeout",
+        "frontend-ad-failure-visible-500s",
+        "frontend-product-catalog-latency",
+        "frontend-product-catalog-unavailable",
+    }

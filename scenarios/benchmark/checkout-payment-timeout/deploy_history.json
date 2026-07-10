@@ -1,0 +1,20 @@
+[
+  {
+    "deployment_id": "bench-payment-timeout-bad",
+    "service_name": "payment",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T07:56:02Z",
+    "commit_sha": "5b82deaeb72a074de0d5d46834109d669cce62f3",
+    "commit_title": "Seed checkout payment timeout scenario",
+    "repo_path": "scenarios/benchmark/checkout-payment-timeout/bad-change.md"
+  },
+  {
+    "deployment_id": "bench-payment-timeout-shipping-distractor",
+    "service_name": "shipping",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T08:01:36Z",
+    "commit_sha": "8aaf682f6cc1c3ccc34efe766518a630cae926d8",
+    "commit_title": "Seed shipping deploy distractor scenario",
+    "repo_path": "scenarios/otel-demo/shipping/zone-rate-cache.md"
+  }
+]

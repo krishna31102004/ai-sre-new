@@ -1,0 +1,28 @@
+{
+  "captured_at": "2026-07-10T09:26:33Z",
+  "prometheus": {
+    "window": "5m",
+    "queries": [
+      {
+        "name": "checkout_total_requests",
+        "query": "max_over_time(http_server_duration_milliseconds_count{service_name=\"checkout\"}[5m]) - min_over_time(http_server_duration_milliseconds_count{service_name=\"checkout\"}[5m])",
+        "value": 4186
+      },
+      {
+        "name": "checkout_500_requests",
+        "query": "max_over_time(http_server_duration_milliseconds_count{service_name=\"checkout\", http_status_code=\"500\"}[5m]) - min_over_time(http_server_duration_milliseconds_count{service_name=\"checkout\", http_status_code=\"500\"}[5m])",
+        "value": 29
+      }
+    ]
+  },
+  "service_graph": {
+    "checkout": ["payment"]
+  },
+  "evidence": [
+    {
+      "kind": "metric",
+      "summary": "Synthetic snapshot: 29 checkout errors out of 4186 checkout requests over five minutes.",
+      "reference": "snapshot:checkout_500_requests"
+    }
+  ]
+}

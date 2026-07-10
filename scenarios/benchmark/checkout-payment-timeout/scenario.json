@@ -1,0 +1,30 @@
+{
+  "id": "checkout-payment-timeout",
+  "title": "Checkout payment timeout",
+  "source_kind": "synthetic_replay",
+  "description": "Synthetic replay fixture for checkout errors caused by an overly aggressive payment authorization timeout.",
+  "fault_flag": "paymentFailure",
+  "alert_fixture": "alertmanager_webhook.json",
+  "world_snapshot": "world_snapshot.json",
+  "deploy_history_fixture": "deploy_history.json",
+  "expected": {
+    "root_cause_id": "payment_authorization_timeout",
+    "bad_commit_sha": "5b82deaeb72a074de0d5d46834109d669cce62f3",
+    "bad_commit_top3_allowed": [
+      "5b82deaeb72a074de0d5d46834109d669cce62f3"
+    ],
+    "service": "checkout",
+    "affected_services": ["checkout", "payment"],
+    "runbook_id": "otel-demo.checkout-payment-failure",
+    "runbook_sections_allowed": ["Summary", "Signals", "Safe Next Steps"],
+    "impact": {
+      "severity": "page",
+      "total_requests": 2843,
+      "error_requests": 64,
+      "affected_requests": 64,
+      "error_rate": 0.02251
+    }
+  },
+  "tags": ["otel-demo", "checkout", "payment", "timeout"],
+  "provenance": "Synthetic replay based on the OTel demo paymentFailure fault path; telemetry values are plausible fixtures, not live-captured measurements."
+}

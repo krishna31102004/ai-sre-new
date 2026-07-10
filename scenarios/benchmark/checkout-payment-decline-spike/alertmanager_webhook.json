@@ -1,0 +1,17 @@
+{
+  "status": "firing",
+  "alerts": [
+    {
+      "labels": {
+        "alertname": "CheckoutPaymentErrors",
+        "service": "checkout",
+        "severity": "ticket"
+      },
+      "annotations": {
+        "summary": "Checkout payment declines are elevated.",
+        "description": "Checkout failures increased after a payment metadata deploy."
+      },
+      "startsAt": "2026-07-10T09:21:08Z"
+    }
+  ]
+}

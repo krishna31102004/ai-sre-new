@@ -1,0 +1,30 @@
+{
+  "id": "frontend-ad-failure-visible-500s",
+  "title": "Frontend ad failure visible 500s",
+  "source_kind": "live_captured",
+  "description": "Replay fixture for the verified adFailure incident where the frontend emitted visible HTTP 500s after upstream ad failures.",
+  "fault_flag": "adFailure",
+  "alert_fixture": "alertmanager_webhook.json",
+  "world_snapshot": "world_snapshot.json",
+  "deploy_history_fixture": "deploy_history.json",
+  "expected": {
+    "root_cause_id": "frontend_ad_failure",
+    "bad_commit_sha": "41080eb518884c6aeede13111f8214a7c87db3fb",
+    "bad_commit_top3_allowed": [
+      "41080eb518884c6aeede13111f8214a7c87db3fb"
+    ],
+    "service": "frontend",
+    "affected_services": ["frontend", "ad"],
+    "runbook_id": "otel-demo.frontend-ad-failure",
+    "runbook_sections_allowed": ["Summary", "Signals", "Diagnostic Queries"],
+    "impact": {
+      "severity": "ticket",
+      "total_requests": 5797,
+      "error_requests": 8,
+      "affected_requests": 8,
+      "error_rate": 0.00138
+    }
+  },
+  "tags": ["otel-demo", "frontend", "ad", "http-500"],
+  "provenance": "Live-captured from the Phase 3 Slack verification run on 2026-07-10."
+}

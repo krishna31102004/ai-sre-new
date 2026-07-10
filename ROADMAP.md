@@ -114,8 +114,8 @@ Done means the local notifier can be replaced by a real Slack Bolt notifier and 
 Done means the project can run a repeatable benchmark of synthetic incidents with ground truth and report honest metrics for root-cause accuracy, commit ranking, runbook retrieval, impact classification, and latency.
 
 - [x] Define benchmark scenario schema.
-- [ ] Create ground-truth labels for fault flag, bad commit, expected runbook, impact class, and expected root cause.
-- [ ] Script at least 5 initial synthetic scenarios.
+- [x] Create ground-truth labels for fault flag, bad commit, expected runbook, impact class, and expected root cause.
+- [x] Script at least 5 initial synthetic scenarios.
 - [ ] Expand toward 20-40 total scenarios as supported functionality grows.
 - [ ] Add scenario runner that can trigger or replay incidents headlessly.
 - [ ] Capture world snapshots where live telemetry would make results non-deterministic.

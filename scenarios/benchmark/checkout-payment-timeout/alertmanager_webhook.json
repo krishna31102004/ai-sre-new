@@ -1,0 +1,17 @@
+{
+  "status": "firing",
+  "alerts": [
+    {
+      "labels": {
+        "alertname": "CheckoutPaymentErrors",
+        "service": "checkout",
+        "severity": "page"
+      },
+      "annotations": {
+        "summary": "Checkout payment authorization errors are elevated.",
+        "description": "Checkout requests are failing while calling the payment service."
+      },
+      "startsAt": "2026-07-10T08:14:27Z"
+    }
+  ]
+}

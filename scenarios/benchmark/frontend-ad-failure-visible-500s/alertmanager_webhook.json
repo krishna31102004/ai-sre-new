@@ -1,0 +1,17 @@
+{
+  "status": "firing",
+  "alerts": [
+    {
+      "labels": {
+        "alertname": "OTelDemoAdServiceErrors",
+        "service": "frontend",
+        "severity": "ticket"
+      },
+      "annotations": {
+        "summary": "Frontend HTTP 500s are being observed while adFailure is active.",
+        "description": "The frontend is returning visible HTTP 500 responses during ad service failures."
+      },
+      "startsAt": "2026-07-10T06:57:12Z"
+    }
+  ]
+}
