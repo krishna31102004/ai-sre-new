@@ -3,12 +3,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from glassbox_sre.benchmark_runner import run_replay_fast_benchmark
+from glassbox_sre.benchmark_runner import run_model_eval_benchmark, run_replay_fast_benchmark
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run Glassbox SRE benchmark scenarios.")
-    parser.add_argument("--mode", choices=["replay-fast"], default="replay-fast")
+    parser.add_argument("--mode", choices=["replay-fast", "model-eval"], default="replay-fast")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument(
         "--scenarios-dir",
@@ -23,12 +23,20 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    output_dir = run_replay_fast_benchmark(
-        scenarios_dir=args.scenarios_dir,
-        repo_root=args.repo_root,
-        runbook_root=args.runbook_root,
-        artifact_root=args.artifact_root,
-    )
+    if args.mode == "model-eval":
+        output_dir = run_model_eval_benchmark(
+            scenarios_dir=args.scenarios_dir,
+            repo_root=args.repo_root,
+            runbook_root=args.runbook_root,
+            artifact_root=args.artifact_root,
+        )
+    else:
+        output_dir = run_replay_fast_benchmark(
+            scenarios_dir=args.scenarios_dir,
+            repo_root=args.repo_root,
+            runbook_root=args.runbook_root,
+            artifact_root=args.artifact_root,
+        )
     print(output_dir)
 
 

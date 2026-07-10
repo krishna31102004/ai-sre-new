@@ -17,6 +17,9 @@ class BenchmarkPrediction(BaseModel):
     latency_ms: float = Field(ge=0.0)
     error: str | None = None
     unavailable_metrics: dict[str, str] = Field(default_factory=dict)
+    input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(default=0, ge=0)
+    total_tokens: int = Field(default=0, ge=0)
 
 
 class ScenarioScore(BaseModel):
@@ -30,6 +33,9 @@ class ScenarioScore(BaseModel):
     latency_ms: float
     error: str | None = None
     unavailable_metrics: dict[str, str] = Field(default_factory=dict)
+    input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(default=0, ge=0)
+    total_tokens: int = Field(default=0, ge=0)
 
 
 class BenchmarkSummary(BaseModel):
@@ -45,6 +51,9 @@ class BenchmarkSummary(BaseModel):
     latency_p50_ms: float
     latency_p95_ms: float
     unavailable_metrics: dict[str, str] = Field(default_factory=dict)
+    input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(default=0, ge=0)
+    total_tokens: int = Field(default=0, ge=0)
 
 
 def score_prediction(
@@ -72,6 +81,9 @@ def score_prediction(
         latency_ms=prediction.latency_ms,
         error=prediction.error,
         unavailable_metrics=prediction.unavailable_metrics,
+        input_tokens=prediction.input_tokens,
+        output_tokens=prediction.output_tokens,
+        total_tokens=prediction.total_tokens,
     )
 
 
@@ -117,6 +129,9 @@ def summarize_scores(scores: list[ScenarioScore]) -> BenchmarkSummary:
         latency_p50_ms=float(median(latencies)),
         latency_p95_ms=_percentile(latencies, 0.95),
         unavailable_metrics=unavailable_metrics,
+        input_tokens=sum(score.input_tokens for score in scores),
+        output_tokens=sum(score.output_tokens for score in scores),
+        total_tokens=sum(score.total_tokens for score in scores),
     )
 
 
