@@ -1,5 +1,14 @@
 [
   {
+    "deployment_id": "bench-payment-timeout-currency-distractor",
+    "service_name": "currency",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T07:48:11Z",
+    "commit_sha": "85d3251f45338bb89d0e4194baf2cdac472c14e3",
+    "commit_title": "Seed currency deploy distractor scenario",
+    "repo_path": "scenarios/otel-demo/currency/exchange-rounding.md"
+  },
+  {
     "deployment_id": "bench-payment-timeout-bad",
     "service_name": "payment",
     "environment": "otel-demo-local",
@@ -9,6 +18,15 @@
     "repo_path": "scenarios/benchmark/checkout-payment-timeout/bad-change.md"
   },
   {
+    "deployment_id": "bench-payment-timeout-receipt-distractor",
+    "service_name": "payment",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T07:59:43Z",
+    "commit_sha": "f7927bcb6b901c812c358a38217ececfdcbceda6",
+    "commit_title": "Seed payment receipt logging distractor",
+    "repo_path": "scenarios/benchmark/payment-benign-receipt-logging/change.md"
+  },
+  {
     "deployment_id": "bench-payment-timeout-shipping-distractor",
     "service_name": "shipping",
     "environment": "otel-demo-local",
@@ -16,5 +34,14 @@
     "commit_sha": "8aaf682f6cc1c3ccc34efe766518a630cae926d8",
     "commit_title": "Seed shipping deploy distractor scenario",
     "repo_path": "scenarios/otel-demo/shipping/zone-rate-cache.md"
+  },
+  {
+    "deployment_id": "bench-payment-timeout-card-label-distractor",
+    "service_name": "payment",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T08:07:18Z",
+    "commit_sha": "6b19fe933ba472eb9cb4cb3e29bad33ed2536dc7",
+    "commit_title": "Seed payment card label distractor",
+    "repo_path": "scenarios/benchmark/payment-benign-card-brand-label/change.md"
   }
 ]

@@ -9,6 +9,15 @@
     "repo_path": "scenarios/otel-demo/currency/exchange-rounding.md"
   },
   {
+    "deployment_id": "bench-catalog-latency-pagination-distractor",
+    "service_name": "product-catalog",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T11:24:31Z",
+    "commit_sha": "700abd2fecd553fcd63e5851949b61bfa322e360",
+    "commit_title": "Seed catalog pagination distractor",
+    "repo_path": "scenarios/benchmark/product-catalog-benign-pagination/change.md"
+  },
+  {
     "deployment_id": "bench-catalog-latency-bad",
     "service_name": "product-catalog",
     "environment": "otel-demo-local",
@@ -16,5 +25,23 @@
     "commit_sha": "5147f682cd479f434e8c5417f44bf0ce90fb4268",
     "commit_title": "Seed product catalog latency scenario",
     "repo_path": "scenarios/benchmark/frontend-product-catalog-latency/bad-change.md"
+  },
+  {
+    "deployment_id": "bench-catalog-latency-alt-text-distractor",
+    "service_name": "product-catalog",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T11:35:42Z",
+    "commit_sha": "582281ad6dd8939a824736256958c9f1895ab7d4",
+    "commit_title": "Seed catalog alt text distractor",
+    "repo_path": "scenarios/benchmark/product-catalog-benign-image-alt-text/change.md"
+  },
+  {
+    "deployment_id": "bench-catalog-latency-frontend-distractor",
+    "service_name": "frontend",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T11:40:16Z",
+    "commit_sha": "d56b8b31b4944ee3eda1b7173d431115d808ce6e",
+    "commit_title": "Seed frontend accessibility distractor",
+    "repo_path": "scenarios/benchmark/frontend-benign-accessibility-labels/change.md"
   }
 ]

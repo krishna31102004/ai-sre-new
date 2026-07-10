@@ -132,6 +132,23 @@ def test_committed_benchmark_scenario_manifests_are_valid() -> None:
 
         assert (scenario_dir / scenario.alert_fixture).is_file()
         assert (scenario_dir / scenario.deploy_history_fixture).is_file()
+        deploy_history = json.loads((scenario_dir / scenario.deploy_history_fixture).read_text())
+        assert 4 <= len(deploy_history) <= 6
+        bad_commit = scenario.expected.bad_commit_sha
+        same_service_distractors = [
+            deploy
+            for deploy in deploy_history
+            if deploy["service_name"] == scenario.expected.service
+            and deploy["commit_sha"] != bad_commit
+        ]
+        if not same_service_distractors:
+            same_service_distractors = [
+                deploy
+                for deploy in deploy_history
+                if deploy["service_name"] in scenario.expected.affected_services
+                and deploy["commit_sha"] != bad_commit
+            ]
+        assert same_service_distractors
         snapshot_path = scenario_dir / scenario.world_snapshot
         assert snapshot_path.is_file()
 

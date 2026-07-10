@@ -1,5 +1,14 @@
 [
   {
+    "deployment_id": "bench-catalog-unavailable-frontend-distractor",
+    "service_name": "frontend",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T10:05:46Z",
+    "commit_sha": "bcc8aa3223072d6c66fcebeea7bc65bb04d5e6cd",
+    "commit_title": "Seed frontend banner copy distractor",
+    "repo_path": "scenarios/benchmark/frontend-benign-banner-copy/change.md"
+  },
+  {
     "deployment_id": "bench-catalog-unavailable-bad",
     "service_name": "product-catalog",
     "environment": "otel-demo-local",
@@ -9,6 +18,15 @@
     "repo_path": "scenarios/benchmark/frontend-product-catalog-unavailable/bad-change.md"
   },
   {
+    "deployment_id": "bench-catalog-unavailable-pagination-distractor",
+    "service_name": "product-catalog",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T10:14:09Z",
+    "commit_sha": "700abd2fecd553fcd63e5851949b61bfa322e360",
+    "commit_title": "Seed catalog pagination distractor",
+    "repo_path": "scenarios/benchmark/product-catalog-benign-pagination/change.md"
+  },
+  {
     "deployment_id": "bench-catalog-unavailable-shipping-distractor",
     "service_name": "shipping",
     "environment": "otel-demo-local",
@@ -16,5 +34,14 @@
     "commit_sha": "8aaf682f6cc1c3ccc34efe766518a630cae926d8",
     "commit_title": "Seed shipping deploy distractor scenario",
     "repo_path": "scenarios/otel-demo/shipping/zone-rate-cache.md"
+  },
+  {
+    "deployment_id": "bench-catalog-unavailable-alt-text-distractor",
+    "service_name": "product-catalog",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T10:22:17Z",
+    "commit_sha": "582281ad6dd8939a824736256958c9f1895ab7d4",
+    "commit_title": "Seed catalog alt text distractor",
+    "repo_path": "scenarios/benchmark/product-catalog-benign-image-alt-text/change.md"
   }
 ]

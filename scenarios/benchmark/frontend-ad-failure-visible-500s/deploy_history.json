@@ -1,5 +1,14 @@
 [
   {
+    "deployment_id": "bench-ad-frontend-banner-distractor",
+    "service_name": "frontend",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T06:12:35Z",
+    "commit_sha": "bcc8aa3223072d6c66fcebeea7bc65bb04d5e6cd",
+    "commit_title": "Seed frontend banner copy distractor",
+    "repo_path": "scenarios/benchmark/frontend-benign-banner-copy/change.md"
+  },
+  {
     "deployment_id": "bench-ad-shipping-distractor",
     "service_name": "shipping",
     "environment": "otel-demo-local",
@@ -18,6 +27,15 @@
     "repo_path": "scenarios/otel-demo/frontend/ad-failure-visible-500s.md"
   },
   {
+    "deployment_id": "bench-ad-frontend-accessibility-distractor",
+    "service_name": "frontend",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T06:46:15Z",
+    "commit_sha": "d56b8b31b4944ee3eda1b7173d431115d808ce6e",
+    "commit_title": "Seed frontend accessibility distractor",
+    "repo_path": "scenarios/benchmark/frontend-benign-accessibility-labels/change.md"
+  },
+  {
     "deployment_id": "bench-ad-currency-distractor",
     "service_name": "currency",
     "environment": "otel-demo-local",
@@ -25,5 +43,14 @@
     "commit_sha": "85d3251f45338bb89d0e4194baf2cdac472c14e3",
     "commit_title": "Seed currency deploy distractor scenario",
     "repo_path": "scenarios/otel-demo/currency/exchange-rounding.md"
+  },
+  {
+    "deployment_id": "bench-ad-payment-receipt-distractor",
+    "service_name": "payment",
+    "environment": "otel-demo-local",
+    "deployed_at": "2026-07-10T06:54:20Z",
+    "commit_sha": "f7927bcb6b901c812c358a38217ececfdcbceda6",
+    "commit_title": "Seed payment receipt logging distractor",
+    "repo_path": "scenarios/benchmark/payment-benign-receipt-logging/change.md"
   }
 ]
