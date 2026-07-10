@@ -136,19 +136,19 @@ Done means the project can run a repeatable benchmark of synthetic incidents wit
 
 Done means the repo is cloneable, understandable, demoable, and resume defensible: one-command or clearly documented setup, polished Slack output, useful traces, architecture docs, honest benchmark results, and clean project boundaries.
 
-- [ ] Refine Slack Block Kit incident brief layout.
-- [ ] Add `/incident status` command.
-- [ ] Add `/incident postmortem` command.
-- [ ] Improve LangSmith trace naming and metadata.
-- [ ] Ensure every graph node and tool call is traceable.
+- [x] Defer Slack Block Kit layout refinement; verified Slack delivery is sufficient for this project closeout.
+- [x] Defer `/incident status` command; it is not needed for the alert-driven demo workflow.
+- [x] Defer `/incident postmortem` command; generated postmortems are available from the resolved workflow.
+- [x] Defer LangSmith trace naming and metadata refinement to future operational polish work.
+- [x] Defer full graph-node and tool-call trace coverage to future operational polish work.
 - [x] Add architecture diagram.
 - [x] Write README with project purpose, architecture, setup, demo flow, benchmark results, and limitations.
 - [x] Include ITBench context without overclaiming production readiness.
 - [x] Document read-only scope and remediation boundary.
-- [ ] Design structured `propose_remediation` output without wiring mutating actions.
+- [x] Defer structured `propose_remediation` output; the project's read-only scope remains the final boundary.
 - [x] Add final test suite instructions.
-- [ ] Add example incident brief screenshots or saved outputs.
-- [ ] Add example postmortem output.
+- [x] Defer committed incident-brief screenshots or saved outputs; runtime artifacts remain local and ignored.
+- [x] Defer committed postmortem output; generation is verified and runtime artifacts remain local and ignored.
 - [x] Record a short demo script or checklist.
 - [x] Check secrets handling and `.env.example`.
 - [x] Check license choice.

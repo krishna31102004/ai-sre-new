@@ -88,6 +88,12 @@ The two model top-1 misses are retained in the artifacts and still appear in
 the top three candidates. The model-eval run used 44,562 tokens across all
 15 scenarios.
 
+The deterministic baseline cannot solve this corpus by service matching alone:
+each deploy window includes benign same-service or affected-service changes, so
+ranking requires reading the diffs. The 86.7% model result is meaningful for
+the same reason: it holds on those adversarial candidate sets, not easy
+single-candidate incidents.
+
 This is a deliberately narrower task than [IBM Research's ITBench][itbench],
 where reported end-to-end SRE scenario resolution was about 11-14% across a
 broader, real-world-style benchmark. Glassbox's 86.7% is **commit top-1 on this
