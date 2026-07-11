@@ -64,7 +64,7 @@ export function ConfidencePill({ confidence }: { confidence: number | null }) {
   return <span className="inline-flex min-w-[92px] items-center gap-2 font-mono text-xs tabular-nums text-slate-300"><span className="h-1.5 w-12 overflow-hidden rounded-full bg-slate-700"><span className={`block h-full rounded-full ${tone}`} style={{ width: `${Math.round(confidence * 100)}%` }} /></span>{Math.round(confidence * 100)}%</span>;
 }
 
-export function Collapsible({ title, children, open = false }: PropsWithChildren<{ title: string; open?: boolean }>) {
+export function Collapsible({ title, children, open = false }: PropsWithChildren<{ title: React.ReactNode; open?: boolean }>) {
   return (
     <details className="border-t border-line py-4" open={open}>
       <summary className="flex cursor-pointer list-none items-center justify-between font-medium text-slate-200">
