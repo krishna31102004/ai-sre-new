@@ -203,3 +203,19 @@ Done means a small Go service improves the realism of traffic or telemetry gener
 - [ ] Integrate with local Docker Compose.
 - [ ] Document why Go is used here and Python remains the orchestrator language.
 - [ ] Add tests or smoke checks for generated metrics.
+
+## Phase 8: Final Polish
+
+**Done state**: the finished project communicates its evaluation boundaries clearly, makes absent deploy correlation explicit, and presents the dashboard as a polished, accessible observability surface without changing runtime behavior.
+
+- [ ] Add benchmark variance disclosure to the README and dashboard.
+- [ ] Replace the README limitations section with clear scope boundaries and future-work framing.
+- [ ] Render evidence-backed empty deploy-window results in briefs and dashboard detail.
+- [ ] Add regression coverage for the zero-candidate deploy-window path.
+- [ ] Establish shared dashboard design tokens and accessible micro-interactions.
+- [ ] Refine the investigations list UI.
+- [ ] Refine the investigation detail UI.
+- [ ] Refine the system status and fault-control UI.
+- [ ] Refine the benchmark UI.
+- [ ] Verify tests, lint, frontend build, and server-side routes; confirm the OTel submodule remains untouched.
+- [ ] Phase 8 complete.

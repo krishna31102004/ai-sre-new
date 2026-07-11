@@ -94,6 +94,11 @@ ranking requires reading the diffs. The 86.7% model result is meaningful for
 the same reason: it holds on those adversarial candidate sets, not easy
 single-candidate incidents.
 
+Across repeated `model-eval` runs on the same 15 scenarios, commit top-1
+accuracy ranged from 86.7% to 93.3%: a one-to-two-scenario variance caused by
+inherent LLM non-determinism at fixed temperature. That spread is published as
+part of the benchmark result rather than hidden behind a single best run.
+
 This is a deliberately narrower task than [IBM Research's ITBench][itbench],
 where reported end-to-end SRE scenario resolution was about 11-14% across a
 broader, real-world-style benchmark. Glassbox's 86.7% is **commit top-1 on this
