@@ -10,22 +10,22 @@ export function Shell({ children }: PropsWithChildren) {
   ];
   return (
     <div className="min-h-screen bg-canvas text-slate-100">
-      <header className="border-b border-line bg-slate-950/50">
-        <div className="mx-auto flex max-w-screen-2xl items-center gap-8 px-5 py-4">
-          <NavLink to="/" className="flex items-center gap-3 font-semibold tracking-wide">
-            <span className="flex h-8 w-8 items-center justify-center rounded bg-cyan-400 text-slate-950">
+      <header className="sticky top-0 z-20 border-b border-line/90 bg-[#090e1b]/90 backdrop-blur">
+        <div className="mx-auto flex max-w-screen-2xl items-center gap-4 px-4 py-3 sm:gap-8 sm:px-5">
+          <NavLink to="/" className="flex shrink-0 items-center gap-3 font-semibold tracking-wide text-slate-100">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cyan-300 text-slate-950 shadow-[0_0_18px_rgba(77,215,245,0.16)]">
               <Activity size={18} strokeWidth={3} />
             </span>
             Glassbox SRE
           </NavLink>
-          <nav className="flex items-center gap-1 text-sm">
+          <nav className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm">
             {links.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 rounded px-3 py-2 transition ${
-                    isActive ? "bg-slate-800 text-cyan-300" : "text-slate-400 hover:bg-slate-800/70 hover:text-slate-100"
+                  `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 transition ${
+                    isActive ? "border border-cyan-400/15 bg-cyan-400/10 text-cyan-200" : "border border-transparent text-slate-400 hover:bg-slate-800/70 hover:text-slate-100"
                   }`
                 }
               >
@@ -37,7 +37,7 @@ export function Shell({ children }: PropsWithChildren) {
           <span className="ml-auto hidden text-xs text-slate-500 sm:block">Read-only incident investigation</span>
         </div>
       </header>
-      <main className="mx-auto max-w-screen-2xl px-5 py-7">{children}</main>
+      <main className="mx-auto max-w-screen-2xl px-4 py-7 sm:px-5">{children}</main>
     </div>
   );
 }

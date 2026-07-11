@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#0f172a",
-        panel: "#172033",
-        line: "#29364d",
+        canvas: "#090e1b",
+        panel: "#101827",
+        line: "#263249",
       },
     },
   },
