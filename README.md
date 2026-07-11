@@ -264,17 +264,29 @@ invent counts, rewrite evidence links, or execute remediation. Generated
 postmortems are deterministic from stored event data after an earlier
 LLM-generated draft produced unsupported claims.
 
-## Limitations And Next Steps
+## Limitations And Future Work
 
-- The system is demonstrated only against the simulated OTel Astronomy Shop,
-  not a production workload.
-- The benchmark corpus is deliberately small and mostly synthetic replay; its
-  results measure this repository's scenario design, not general SRE accuracy.
+Glassbox SRE is intentionally **read-only and advisory**. It does not roll
+back deploys, restart services, change flags, or otherwise remediate an
+incident, because a plausible but wrong automated action has a much larger
+blast radius than a clearly evidenced recommendation.
+
+- Investigations are scoped to one incoming alert. The system does not yet
+  correlate or deduplicate related alerts into a broader incident.
+- The benchmark has one live-captured scenario and 14 synthetic replays. It is
+  a controlled regression corpus, not a claim of general production SRE
+  accuracy.
+- Root-cause precision and recall are deliberately not separate metrics. The
+  actionable root-cause output is an evidence-ranked suspect commit; a second
+  label would duplicate commit ranking or require an independent evaluator.
+- The optional Go traffic generator was consciously not pursued. The pinned
+  Astronomy Shop load generator already provides the traffic needed for this
+  project's controlled fault scenarios.
+- The pinned demo metric set does not expose the latency histogram needed for
+  a defensible p95 calculation. The impact estimator reports latency only when
+  a real query supplies it; it never manufactures a percentile.
 - The live alert loop depends on Docker resources and a five-minute alert
   lookback, so it is not designed as a lightweight CI test.
-- A critic/evaluator node, retry handling for transient Postgres failures,
-  richer LangSmith metadata, and Slack slash commands are planned but not yet
-  implemented.
 
 ## Development Notes
 
