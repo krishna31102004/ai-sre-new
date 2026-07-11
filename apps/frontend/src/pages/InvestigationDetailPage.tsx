@@ -23,6 +23,7 @@ export function InvestigationDetailPage() {
   if (!detail) return <LoadingState />;
   const { investigation, findings } = detail;
   const commitFinding = findings[0];
+  const emptyDeployWindow = detail.brief?.includes("no deploys found in the correlation window");
   const slackUrl = investigation.slack_thread_ts && investigation.slack_channel
     ? `https://app.slack.com/client/${investigation.slack_channel}/thread/${investigation.slack_thread_ts.replace(".", "")}`
     : null;
@@ -49,7 +50,7 @@ export function InvestigationDetailPage() {
       </div>
       <div className="rounded border border-line bg-panel px-5">
         <Collapsible title="Commit correlation" open>
-          {commitFinding ? <dl className="detail-grid"><dt>Commit</dt><dd className="font-mono">{commitFinding.commit_sha ?? "--"}</dd><dt>Title</dt><dd>{commitFinding.commit_title ?? "--"}</dd><dt>Confidence</dt><dd><ConfidencePill confidence={commitFinding.confidence} /></dd><dt>Evidence</dt><dd><pre className="evidence">{json(commitFinding.evidence)}</pre></dd></dl> : <p className="rounded border border-amber-900/70 bg-amber-950/20 p-3 text-amber-100">Investigation completed with partial findings. No commit-correlation candidate was returned; the available runbook and impact evidence is shown below.</p>}
+          {commitFinding ? <dl className="detail-grid"><dt>Commit</dt><dd className="font-mono">{commitFinding.commit_sha ?? "--"}</dd><dt>Title</dt><dd>{commitFinding.commit_title ?? "--"}</dd><dt>Confidence</dt><dd><ConfidencePill confidence={commitFinding.confidence} /></dd><dt>Evidence</dt><dd><pre className="evidence">{json(commitFinding.evidence)}</pre></dd></dl> : <p className="rounded border border-amber-900/70 bg-amber-950/20 p-3 text-amber-100">{emptyDeployWindow ? "Suspect commit: none - no deploys found in the correlation window. The rendered brief contains the exact correlation-window evidence; available runbook and impact evidence is shown below." : "Investigation completed with partial findings. No commit-correlation candidate was returned; the available runbook and impact evidence is shown below."}</p>}
         </Collapsible>
         <Collapsible title="Runbook retrieval">
           <dl className="detail-grid"><dt>Runbook</dt><dd>{investigation.runbook_id ?? "Not available"}</dd><dt>Section</dt><dd>{investigation.runbook_section ?? "Not available"}</dd><dt>Score</dt><dd>{investigation.runbook_score?.toFixed(2) ?? "Not available"}</dd></dl>

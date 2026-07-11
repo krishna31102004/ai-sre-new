@@ -26,6 +26,7 @@ def synthesize_incident_brief(
     impact: ImpactEstimate | None,
     affected_services: list[str] | None = None,
     affected_endpoints: list[str] | None = None,
+    empty_deploy_window_evidence: str | None = None,
 ) -> SynthesizedIncidentBrief:
     lines = [
         "[investigation brief]",
@@ -54,6 +55,11 @@ def synthesize_incident_brief(
                     f"(evidence: {commit_evidence})"
                 ),
             ]
+        )
+    elif empty_deploy_window_evidence is not None:
+        lines.append(
+            "suspect commit: none - no deploys found in the correlation window "
+            f"(evidence: {empty_deploy_window_evidence})"
         )
 
     if runbook is not None:

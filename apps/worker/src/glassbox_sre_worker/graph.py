@@ -2,11 +2,16 @@ import json
 import logging
 import os
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, NotRequired, TypedDict
 
-from glassbox_sre.commit_correlation import git_show_diff, rank_commit_candidates
+from glassbox_sre.commit_correlation import (
+    alert_start_time,
+    candidate_deployments_for_alert,
+    git_show_diff,
+    rank_commit_candidates,
+)
 from glassbox_sre.config import Settings, get_settings
 from glassbox_sre.event_log import IncidentEvent
 from glassbox_sre.impact import (
@@ -61,6 +66,7 @@ class InvestigationState(TypedDict):
     alert_payload: AlertmanagerWebhook
     triage: NotRequired[TriageResult]
     commit_findings: NotRequired[list[CommitCorrelationFinding]]
+    empty_deploy_window_evidence: NotRequired[str]
     runbook_findings: NotRequired[list[RunbookRetrievalFinding]]
     impact: NotRequired[ImpactEstimate]
     affected_services: NotRequired[list[str]]
@@ -218,10 +224,22 @@ def _build_commit_correlation_node(settings: Settings, repo_root: Path):
 
     def commit_correlation_node(
         state: InvestigationState,
-    ) -> dict[str, list[CommitCorrelationFinding]]:
+    ) -> dict[str, list[CommitCorrelationFinding] | str]:
         payload = state["alert_payload"]
         with session_factory() as session:
             deployments = load_deployments(session)
+        candidates = candidate_deployments_for_alert(payload, deployments)
+        if not candidates:
+            alert_started_at = alert_start_time(payload)
+            window_start = alert_started_at - timedelta(hours=24)
+            window_end = alert_started_at + timedelta(minutes=5)
+            return {
+                "commit_findings": [],
+                "empty_deploy_window_evidence": (
+                    "0 candidate deploys between "
+                    f"{window_start.isoformat()} and {window_end.isoformat()}"
+                ),
+            }
         deterministic_findings = rank_commit_candidates(payload, deployments, repo_root)
         candidate_context = [
             {
@@ -352,6 +370,7 @@ def _build_synthesis_node():
         impact = state.get("impact")
         affected_services = state.get("affected_services", [])
         affected_endpoints = state.get("affected_endpoints", [])
+        empty_deploy_window_evidence = state.get("empty_deploy_window_evidence")
         brief = synthesize_incident_brief(
             payload.status,
             triage.alert_names[0]
@@ -363,6 +382,7 @@ def _build_synthesis_node():
             impact,
             list(affected_services or triage.affected_services or []),
             affected_endpoints,
+            empty_deploy_window_evidence,
         ).brief
         return {"brief": brief}
 

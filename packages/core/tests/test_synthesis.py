@@ -57,3 +57,24 @@ def test_synthesis_brief_includes_commit_runbook_and_impact() -> None:
     assert "impact: error_rate=0.0300, affected_requests=9, severity=page" in brief.brief
     assert "affected services: frontend, ad" in brief.brief
     assert "affected endpoints: /, /api/ad" in brief.brief
+
+
+def test_synthesis_brief_explains_empty_deploy_window() -> None:
+    brief = synthesize_incident_brief(
+        "firing",
+        "OTelDemoAdServiceErrors",
+        "frontend",
+        None,
+        None,
+        None,
+        empty_deploy_window_evidence=(
+            "0 candidate deploys between 2026-07-09T12:00:00+00:00 and "
+            "2026-07-10T12:05:00+00:00"
+        ),
+    )
+
+    assert (
+        "suspect commit: none - no deploys found in the correlation window "
+        "(evidence: 0 candidate deploys between 2026-07-09T12:00:00+00:00 and "
+        "2026-07-10T12:05:00+00:00)"
+    ) in brief.brief
