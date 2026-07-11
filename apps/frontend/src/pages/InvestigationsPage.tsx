@@ -1,3 +1,4 @@
+import { Activity, ArrowUpRight, Radar } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -41,22 +42,29 @@ export function InvestigationsPage() {
   }, []);
 
   return (
-    <section>
-      <div className="mb-6 flex items-end justify-between">
+    <section className="pb-8">
+      <div className="mb-7 flex items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Live queue history</p>
+          <p className="eyebrow">Live investigation queue</p>
           <h1>Investigations</h1>
-          <p className="mt-2 text-sm text-slate-400">Latest 20 investigations. Refreshes every 5 seconds.</p>
+          <p className="mt-2 text-sm text-slate-400">The latest 20 evidence-backed investigations, refreshed every 5 seconds.</p>
         </div>
-        <span className="text-xs text-slate-500">Evidence-first, read-only</span>
+        <span className="hidden items-center gap-2 rounded-full border border-line bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 sm:inline-flex"><Activity size={13} className="text-cyan-300" /> Live polling</span>
       </div>
       {error && <ErrorState message={error} />}
       {investigations === null && !error && <LoadingState />}
-      {investigations?.length === 0 && <LoadingState label="No investigations have been persisted yet." />}
+      {investigations?.length === 0 && (
+        <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-dashed border-line bg-panel/45 px-6 text-center">
+          <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-400/10 text-cyan-300"><Radar size={21} /></span>
+          <h2>No investigations yet</h2>
+          <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">Trigger a supported demo fault from <a className="text-cyan-300 hover:text-cyan-200" href="/status">System status</a> to start an evidence-backed investigation.</p>
+        </div>
+      )}
       {!!investigations?.length && (
-        <div className="overflow-x-auto rounded border border-line bg-panel shadow-2xl shadow-slate-950/20">
+        <div className="overflow-hidden rounded-lg border border-line bg-panel shadow-2xl shadow-slate-950/20">
+          <div className="overflow-x-auto">
           <table className="min-w-[1050px] w-full text-left text-sm">
-            <thead className="border-b border-line bg-slate-950/30 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-line bg-slate-950/45 text-[11px] uppercase tracking-[0.12em] text-slate-500">
               <tr>
                 <th>Started</th><th>Alert</th><th>Service</th><th>Status</th><th>Suspect commit</th><th>Confidence</th><th>Severity</th><th>Runbook</th>
               </tr>
@@ -66,10 +74,10 @@ export function InvestigationsPage() {
                 <tr
                   key={item.investigation_id}
                   onClick={() => navigate(`/investigations/${item.investigation_id}`)}
-                  className={`cursor-pointer border-b border-line/70 transition hover:bg-slate-800/70 ${newIds.has(item.investigation_id) ? "new-row" : ""}`}
+                  className={`group cursor-pointer border-b border-line/60 transition duration-200 hover:bg-slate-800/65 ${newIds.has(item.investigation_id) ? "new-row" : ""}`}
                 >
-                  <td className="whitespace-nowrap text-slate-400">{relativeTime(item.started_at)}</td>
-                  <td className="font-medium text-slate-100">{item.alert_name}</td>
+                  <td className="whitespace-nowrap font-mono text-xs tabular-nums text-slate-400">{relativeTime(item.started_at)}</td>
+                  <td className="font-medium text-slate-100"><span className="inline-flex items-center gap-2">{item.alert_name}<ArrowUpRight size={14} className="opacity-0 transition group-hover:opacity-80" /></span></td>
                   <td className="font-mono text-cyan-300">{item.service}</td>
                   <td><StatusBadge status={item.status} /></td>
                   <td className="max-w-[270px] font-mono text-xs text-slate-300">
@@ -82,6 +90,8 @@ export function InvestigationsPage() {
               ))}
             </tbody>
           </table>
+          </div>
+          <div className="flex items-center justify-between border-t border-line/70 bg-slate-950/20 px-4 py-2.5 text-xs text-slate-500"><span>Newest investigations appear first.</span><span className="font-mono tabular-nums">{investigations.length} shown</span></div>
         </div>
       )}
     </section>

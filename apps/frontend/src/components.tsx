@@ -60,8 +60,8 @@ export function SeverityBadge({ severity }: { severity: string | null }) {
 
 export function ConfidencePill({ confidence }: { confidence: number | null }) {
   if (confidence === null) return <span className="text-slate-500">--</span>;
-  const tone = confidence >= 0.8 ? "badge-green" : confidence >= 0.5 ? "badge-amber" : "badge-red";
-  return <span className={`badge ${tone}`}>{Math.round(confidence * 100)}%</span>;
+  const tone = confidence >= 0.8 ? "bg-emerald-400" : confidence >= 0.5 ? "bg-amber-400" : "bg-red-400";
+  return <span className="inline-flex min-w-[92px] items-center gap-2 font-mono text-xs tabular-nums text-slate-300"><span className="h-1.5 w-12 overflow-hidden rounded-full bg-slate-700"><span className={`block h-full rounded-full ${tone}`} style={{ width: `${Math.round(confidence * 100)}%` }} /></span>{Math.round(confidence * 100)}%</span>;
 }
 
 export function Collapsible({ title, children, open = false }: PropsWithChildren<{ title: string; open?: boolean }>) {
