@@ -1,8 +1,10 @@
-import { Check, RefreshCw, X, Zap } from "lucide-react";
+import { Check, Clock3, Database, Loader2, RefreshCw, Server, Signal, ToggleRight, Wifi, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { api, type Health } from "../api";
 import { ErrorState, LoadingState } from "../components";
+import { Badge } from "../components/ui/badge";
+import { Switch } from "../components/ui/switch";
 
 const faults = [
   { name: "adFailure", description: "Returns failures from the ad service and surfaces frontend HTTP 500s." },
@@ -55,20 +57,20 @@ export function StatusPage() {
         <button className="icon-button" onClick={() => void load()} aria-label="Refresh system state" title="Refresh system state"><RefreshCw size={16} /></button>
       </div>
       {error && <div className="mt-5"><ErrorState message={error} /></div>}
-      <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-7 grid gap-4 sm:grid-cols-2">
         {health && [
-          { label: "API", ok: health.api.ok, detail: "reachable" },
-          { label: "Worker", ok: health.worker.ok, detail: health.worker.seconds_since_last_heartbeat === null ? "no heartbeat" : `${Math.round(health.worker.seconds_since_last_heartbeat)}s ago` },
-          { label: "Postgres", ok: health.postgres.ok, detail: health.postgres.ok ? "connected" : "unavailable" },
-          { label: "Redis", ok: health.redis.ok, detail: health.redis.ok ? "connected" : "unavailable" },
+          { label: "API", ok: health.api.ok, detail: "reachable", icon: Server },
+          { label: "Worker", ok: health.worker.ok, detail: health.worker.seconds_since_last_heartbeat === null ? "no heartbeat" : `${Math.round(health.worker.seconds_since_last_heartbeat)}s ago`, age: health.worker.seconds_since_last_heartbeat, icon: Clock3 },
+          { label: "Postgres", ok: health.postgres.ok, detail: health.postgres.ok ? "connected" : "unavailable", icon: Database },
+          { label: "Redis", ok: health.redis.ok, detail: health.redis.ok ? "connected" : "unavailable", icon: Wifi },
         ].map((item) => <HealthCard key={item.label} {...item} />)}
       </div>
-      <div className="mt-10 border-t border-line/80 pt-7"><p className="eyebrow">Feature flags</p><div className="mt-1 flex items-center gap-2"><Zap size={18} className="text-cyan-300" /><h2>Fault controls</h2></div><p className="mt-2 text-sm text-slate-500">Enable a fault only to run the controlled demo. The investigation system remains read-only.</p></div>
-      <div className="mt-5 overflow-hidden rounded-lg border border-line bg-panel">
+      <div className="mt-10 border-t border-line pt-7"><p className="eyebrow">Feature flags</p><div className="mt-1 flex items-center gap-2"><Zap size={18} className="text-blue-300" /><h2>Fault controls</h2></div><p className="mt-2 text-sm text-slate-500">Enable a fault only to run the controlled demo. The investigation system remains read-only.</p></div>
+      <div className="mt-5 grid gap-3">
         {faults.map((fault) => {
           const isOn = variants[fault.name] === "on";
           const isUpdating = updating === fault.name;
-          return <div key={fault.name} className="flex flex-wrap items-center gap-5 border-b border-line/70 p-5 last:border-b-0"><div className="min-w-[230px] flex-1"><p className="font-mono text-sm font-medium text-cyan-300">{fault.name}</p><p className="mt-1 max-w-xl text-sm leading-5 text-slate-400">{fault.description}</p></div><span className={`badge ${isOn ? "badge-red" : "badge-slate"}`}>{variants[fault.name] ?? "loading"}</span><button role="switch" aria-checked={isOn} aria-label={`Turn ${fault.name} ${isOn ? "off" : "on"}`} onClick={() => void toggle(fault.name)} disabled={isUpdating || !variants[fault.name]} className={`relative inline-flex h-8 w-[62px] shrink-0 items-center rounded-full border p-1 transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 ${isOn ? "border-red-400/45 bg-red-400/20" : "border-slate-600 bg-slate-800"}`}><span className={`h-6 w-6 rounded-full bg-slate-100 shadow-sm transition duration-200 ${isOn ? "translate-x-[29px]" : "translate-x-0"}`} />{isUpdating && <span className="absolute inset-0 rounded-full bg-slate-950/35" />}</button><span className="w-20 text-right font-mono text-xs tabular-nums text-slate-500">{isUpdating ? "updating" : isOn ? "enabled" : "disabled"}</span></div>;
+          return <div key={fault.name} className="glass-card flex flex-wrap items-center gap-5 p-5"><div className="min-w-[230px] flex-1"><p className="font-mono text-sm font-medium text-blue-300">{fault.name}</p><p className="mt-1 max-w-xl text-sm leading-5 text-slate-400">{fault.description}</p></div><Badge variant={isOn ? "danger" : "muted"}>{variants[fault.name] ?? "loading"}</Badge><div className="relative"><Switch checked={isOn} aria-label={`Turn ${fault.name} ${isOn ? "off" : "on"}`} onCheckedChange={() => void toggle(fault.name)} disabled={isUpdating || !variants[fault.name]} />{isUpdating && <Loader2 size={16} className="absolute left-1/2 top-1/2 -ml-2 -mt-2 animate-spin text-blue-200" />}</div><span className="w-20 text-right font-mono text-xs tabular-nums text-slate-500">{isUpdating ? "updating" : isOn ? "enabled" : "disabled"}</span></div>;
         })}
       </div>
       {toast && <div className={`toast ${toast.tone === "success" ? "toast-success" : "toast-error"}`} role="status" aria-live="polite">{toast.tone === "success" ? <Check size={16} /> : <X size={16} />}{toast.message}</div>}
@@ -76,6 +78,9 @@ export function StatusPage() {
   );
 }
 
-function HealthCard({ label, ok, detail }: { label: string; ok: boolean; detail: string }) {
-  return <div className="rounded-lg border border-line bg-panel p-4 shadow-lg shadow-slate-950/10"><div className="flex items-center gap-2.5"><span className={`status-dot h-2.5 w-2.5 rounded-full ${ok ? "bg-emerald-400" : "bg-red-400"}`} /><span className="font-medium text-slate-200">{label}</span></div><p className="mt-3 font-mono text-xs tabular-nums text-slate-500">{detail}</p></div>;
+function HealthCard({ label, ok, detail, age, icon: Icon }: { label: string; ok: boolean; detail: string; age?: number | null; icon: typeof Signal }) {
+  const stale = label === "Worker" && typeof age === "number" && age > 30;
+  const warning = label === "Worker" && typeof age === "number" && age > 15 && age <= 30;
+  const dot = !ok || stale ? "bg-firing" : warning ? "bg-warning" : "bg-healthy";
+  return <div className="glass-card p-4"><div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-md border border-line bg-white/[0.03] text-blue-300"><Icon size={18} /></span><div><p className="font-medium text-slate-200">{label}</p><p className="mt-1 font-mono text-xs tabular-nums text-slate-500">{detail}</p></div></div><span className={`status-dot mt-2 h-2.5 w-2.5 rounded-full ${dot}`} /></div></div>;
 }

@@ -1,6 +1,9 @@
-import { Activity, BarChart3, ChevronDown, ClipboardList, Server } from "lucide-react";
+import { Activity, BarChart3, ChevronDown, ClipboardList, ShieldCheck, Signal, Server } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import type { PropsWithChildren } from "react";
+
+import { Badge } from "./components/ui/badge";
+import { Progress } from "./components/ui/progress";
 
 export function Shell({ children }: PropsWithChildren) {
   const links = [
@@ -10,13 +13,15 @@ export function Shell({ children }: PropsWithChildren) {
   ];
   return (
     <div className="min-h-screen bg-canvas text-slate-100">
-      <header className="sticky top-0 z-20 border-b border-line/90 bg-[#090e1b]/90 backdrop-blur">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.10),transparent_34%),linear-gradient(180deg,rgba(20,29,46,0.52),transparent_280px)]" />
+      <header className="sticky top-0 z-20 border-b border-line bg-canvas/78 backdrop-blur-xl">
         <div className="mx-auto flex max-w-screen-2xl items-center gap-4 px-4 py-3 sm:gap-8 sm:px-5">
-          <NavLink to="/" className="flex shrink-0 items-center gap-3 font-semibold tracking-wide text-slate-100">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cyan-300 text-slate-950 shadow-[0_0_18px_rgba(77,215,245,0.16)]">
-              <Activity size={18} strokeWidth={3} />
+          <NavLink to="/" className="group flex shrink-0 items-center gap-3 font-semibold tracking-wide text-slate-100">
+            <span className="relative flex h-8 w-8 items-center justify-center rounded-md border border-accent/30 bg-accent/15 text-blue-200 shadow-glow">
+              <Signal size={17} strokeWidth={2.6} />
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-healthy pulse-dot" />
             </span>
-            Glassbox SRE
+            <span className="text-blue-200 group-hover:text-blue-100">Glassbox SRE</span>
           </NavLink>
           <nav className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm">
             {links.map(({ to, label, icon: Icon }) => (
@@ -24,8 +29,8 @@ export function Shell({ children }: PropsWithChildren) {
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 transition ${
-                    isActive ? "border border-cyan-400/15 bg-cyan-400/10 text-cyan-200" : "border border-transparent text-slate-400 hover:bg-slate-800/70 hover:text-slate-100"
+                  `relative flex shrink-0 items-center gap-2 px-3 py-2 transition ${
+                    isActive ? "text-blue-200 after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:bg-accent" : "text-slate-400 hover:text-slate-100"
                   }`
                 }
               >
@@ -34,19 +39,23 @@ export function Shell({ children }: PropsWithChildren) {
               </NavLink>
             ))}
           </nav>
-          <span className="ml-auto hidden text-xs text-slate-500 sm:block">Read-only incident investigation</span>
+          <Badge variant="muted" className="ml-auto hidden sm:inline-flex">
+            <ShieldCheck size={13} className="text-blue-300" />
+            Read-only
+          </Badge>
         </div>
       </header>
-      <main className="mx-auto max-w-screen-2xl px-4 py-7 sm:px-5">{children}</main>
+      <main className="relative mx-auto max-w-screen-2xl px-4 py-7 sm:px-5">{children}</main>
     </div>
   );
 }
 
 export function StatusBadge({ status }: { status: string | null }) {
   const resolved = status?.toLowerCase() === "resolved";
+  const firing = status?.toLowerCase() === "firing";
   return (
     <span className={`badge ${resolved ? "badge-green" : "badge-red"}`}>
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      <span className={`h-1.5 w-1.5 rounded-full bg-current ${firing ? "pulse-dot" : ""}`} />
       {status ?? "unknown"}
     </span>
   );
@@ -60,8 +69,13 @@ export function SeverityBadge({ severity }: { severity: string | null }) {
 
 export function ConfidencePill({ confidence }: { confidence: number | null }) {
   if (confidence === null) return <span className="text-slate-500">--</span>;
-  const tone = confidence >= 0.8 ? "bg-emerald-400" : confidence >= 0.5 ? "bg-amber-400" : "bg-red-400";
-  return <span className="inline-flex min-w-[92px] items-center gap-2 font-mono text-xs tabular-nums text-slate-300"><span className="h-1.5 w-12 overflow-hidden rounded-full bg-slate-700"><span className={`block h-full rounded-full ${tone}`} style={{ width: `${Math.round(confidence * 100)}%` }} /></span>{Math.round(confidence * 100)}%</span>;
+  const tone = confidence >= 0.8 ? "bg-healthy" : confidence >= 0.5 ? "bg-warning" : "bg-firing";
+  return (
+    <span className="inline-flex min-w-[112px] items-center gap-2 font-mono text-xs tabular-nums text-slate-300">
+      <Progress value={Math.round(confidence * 100)} className="w-14" indicatorClassName={tone} />
+      {Math.round(confidence * 100)}%
+    </span>
+  );
 }
 
 export function Collapsible({ title, children, open = false }: PropsWithChildren<{ title: React.ReactNode; open?: boolean }>) {
@@ -77,9 +91,15 @@ export function Collapsible({ title, children, open = false }: PropsWithChildren
 }
 
 export function LoadingState({ label = "Loading..." }: { label?: string }) {
-  return <div className="py-16 text-center text-sm text-slate-500">{label}</div>;
+  return (
+    <div className="space-y-3 py-16">
+      <div className="mx-auto h-4 w-40 skeleton" />
+      <div className="mx-auto h-3 w-64 skeleton" />
+      <p className="text-center text-sm text-slate-500">{label}</p>
+    </div>
+  );
 }
 
 export function ErrorState({ message }: { message: string }) {
-  return <div className="rounded border border-red-900 bg-red-950/40 p-4 text-sm text-red-200">{message}</div>;
+  return <div className="rounded-glass border border-firing/25 bg-red-950/40 p-4 text-sm text-red-200">{message}</div>;
 }
