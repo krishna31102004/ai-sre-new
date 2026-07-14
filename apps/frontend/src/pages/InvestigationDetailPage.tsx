@@ -18,7 +18,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { api, type Finding, type InvestigationDetail } from "../api";
+import { api, DEMO_MODE, type Finding, type InvestigationDetail } from "../api";
 import { ConfidencePill, ErrorState, LoadingState, SeverityBadge, StatusBadge } from "../components";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 import { Badge } from "../components/ui/badge";
@@ -274,8 +274,34 @@ export function InvestigationDetailPage() {
         </InvestigatorCard>
       </Accordion>
       <div className="mt-5 flex flex-wrap gap-3 text-sm">
-        {slackUrl && <a className="link-button" href={slackUrl} target="_blank" rel="noreferrer">Slack thread <ExternalLink size={15} /></a>}
-        {investigation.langsmith_trace_url && <a className="link-button" href={investigation.langsmith_trace_url} target="_blank" rel="noreferrer">LangSmith trace <ExternalLink size={15} /></a>}
+        {slackUrl && (
+          DEMO_MODE ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="link-button cursor-not-allowed opacity-60" disabled>
+                  Slack thread <ExternalLink size={15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Slack thread available in live deployment</TooltipContent>
+            </Tooltip>
+          ) : (
+            <a className="link-button" href={slackUrl} target="_blank" rel="noreferrer">Slack thread <ExternalLink size={15} /></a>
+          )
+        )}
+        {investigation.langsmith_trace_url && (
+          DEMO_MODE ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="link-button cursor-not-allowed opacity-60" disabled>
+                  LangSmith trace <ExternalLink size={15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>LangSmith trace available in live deployment, see GitHub for setup.</TooltipContent>
+            </Tooltip>
+          ) : (
+            <a className="link-button" href={investigation.langsmith_trace_url} target="_blank" rel="noreferrer">LangSmith trace <ExternalLink size={15} /></a>
+          )
+        )}
         {!slackUrl && !investigation.langsmith_trace_url && <span className="text-slate-500">No external links were recorded for this investigation.</span>}
       </div>
     </section>
