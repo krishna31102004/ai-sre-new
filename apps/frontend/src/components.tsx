@@ -1,4 +1,4 @@
-import { Activity, BarChart3, ChevronDown, ClipboardList, ShieldCheck, Signal, Server } from "lucide-react";
+import { Activity, BarChart3, ChevronDown, ClipboardList, GitBranchPlus, ShieldCheck, Signal, Server } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import type { PropsWithChildren } from "react";
 
@@ -9,6 +9,7 @@ import { Progress } from "./components/ui/progress";
 export function Shell({ children }: PropsWithChildren) {
   const links = [
     { to: "/", label: "Investigations", icon: ClipboardList },
+    { to: "/pipeline", label: "Pipeline", icon: GitBranchPlus },
     { to: "/status", label: "System status", icon: Server },
     { to: "/benchmark", label: "Benchmark", icon: BarChart3 },
   ];

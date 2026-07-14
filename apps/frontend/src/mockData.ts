@@ -403,3 +403,9 @@ export function getMockInvestigationDetail(id: string): InvestigationDetail {
 export function getMockFault(flag: string): FaultResponse {
   return mockFaults[flag] ?? { flag, variant: "off" };
 }
+
+export function getAllMockInvestigationDetails(): InvestigationDetail[] {
+  return investigations
+    .map((investigation) => detailMap.get(investigation.investigation_id))
+    .filter((detail): detail is InvestigationDetail => detail !== undefined);
+}
