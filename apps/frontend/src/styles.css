@@ -109,77 +109,56 @@ details[open] summary svg { transform: rotate(180deg); }
   animation: panel-slide-up 300ms ease-out;
 }
 
-@keyframes pipeline-flow {
-  0% { background-position: 0 0; }
-  100% { background-position: 24px 0; }
-}
-
-@keyframes pipeline-dot {
-  0% { left: 0; opacity: 0; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { left: calc(100% - 8px); opacity: 0; }
-}
-
 @keyframes branch-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.18); }
   50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
 }
 
-.pipeline-link,
-.pipeline-merge-line,
-.pipeline-branch-line {
-  position: relative;
-  height: 2px;
-  border-radius: 999px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(148, 163, 184, 0.55) 0,
-    rgba(148, 163, 184, 0.55) 10px,
-    transparent 10px,
-    transparent 20px
-  );
-  animation: pipeline-flow 1.1s linear infinite;
-}
-
-.pipeline-link::after,
-.pipeline-merge-line::after,
-.pipeline-branch-line::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgb(96 165 250);
-  box-shadow: 0 0 14px rgba(96, 165, 250, 0.7);
-  transform: translateY(-50%);
-  animation: pipeline-dot 2s ease-in-out infinite;
-}
-
-.pipeline-branch-line {
-  width: 2px;
-  height: 32px;
-  margin: 0 auto;
-  background-image: repeating-linear-gradient(
-    180deg,
-    rgba(148, 163, 184, 0.55) 0,
-    rgba(148, 163, 184, 0.55) 10px,
-    transparent 10px,
-    transparent 20px
-  );
-}
-
-.pipeline-branch-line::after {
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, 0);
-  animation: pipeline-dot 1.8s ease-in-out infinite;
-}
-
 .pipeline-branch {
   animation: branch-pulse 2.2s ease-in-out infinite;
+}
+
+.pipeline-edge {
+  stroke: rgba(59, 130, 246, 0.9);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 7 7;
+  animation: pipeline-dash-flow 1.1s linear infinite;
+  transition: opacity 200ms ease, stroke 200ms ease;
+}
+
+.pipeline-edge-active {
+  opacity: 1;
+  stroke: rgba(96, 165, 250, 0.95);
+}
+
+.pipeline-edge-dimmed {
+  opacity: 0.2;
+  stroke: rgba(96, 165, 250, 0.35);
+}
+
+@keyframes pipeline-dash-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -28; }
+}
+
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlay-card-enter {
+  from { opacity: 0; transform: scale(0.97) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.pipeline-overlay {
+  animation: overlay-fade-in 200ms ease-out;
+}
+
+.pipeline-overlay-content {
+  animation: overlay-card-enter 200ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

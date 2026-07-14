@@ -9,8 +9,10 @@ import {
   MessageSquareText,
   ShieldAlert,
   TimerReset,
+  Workflow,
+  X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getAllMockInvestigationDetails, mockBenchmark } from "../mockData";
 import { Badge } from "../components/ui/badge";
@@ -27,6 +29,22 @@ type PipelineNode = {
   exampleBody: string[];
   branch?: boolean;
 };
+
+type PipelinePosition = {
+  x: number;
+  y: number;
+};
+
+type PipelineEdge = {
+  from: string;
+  to: string;
+  path: string;
+};
+
+const NODE_WIDTH = 184;
+const NODE_HEIGHT = 132;
+const SVG_WIDTH = 1320;
+const SVG_HEIGHT = 620;
 
 const detailData = getAllMockInvestigationDetails();
 const adIncident = detailData[0];
@@ -143,7 +161,7 @@ const pipelineNodes: PipelineNode[] = [
     id: "synthesis",
     title: "Evidence synthesis",
     subtitle: "Single grounded brief",
-    icon: FileText,
+    icon: Workflow,
     input: "Commit finding, runbook retrieval result, and impact estimate from the parallel branches.",
     output: "A unified incident brief with explicit evidence on every claim.",
     description: [
@@ -192,6 +210,88 @@ const pipelineNodes: PipelineNode[] = [
   },
 ];
 
+const positions: Record<string, PipelinePosition> = {
+  alert: { x: 40, y: 48 },
+  queue: { x: 292, y: 48 },
+  orchestrator: { x: 544, y: 48 },
+  commit: { x: 332, y: 252 },
+  runbook: { x: 568, y: 252 },
+  impact: { x: 804, y: 252 },
+  synthesis: { x: 544, y: 470 },
+  slack: { x: 796, y: 470 },
+  postmortem: { x: 1048, y: 470 },
+};
+
+function centerX(nodeId: string) {
+  return positions[nodeId].x + NODE_WIDTH / 2;
+}
+
+function topY(nodeId: string) {
+  return positions[nodeId].y;
+}
+
+function bottomY(nodeId: string) {
+  return positions[nodeId].y + NODE_HEIGHT;
+}
+
+const edges: PipelineEdge[] = [
+  {
+    from: "alert",
+    to: "queue",
+    path: `M ${positions.alert.x + NODE_WIDTH} ${topY("alert") + NODE_HEIGHT / 2} L ${positions.queue.x} ${topY("queue") + NODE_HEIGHT / 2}`,
+  },
+  {
+    from: "queue",
+    to: "orchestrator",
+    path: `M ${positions.queue.x + NODE_WIDTH} ${topY("queue") + NODE_HEIGHT / 2} L ${positions.orchestrator.x} ${topY("orchestrator") + NODE_HEIGHT / 2}`,
+  },
+  {
+    from: "orchestrator",
+    to: "commit",
+    path: `M ${centerX("orchestrator")} ${bottomY("orchestrator")} C ${centerX("orchestrator")} ${bottomY("orchestrator") + 40}, ${centerX("commit")} ${topY("commit") - 40}, ${centerX("commit")} ${topY("commit")}`,
+  },
+  {
+    from: "orchestrator",
+    to: "runbook",
+    path: `M ${centerX("orchestrator")} ${bottomY("orchestrator")} L ${centerX("runbook")} ${topY("runbook")}`,
+  },
+  {
+    from: "orchestrator",
+    to: "impact",
+    path: `M ${centerX("orchestrator")} ${bottomY("orchestrator")} C ${centerX("orchestrator")} ${bottomY("orchestrator") + 40}, ${centerX("impact")} ${topY("impact") - 40}, ${centerX("impact")} ${topY("impact")}`,
+  },
+  {
+    from: "commit",
+    to: "synthesis",
+    path: `M ${centerX("commit")} ${bottomY("commit")} C ${centerX("commit")} ${bottomY("commit") + 40}, ${centerX("synthesis")} ${topY("synthesis") - 40}, ${centerX("synthesis")} ${topY("synthesis")}`,
+  },
+  {
+    from: "runbook",
+    to: "synthesis",
+    path: `M ${centerX("runbook")} ${bottomY("runbook")} L ${centerX("synthesis")} ${topY("synthesis")}`,
+  },
+  {
+    from: "impact",
+    to: "synthesis",
+    path: `M ${centerX("impact")} ${bottomY("impact")} C ${centerX("impact")} ${bottomY("impact") + 40}, ${centerX("synthesis")} ${topY("synthesis") - 40}, ${centerX("synthesis")} ${topY("synthesis")}`,
+  },
+  {
+    from: "synthesis",
+    to: "slack",
+    path: `M ${positions.synthesis.x + NODE_WIDTH} ${topY("synthesis") + NODE_HEIGHT / 2} L ${positions.slack.x} ${topY("slack") + NODE_HEIGHT / 2}`,
+  },
+  {
+    from: "slack",
+    to: "postmortem",
+    path: `M ${positions.slack.x + NODE_WIDTH} ${topY("slack") + NODE_HEIGHT / 2} L ${positions.postmortem.x} ${topY("postmortem") + NODE_HEIGHT / 2}`,
+  },
+];
+
+function isEdgeHighlighted(edge: PipelineEdge, selectedId: string | null) {
+  if (!selectedId) return true;
+  return edge.from === selectedId || edge.to === selectedId;
+}
+
 function PipelineCard({
   node,
   active,
@@ -207,11 +307,9 @@ function PipelineCard({
   return (
     <button
       onClick={onClick}
-      className={`glass-card relative w-full min-w-[170px] px-4 py-4 text-left ${
+      className={`glass-card pipeline-node relative w-[184px] px-4 py-4 text-left ${
         active ? "pipeline-node-active border-accent/40 bg-accent/10 shadow-glow" : "hover:border-accent/25 hover:bg-white/[0.04]"
-      } ${
-        dimmed ? "pipeline-node-dimmed" : "pipeline-node-clear"
-      } ${node.branch ? "pipeline-branch" : ""}`}
+      } ${dimmed ? "pipeline-node-dimmed" : "pipeline-node-clear"} ${node.branch ? "pipeline-branch" : ""}`}
     >
       <div className="flex items-start justify-between gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-md border border-line bg-white/[0.04] text-blue-200">
@@ -225,12 +323,111 @@ function PipelineCard({
   );
 }
 
+function PipelineOverlay({
+  node,
+  onClose,
+}: {
+  node: PipelineNode;
+  onClose: () => void;
+}) {
+  const Icon = node.icon;
+
+  return (
+    <div className="pipeline-overlay fixed inset-0 z-50 flex items-center justify-center p-6">
+      <button className="pipeline-overlay-backdrop absolute inset-0 h-full w-full cursor-default bg-black/85 backdrop-blur-sm" aria-label="Close pipeline overlay" onClick={onClose} />
+      <div className="pipeline-overlay-content relative z-10 mx-auto max-w-3xl">
+        <button className="icon-button absolute right-4 top-4 z-10" aria-label="Close pipeline overlay" onClick={onClose}>
+          <X size={16} />
+        </button>
+        <div className="glass-card border-accent/35 bg-panel/95 px-8 py-8 shadow-[0_0_0_1px_rgba(59,130,246,0.28),0_0_36px_rgba(59,130,246,0.16)]">
+          <div className="mx-auto max-w-[420px]">
+            <div className="pipeline-node-active glass-card bg-accent/10 px-5 py-5">
+              <div className="flex items-start justify-between gap-3">
+                <span className="flex h-12 w-12 items-center justify-center rounded-md border border-accent/30 bg-white/[0.06] text-blue-100">
+                  <Icon size={22} />
+                </span>
+                <Badge variant="accent">{node.subtitle}</Badge>
+              </div>
+              <h2 className="mt-5 text-xl font-semibold text-slate-50">{node.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-300">{node.input}</p>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="space-y-5">
+              <div className="soft-card p-4">
+                <p className="label">What this node does</p>
+                <p className="text-sm leading-6 text-slate-300">{node.description[0]}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-400">{node.description[1]}</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="soft-card p-4">
+                  <p className="label">Input</p>
+                  <p className="text-sm leading-6 text-slate-300">{node.input}</p>
+                </div>
+                <div className="soft-card p-4">
+                  <p className="label">Output</p>
+                  <p className="text-sm leading-6 text-slate-300">{node.output}</p>
+                </div>
+              </div>
+            </div>
+            <div className="soft-card p-4">
+              <p className="label">Real example</p>
+              <h3 className="text-sm font-semibold text-slate-100">{node.exampleTitle}</h3>
+              <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-slate-300">
+                {node.exampleBody.map((line) => (
+                  <div key={line} className="rounded-md border border-line bg-black/20 px-3 py-2">
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PipelinePage() {
-  const [selectedId, setSelectedId] = useState<string | null>("commit");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hasExplored, setHasExplored] = useState(false);
+
   const selectedNode = useMemo(
     () => pipelineNodes.find((node) => node.id === selectedId) ?? null,
     [selectedId],
   );
+
+  useEffect(() => {
+    if (!selectedNode) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedId(null);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedNode]);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    if (selectedNode) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [selectedNode]);
+
+  const handleSelect = (nodeId: string) => {
+    setSelectedId((current) => {
+      const next = current === nodeId ? null : nodeId;
+      if (next) setHasExplored(true);
+      return next;
+    });
+  };
 
   return (
     <section className="pb-8">
@@ -246,79 +443,58 @@ export function PipelinePage() {
       </div>
 
       <div className="glass-card overflow-x-auto p-6">
-        <div className="min-w-[1220px]">
-          <div className="flex items-center gap-4">
-            <PipelineCard node={pipelineNodes[0]} active={selectedId === pipelineNodes[0].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[0].id} onClick={() => setSelectedId((current) => current === pipelineNodes[0].id ? null : pipelineNodes[0].id)} />
-            <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[1]} active={selectedId === pipelineNodes[1].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[1].id} onClick={() => setSelectedId((current) => current === pipelineNodes[1].id ? null : pipelineNodes[1].id)} />
-            <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[2]} active={selectedId === pipelineNodes[2].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[2].id} onClick={() => setSelectedId((current) => current === pipelineNodes[2].id ? null : pipelineNodes[2].id)} />
+        <div className="relative min-h-[620px] min-w-[1320px]">
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+            viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+            fill="none"
+            aria-hidden="true"
+          >
+            {edges.map((edge) => {
+              const highlighted = isEdgeHighlighted(edge, selectedId);
+              return (
+                <path
+                  key={`${edge.from}-${edge.to}`}
+                  d={edge.path}
+                  className={`pipeline-edge ${highlighted ? "pipeline-edge-active" : "pipeline-edge-dimmed"}`}
+                />
+              );
+            })}
+          </svg>
+
+          <div className="absolute left-[300px] top-[224px] h-[188px] w-[724px] rounded-glass border border-dashed border-accent/20 bg-accent/[0.03]">
+            <div className="absolute left-4 top-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-200/70">
+              Parallel execution
+            </div>
           </div>
 
-          <div className="mt-8 grid grid-cols-[1fr_1fr_1fr] gap-6 px-[310px]">
-            {pipelineNodes.slice(3, 6).map((node) => (
-              <div key={node.id} className="relative">
-                <div className="pipeline-branch-line absolute -top-8 left-1/2 h-8 -translate-x-1/2" />
-                <PipelineCard node={node} active={selectedId === node.id} dimmed={selectedId !== null && selectedId !== node.id} onClick={() => setSelectedId((current) => current === node.id ? null : node.id)} />
+          {pipelineNodes.map((node) => {
+            const position = positions[node.id];
+            return (
+              <div
+                key={node.id}
+                className="absolute"
+                style={{ left: `${position.x}px`, top: `${position.y}px` }}
+              >
+                <PipelineCard
+                  node={node}
+                  active={selectedId === node.id}
+                  dimmed={selectedId !== null && selectedId !== node.id}
+                  onClick={() => handleSelect(node.id)}
+                />
               </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex items-center justify-center">
-            <div className="pipeline-merge-line w-[520px]" />
-          </div>
-
-          <div className="mt-6 flex items-center gap-4">
-            <PipelineCard node={pipelineNodes[6]} active={selectedId === pipelineNodes[6].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[6].id} onClick={() => setSelectedId((current) => current === pipelineNodes[6].id ? null : pipelineNodes[6].id)} />
-            <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[7]} active={selectedId === pipelineNodes[7].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[7].id} onClick={() => setSelectedId((current) => current === pipelineNodes[7].id ? null : pipelineNodes[7].id)} />
-            <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[8]} active={selectedId === pipelineNodes[8].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[8].id} onClick={() => setSelectedId((current) => current === pipelineNodes[8].id ? null : pipelineNodes[8].id)} />
-          </div>
+            );
+          })}
         </div>
       </div>
 
-      {selectedNode && (
-        <div className="glass-card pipeline-detail-panel mt-6 p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="eyebrow">Selected node</p>
-              <h2 className="mt-2">{selectedNode.title}</h2>
-            </div>
-            <Badge variant="accent">{selectedNode.subtitle}</Badge>
-          </div>
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-5">
-              <div className="soft-card p-4">
-                <p className="label">What this node does</p>
-                <p className="text-sm leading-6 text-slate-300">{selectedNode.description[0]}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-400">{selectedNode.description[1]}</p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="soft-card p-4">
-                  <p className="label">Input</p>
-                  <p className="text-sm leading-6 text-slate-300">{selectedNode.input}</p>
-                </div>
-                <div className="soft-card p-4">
-                  <p className="label">Output</p>
-                  <p className="text-sm leading-6 text-slate-300">{selectedNode.output}</p>
-                </div>
-              </div>
-            </div>
-            <div className="soft-card p-4">
-              <p className="label">Real example</p>
-              <h3 className="text-sm font-semibold text-slate-100">{selectedNode.exampleTitle}</h3>
-              <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-slate-300">
-                {selectedNode.exampleBody.map((line) => (
-                  <div key={line} className="rounded-md border border-line bg-black/20 px-3 py-2">
-                    {line}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+      {!hasExplored && (
+        <p className="mt-4 text-center text-sm text-slate-500">
+          Click to explore each stage of the Glassbox SRE investigation pipeline.
+        </p>
       )}
+
+      {selectedNode && <PipelineOverlay node={selectedNode} onClose={() => setSelectedId(null)} />}
     </section>
   );
 }
