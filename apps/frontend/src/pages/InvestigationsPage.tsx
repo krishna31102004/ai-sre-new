@@ -42,6 +42,13 @@ export function InvestigationsPage() {
     };
   }, []);
 
+  const summary = investigations ? {
+    total: investigations.length,
+    resolved: investigations.filter((item) => item.status.toLowerCase() === "resolved").length,
+    firing: investigations.filter((item) => item.status.toLowerCase() === "firing").length,
+    averageConfidence: investigations.reduce((total, item) => total + (item.confidence ?? 0), 0) / investigations.length,
+  } : null;
+
   return (
     <section className="pb-8">
       <div className="mb-7 flex items-end justify-between gap-4">
@@ -57,6 +64,32 @@ export function InvestigationsPage() {
       </div>
       {error && <ErrorState message={error} />}
       {investigations === null && !error && <LoadingState />}
+      {summary && (
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="soft-card p-4">
+            <p className="label">Total investigations</p>
+            <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{summary.total}</p>
+          </div>
+          <div className="soft-card p-4">
+            <p className="label">Resolved</p>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-healthy" />
+              <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{summary.resolved}</p>
+            </div>
+          </div>
+          <div className="soft-card p-4">
+            <p className="label">Firing</p>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-firing pulse-dot" />
+              <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{summary.firing}</p>
+            </div>
+          </div>
+          <div className="soft-card p-4">
+            <p className="label">Average confidence</p>
+            <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{Math.round(summary.averageConfidence * 100)}%</p>
+          </div>
+        </div>
+      )}
       {investigations?.length === 0 && (
         <div className="glass-card flex min-h-72 flex-col items-center justify-center border-dashed px-6 text-center">
           <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-blue-200 shadow-glow"><TerminalSquare size={22} /></span>
