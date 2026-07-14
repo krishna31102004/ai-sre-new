@@ -30,21 +30,14 @@ type PipelineNode = {
   branch?: boolean;
 };
 
-type PipelinePosition = {
-  x: number;
-  y: number;
-};
-
 type PipelineEdge = {
   from: string;
   to: string;
   path: string;
 };
 
-const NODE_WIDTH = 184;
-const NODE_HEIGHT = 132;
-const SVG_WIDTH = 1320;
-const SVG_HEIGHT = 620;
+const SVG_WIDTH = 1100;
+const SVG_HEIGHT = 648;
 
 const detailData = getAllMockInvestigationDetails();
 const adIncident = detailData[0];
@@ -210,85 +203,61 @@ const pipelineNodes: PipelineNode[] = [
   },
 ];
 
-const positions: Record<string, PipelinePosition> = {
-  alert: { x: 40, y: 48 },
-  queue: { x: 292, y: 48 },
-  orchestrator: { x: 544, y: 48 },
-  commit: { x: 332, y: 252 },
-  runbook: { x: 568, y: 252 },
-  impact: { x: 804, y: 252 },
-  synthesis: { x: 544, y: 470 },
-  slack: { x: 796, y: 470 },
-  postmortem: { x: 1048, y: 470 },
-};
-
-function centerX(nodeId: string) {
-  return positions[nodeId].x + NODE_WIDTH / 2;
-}
-
-function topY(nodeId: string) {
-  return positions[nodeId].y;
-}
-
-function bottomY(nodeId: string) {
-  return positions[nodeId].y + NODE_HEIGHT;
-}
-
 const edges: PipelineEdge[] = [
   {
     from: "alert",
     to: "queue",
-    path: `M ${positions.alert.x + NODE_WIDTH} ${topY("alert") + NODE_HEIGHT / 2} L ${positions.queue.x} ${topY("queue") + NODE_HEIGHT / 2}`,
+    path: "M 319 88 L 395 88",
   },
   {
     from: "queue",
     to: "orchestrator",
-    path: `M ${positions.queue.x + NODE_WIDTH} ${topY("queue") + NODE_HEIGHT / 2} L ${positions.orchestrator.x} ${topY("orchestrator") + NODE_HEIGHT / 2}`,
+    path: "M 705 88 L 781 88",
   },
   {
     from: "orchestrator",
     to: "commit",
-    path: `M ${centerX("orchestrator")} ${bottomY("orchestrator")} C ${centerX("orchestrator")} ${bottomY("orchestrator") + 40}, ${centerX("commit")} ${topY("commit") - 40}, ${centerX("commit")} ${topY("commit")}`,
+    path: "M 936 168 Q 936 202 550 244 Q 163 202 163 244",
   },
   {
     from: "orchestrator",
     to: "runbook",
-    path: `M ${centerX("orchestrator")} ${bottomY("orchestrator")} L ${centerX("runbook")} ${topY("runbook")}`,
+    path: "M 936 168 Q 936 202 550 244",
   },
   {
     from: "orchestrator",
     to: "impact",
-    path: `M ${centerX("orchestrator")} ${bottomY("orchestrator")} C ${centerX("orchestrator")} ${bottomY("orchestrator") + 40}, ${centerX("impact")} ${topY("impact") - 40}, ${centerX("impact")} ${topY("impact")}`,
+    path: "M 936 168 L 936 244",
   },
   {
     from: "commit",
     to: "synthesis",
-    path: `M ${centerX("commit")} ${bottomY("commit")} C ${centerX("commit")} ${bottomY("commit") + 40}, ${centerX("synthesis")} ${topY("synthesis") - 40}, ${centerX("synthesis")} ${topY("synthesis")}`,
+    path: "M 163 404 L 163 480",
   },
   {
     from: "runbook",
     to: "synthesis",
-    path: `M ${centerX("runbook")} ${bottomY("runbook")} L ${centerX("synthesis")} ${topY("synthesis")}`,
+    path: "M 550 404 Q 550 438 163 480",
   },
   {
     from: "impact",
     to: "synthesis",
-    path: `M ${centerX("impact")} ${bottomY("impact")} C ${centerX("impact")} ${bottomY("impact") + 40}, ${centerX("synthesis")} ${topY("synthesis") - 40}, ${centerX("synthesis")} ${topY("synthesis")}`,
+    path: "M 936 404 Q 936 438 163 480",
   },
   {
     from: "synthesis",
     to: "slack",
-    path: `M ${positions.synthesis.x + NODE_WIDTH} ${topY("synthesis") + NODE_HEIGHT / 2} L ${positions.slack.x} ${topY("slack") + NODE_HEIGHT / 2}`,
+    path: "M 319 560 L 395 560",
   },
   {
     from: "slack",
     to: "postmortem",
-    path: `M ${positions.slack.x + NODE_WIDTH} ${topY("slack") + NODE_HEIGHT / 2} L ${positions.postmortem.x} ${topY("postmortem") + NODE_HEIGHT / 2}`,
+    path: "M 705 560 L 781 560",
   },
 ];
 
 function isEdgeHighlighted(edge: PipelineEdge, selectedId: string | null) {
-  if (!selectedId) return true;
+  if (!selectedId) return false;
   return edge.from === selectedId || edge.to === selectedId;
 }
 
@@ -307,7 +276,7 @@ function PipelineCard({
   return (
     <button
       onClick={onClick}
-      className={`glass-card pipeline-node relative w-[184px] px-4 py-4 text-left ${
+      className={`glass-card pipeline-node relative h-40 w-full overflow-hidden px-4 py-4 text-left ${
         active ? "pipeline-node-active border-accent/40 bg-accent/10 shadow-glow" : "hover:border-accent/25 hover:bg-white/[0.04]"
       } ${dimmed ? "pipeline-node-dimmed" : "pipeline-node-clear"} ${node.branch ? "pipeline-branch" : ""}`}
     >
@@ -315,10 +284,12 @@ function PipelineCard({
         <span className="flex h-10 w-10 items-center justify-center rounded-md border border-line bg-white/[0.04] text-blue-200">
           <Icon size={18} />
         </span>
-        <Badge variant={active ? "accent" : "muted"}>{node.subtitle}</Badge>
+        <Badge variant={active ? "accent" : "muted"} className="max-w-[150px] truncate">
+          {node.subtitle}
+        </Badge>
       </div>
-      <h3 className="mt-4 text-base font-semibold text-slate-100">{node.title}</h3>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{node.input}</p>
+      <h3 className="mt-4 truncate text-base font-semibold text-slate-100">{node.title}</h3>
+      <p className="mt-2 truncate text-sm leading-6 text-slate-400">{node.input}</p>
     </button>
   );
 }
@@ -443,48 +414,47 @@ export function PipelinePage() {
       </div>
 
       <div className="glass-card overflow-x-auto p-6">
-        <div className="relative min-h-[620px] min-w-[1320px]">
+        <div className="pipeline-grid relative mx-auto min-w-[1100px]">
           <svg
-            className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+            className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible"
             viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
             fill="none"
             aria-hidden="true"
           >
+            <defs>
+              <marker id="pipeline-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+              </marker>
+            </defs>
             {edges.map((edge) => {
               const highlighted = isEdgeHighlighted(edge, selectedId);
               return (
                 <path
                   key={`${edge.from}-${edge.to}`}
                   d={edge.path}
-                  className={`pipeline-edge ${highlighted ? "pipeline-edge-active" : "pipeline-edge-dimmed"}`}
+                  markerEnd="url(#pipeline-arrow)"
+                  className={`pipeline-edge ${selectedId ? (highlighted ? "pipeline-edge-active" : "pipeline-edge-dimmed") : ""}`}
                 />
               );
             })}
           </svg>
 
-          <div className="absolute left-[300px] top-[224px] h-[188px] w-[724px] rounded-glass border border-dashed border-accent/20 bg-accent/[0.03]">
+          <div className="pointer-events-none absolute inset-x-0 top-[220px] z-0 h-[192px] rounded-glass border border-dashed border-accent/20 bg-accent/[0.03]">
             <div className="absolute left-4 top-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-200/70">
               Parallel execution
             </div>
           </div>
 
-          {pipelineNodes.map((node) => {
-            const position = positions[node.id];
-            return (
-              <div
-                key={node.id}
-                className="absolute"
-                style={{ left: `${position.x}px`, top: `${position.y}px` }}
-              >
-                <PipelineCard
-                  node={node}
-                  active={selectedId === node.id}
-                  dimmed={selectedId !== null && selectedId !== node.id}
-                  onClick={() => handleSelect(node.id)}
-                />
-              </div>
-            );
-          })}
+          {pipelineNodes.map((node) => (
+            <div key={node.id} className="relative z-20 p-2">
+              <PipelineCard
+                node={node}
+                active={selectedId === node.id}
+                dimmed={selectedId !== null && selectedId !== node.id}
+                onClick={() => handleSelect(node.id)}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
