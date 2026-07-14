@@ -195,10 +195,12 @@ const pipelineNodes: PipelineNode[] = [
 function PipelineCard({
   node,
   active,
+  dimmed,
   onClick,
 }: {
   node: PipelineNode;
   active: boolean;
+  dimmed: boolean;
   onClick: () => void;
 }) {
   const Icon = node.icon;
@@ -206,7 +208,9 @@ function PipelineCard({
     <button
       onClick={onClick}
       className={`glass-card relative w-full min-w-[170px] px-4 py-4 text-left ${
-        active ? "border-accent/40 bg-accent/10 shadow-glow" : "hover:border-accent/25 hover:bg-white/[0.04]"
+        active ? "pipeline-node-active border-accent/40 bg-accent/10 shadow-glow" : "hover:border-accent/25 hover:bg-white/[0.04]"
+      } ${
+        dimmed ? "pipeline-node-dimmed" : "pipeline-node-clear"
       } ${node.branch ? "pipeline-branch" : ""}`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -222,9 +226,9 @@ function PipelineCard({
 }
 
 export function PipelinePage() {
-  const [selectedId, setSelectedId] = useState("commit");
+  const [selectedId, setSelectedId] = useState<string | null>("commit");
   const selectedNode = useMemo(
-    () => pipelineNodes.find((node) => node.id === selectedId) ?? pipelineNodes[0],
+    () => pipelineNodes.find((node) => node.id === selectedId) ?? null,
     [selectedId],
   );
 
@@ -244,18 +248,18 @@ export function PipelinePage() {
       <div className="glass-card overflow-x-auto p-6">
         <div className="min-w-[1220px]">
           <div className="flex items-center gap-4">
-            <PipelineCard node={pipelineNodes[0]} active={selectedId === pipelineNodes[0].id} onClick={() => setSelectedId(pipelineNodes[0].id)} />
+            <PipelineCard node={pipelineNodes[0]} active={selectedId === pipelineNodes[0].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[0].id} onClick={() => setSelectedId((current) => current === pipelineNodes[0].id ? null : pipelineNodes[0].id)} />
             <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[1]} active={selectedId === pipelineNodes[1].id} onClick={() => setSelectedId(pipelineNodes[1].id)} />
+            <PipelineCard node={pipelineNodes[1]} active={selectedId === pipelineNodes[1].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[1].id} onClick={() => setSelectedId((current) => current === pipelineNodes[1].id ? null : pipelineNodes[1].id)} />
             <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[2]} active={selectedId === pipelineNodes[2].id} onClick={() => setSelectedId(pipelineNodes[2].id)} />
+            <PipelineCard node={pipelineNodes[2]} active={selectedId === pipelineNodes[2].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[2].id} onClick={() => setSelectedId((current) => current === pipelineNodes[2].id ? null : pipelineNodes[2].id)} />
           </div>
 
           <div className="mt-8 grid grid-cols-[1fr_1fr_1fr] gap-6 px-[310px]">
             {pipelineNodes.slice(3, 6).map((node) => (
               <div key={node.id} className="relative">
                 <div className="pipeline-branch-line absolute -top-8 left-1/2 h-8 -translate-x-1/2" />
-                <PipelineCard node={node} active={selectedId === node.id} onClick={() => setSelectedId(node.id)} />
+                <PipelineCard node={node} active={selectedId === node.id} dimmed={selectedId !== null && selectedId !== node.id} onClick={() => setSelectedId((current) => current === node.id ? null : node.id)} />
               </div>
             ))}
           </div>
@@ -265,54 +269,56 @@ export function PipelinePage() {
           </div>
 
           <div className="mt-6 flex items-center gap-4">
-            <PipelineCard node={pipelineNodes[6]} active={selectedId === pipelineNodes[6].id} onClick={() => setSelectedId(pipelineNodes[6].id)} />
+            <PipelineCard node={pipelineNodes[6]} active={selectedId === pipelineNodes[6].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[6].id} onClick={() => setSelectedId((current) => current === pipelineNodes[6].id ? null : pipelineNodes[6].id)} />
             <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[7]} active={selectedId === pipelineNodes[7].id} onClick={() => setSelectedId(pipelineNodes[7].id)} />
+            <PipelineCard node={pipelineNodes[7]} active={selectedId === pipelineNodes[7].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[7].id} onClick={() => setSelectedId((current) => current === pipelineNodes[7].id ? null : pipelineNodes[7].id)} />
             <div className="pipeline-link flex-1" />
-            <PipelineCard node={pipelineNodes[8]} active={selectedId === pipelineNodes[8].id} onClick={() => setSelectedId(pipelineNodes[8].id)} />
+            <PipelineCard node={pipelineNodes[8]} active={selectedId === pipelineNodes[8].id} dimmed={selectedId !== null && selectedId !== pipelineNodes[8].id} onClick={() => setSelectedId((current) => current === pipelineNodes[8].id ? null : pipelineNodes[8].id)} />
           </div>
         </div>
       </div>
 
-      <div className="glass-card mt-6 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="eyebrow">Selected node</p>
-            <h2 className="mt-2">{selectedNode.title}</h2>
-          </div>
-          <Badge variant="accent">{selectedNode.subtitle}</Badge>
-        </div>
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="space-y-5">
-            <div className="soft-card p-4">
-              <p className="label">What this node does</p>
-              <p className="text-sm leading-6 text-slate-300">{selectedNode.description[0]}</p>
-              <p className="mt-3 text-sm leading-6 text-slate-400">{selectedNode.description[1]}</p>
+      {selectedNode && (
+        <div className="glass-card pipeline-detail-panel mt-6 p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="eyebrow">Selected node</p>
+              <h2 className="mt-2">{selectedNode.title}</h2>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="soft-card p-4">
-                <p className="label">Input</p>
-                <p className="text-sm leading-6 text-slate-300">{selectedNode.input}</p>
-              </div>
-              <div className="soft-card p-4">
-                <p className="label">Output</p>
-                <p className="text-sm leading-6 text-slate-300">{selectedNode.output}</p>
-              </div>
-            </div>
+            <Badge variant="accent">{selectedNode.subtitle}</Badge>
           </div>
-          <div className="soft-card p-4">
-            <p className="label">Real example</p>
-            <h3 className="text-sm font-semibold text-slate-100">{selectedNode.exampleTitle}</h3>
-            <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-slate-300">
-              {selectedNode.exampleBody.map((line) => (
-                <div key={line} className="rounded-md border border-line bg-black/20 px-3 py-2">
-                  {line}
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-5">
+              <div className="soft-card p-4">
+                <p className="label">What this node does</p>
+                <p className="text-sm leading-6 text-slate-300">{selectedNode.description[0]}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-400">{selectedNode.description[1]}</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="soft-card p-4">
+                  <p className="label">Input</p>
+                  <p className="text-sm leading-6 text-slate-300">{selectedNode.input}</p>
                 </div>
-              ))}
+                <div className="soft-card p-4">
+                  <p className="label">Output</p>
+                  <p className="text-sm leading-6 text-slate-300">{selectedNode.output}</p>
+                </div>
+              </div>
+            </div>
+            <div className="soft-card p-4">
+              <p className="label">Real example</p>
+              <h3 className="text-sm font-semibold text-slate-100">{selectedNode.exampleTitle}</h3>
+              <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-slate-300">
+                {selectedNode.exampleBody.map((line) => (
+                  <div key={line} className="rounded-md border border-line bg-black/20 px-3 py-2">
+                    {line}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

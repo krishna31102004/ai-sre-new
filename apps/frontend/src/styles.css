@@ -82,6 +82,33 @@ details[open] summary svg { transform: rotate(180deg); }
   animation: row-fade-in 320ms ease-out forwards;
 }
 
+.pipeline-node-clear {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms ease, transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.pipeline-node-dimmed {
+  opacity: 0.35;
+  transform: scale(0.985);
+  transition: opacity 200ms ease, transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.pipeline-node-active {
+  opacity: 1;
+  transform: scale(1.02);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.28), 0 0 24px rgba(59, 130, 246, 0.18);
+}
+
+@keyframes panel-slide-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pipeline-detail-panel {
+  animation: panel-slide-up 300ms ease-out;
+}
+
 @keyframes pipeline-flow {
   0% { background-position: 0 0; }
   100% { background-position: 24px 0; }
