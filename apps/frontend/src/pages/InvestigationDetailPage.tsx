@@ -21,6 +21,8 @@ import { Badge } from "../components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
 import { number, percent } from "../lib";
 
+type BriefRow = { label: string; value: string };
+
 function evidenceItems(evidence: unknown): Array<{ kind?: string; summary: string; reference?: string }> {
   if (!Array.isArray(evidence)) return [];
   return evidence.filter((item): item is { kind?: string; summary: string; reference?: string } => (
@@ -44,6 +46,24 @@ function EvidenceList({ finding }: { finding: Finding }) {
       ))}
     </ul>
   );
+}
+
+function parseBriefRows(brief: string | null): BriefRow[] {
+  if (!brief) return [];
+  return brief
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && line !== "[investigation brief]")
+    .map((line) => {
+      const separator = line.indexOf(":");
+      if (separator === -1) {
+        return { label: "NOTE", value: line };
+      }
+      return {
+        label: line.slice(0, separator).trim().toUpperCase(),
+        value: line.slice(separator + 1).trim(),
+      };
+    });
 }
 
 function InvestigatorCard({
@@ -95,6 +115,7 @@ export function InvestigationDetailPage() {
   const { investigation, findings } = detail;
   const commitFinding = findings[0];
   const emptyDeployWindow = detail.brief?.includes("no deploys found in the correlation window");
+  const briefRows = parseBriefRows(detail.brief);
   const slackUrl = investigation.slack_thread_ts && investigation.slack_channel
     ? `https://app.slack.com/client/${investigation.slack_channel}/thread/${investigation.slack_thread_ts.replace(".", "")}`
     : null;
@@ -147,7 +168,21 @@ export function InvestigationDetailPage() {
         </div>
         <div className="p-5">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Rendered incident brief</p>
-          <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap font-mono text-sm leading-6 text-slate-200">{detail.brief ?? "No final brief was persisted."}</pre>
+          {briefRows.length ? (
+            <div className="max-h-[520px] overflow-auto rounded-md border border-line/80 bg-white/[0.02] font-mono text-sm text-slate-200">
+              {briefRows.map((row, index) => (
+                <div
+                  key={`${row.label}-${index}`}
+                  className={`grid gap-2 px-4 py-3 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-4 ${index === briefRows.length - 1 ? "" : "border-b border-line/70"}`}
+                >
+                  <div className="text-[11px] font-semibold tracking-[0.12em] text-slate-500">{row.label}</div>
+                  <div className="whitespace-pre-wrap break-words leading-6 text-slate-200">{row.value}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap font-mono text-sm leading-6 text-slate-200">{detail.brief ?? "No final brief was persisted."}</pre>
+          )}
         </div>
       </div>
       <Accordion type="multiple" defaultValue={["commit"]} className="space-y-3">

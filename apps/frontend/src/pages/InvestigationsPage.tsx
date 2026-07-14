@@ -88,7 +88,7 @@ export function InvestigationsPage() {
                   <td className="font-mono text-blue-300">{item.service}</td>
                   <td><StatusBadge status={item.status} /></td>
                   <td className="max-w-[270px] font-mono text-xs text-slate-300">
-                    {item.suspect_commit_sha ? <span className="inline-flex items-center gap-2"><span className="rounded-md border border-line bg-white/[0.04] px-2 py-1 text-blue-200">{item.suspect_commit_sha.slice(0, 7)}</span><span className="truncate text-slate-400">{truncate(item.suspect_commit_title, 40)}</span></span> : "--"}
+                    {item.suspect_commit_sha ? <span className="flex min-w-0 items-center gap-2"><span className="shrink-0 rounded-md border border-line bg-white/[0.04] px-2 py-1 text-blue-200">{item.suspect_commit_sha.slice(0, 7)}</span><span className="min-w-0 truncate text-slate-400" title={item.suspect_commit_title ?? undefined}>{truncate(item.suspect_commit_title, 40)}</span></span> : "--"}
                   </td>
                   <td><ConfidencePill confidence={item.confidence} /></td>
                   <td><SeverityBadge severity={item.severity} /></td>
