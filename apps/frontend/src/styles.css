@@ -167,7 +167,11 @@ details[open] summary svg { transform: rotate(180deg); }
 }
 
 .pipeline-row-label-0 { top: 88px; }
-.pipeline-row-label-1 { top: 324px; }
+.pipeline-row-label-1 {
+  top: 324px;
+  left: -20px;
+  z-index: 30;
+}
 .pipeline-row-label-2 { top: 560px; }
 
 .pipeline-node {
