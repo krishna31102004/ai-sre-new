@@ -40,12 +40,12 @@ function useCountUp(target: number, durationMs: number): number {
 export function BenchmarkPage() {
   const [model, setModel] = useState<BenchmarkSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const modelTopOne = useCountUp(86.7, 1500);
+  const deterministicTopOne = useCountUp(13.3, 1500);
   useEffect(() => { void api.benchmark().then(setModel).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Unable to load benchmark")); }, []);
   if (error) return <ErrorState message={error} />;
   if (!model) return <LoadingState />;
   const rows = [["replay-fast", replayFast], ["model-eval", model]] as const;
-  const modelTopOne = useCountUp(86.7, 1500);
-  const deterministicTopOne = useCountUp(13.3, 1500);
   return <section className="pb-8">
     <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow">Evaluation harness</p><h1>Benchmark results</h1><p className="mt-2 text-sm text-slate-400">Ground-truth scoring for the hardened commit-correlation corpus.</p></div><Badge variant="accent" className="hidden sm:inline-flex"><Gauge size={13} /> 15 scenarios</Badge></div>
     <div className="glass-card mt-7 p-6">
