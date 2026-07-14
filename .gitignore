@@ -20,6 +20,7 @@ venv/
 .env
 .env.*
 !.env.example
+!apps/frontend/.env.demo.example
 
 # Local runtime output
 logs/

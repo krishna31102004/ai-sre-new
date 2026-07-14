@@ -7,6 +7,16 @@ Git diffs, retrieves a relevant runbook, calculates impact from telemetry, and
 posts the result to Slack. When Alertmanager sends a resolved notification, it
 creates a blameless postmortem from the stored event log.
 
+## Live Demo
+
+Portfolio demo URL: `https://<vercel-demo-url>`
+
+The Vercel demo is a static frontend build running with `VITE_DEMO_MODE=true`,
+so anyone can explore the dashboard with realistic investigation data and no
+local backend. For the real system with live Alertmanager, Redis, Postgres,
+LangGraph, Slack, and OpenAI integration, follow the local setup and demo
+instructions below.
+
 Production incidents are usually fragmented across alerts, dashboards, deploy
 history, diffs, runbooks, and chat. The costly work is assembling a defensible
 story quickly without pretending that an ungrounded model answer is evidence.

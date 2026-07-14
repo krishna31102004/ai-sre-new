@@ -62,7 +62,38 @@ export type BenchmarkSummary = {
   total_tokens: number;
 };
 
+import {
+  getMockFault,
+  getMockInvestigationDetail,
+  getMockInvestigationsResponse,
+  mockBenchmark,
+  mockHealth,
+} from "./mockData";
+
+export const DEMO_MODE = ["1", "true", "yes", "on"].includes(
+  String(import.meta.env.VITE_DEMO_MODE ?? "").toLowerCase(),
+);
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  if (DEMO_MODE) {
+    switch (path) {
+      case "/api/investigations":
+        return getMockInvestigationsResponse() as T;
+      case "/api/health":
+        return mockHealth as T;
+      case "/api/benchmark/latest":
+        return mockBenchmark as T;
+      default: {
+        if (path.startsWith("/api/investigations/")) {
+          return getMockInvestigationDetail(path.replace("/api/investigations/", "")) as T;
+        }
+        if (path.startsWith("/api/fault/")) {
+          return getMockFault(path.replace("/api/fault/", "")) as T;
+        }
+      }
+    }
+  }
+
   const response = await fetch(path, {
     headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,

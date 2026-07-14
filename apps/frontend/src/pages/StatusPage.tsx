@@ -1,10 +1,11 @@
 import { Check, Clock3, Database, Loader2, RefreshCw, Server, Signal, ToggleRight, Wifi, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { api, type Health } from "../api";
+import { api, DEMO_MODE, type Health } from "../api";
 import { ErrorState, LoadingState } from "../components";
 import { Badge } from "../components/ui/badge";
 import { Switch } from "../components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
 
 const faults = [
   { name: "adFailure", description: "Returns failures from the ad service and surfaces frontend HTTP 500s." },
@@ -34,6 +35,11 @@ export function StatusPage() {
   useEffect(() => { void load(); }, []);
 
   const toggle = async (flag: string) => {
+    if (DEMO_MODE) {
+      setToast({ tone: "success", message: "Demo mode: fault injection disabled." });
+      window.setTimeout(() => setToast(null), 3500);
+      return;
+    }
     const next = variants[flag] === "on" ? "off" : "on";
     setUpdating(flag);
     try {
@@ -70,7 +76,13 @@ export function StatusPage() {
         {faults.map((fault) => {
           const isOn = variants[fault.name] === "on";
           const isUpdating = updating === fault.name;
-          return <div key={fault.name} className="glass-card flex flex-wrap items-center gap-5 p-5"><div className="min-w-[230px] flex-1"><p className="font-mono text-sm font-medium text-blue-300">{fault.name}</p><p className="mt-1 max-w-xl text-sm leading-5 text-slate-400">{fault.description}</p></div><Badge variant={isOn ? "danger" : "muted"}>{variants[fault.name] ?? "loading"}</Badge><div className="relative"><Switch checked={isOn} aria-label={`Turn ${fault.name} ${isOn ? "off" : "on"}`} onCheckedChange={() => void toggle(fault.name)} disabled={isUpdating || !variants[fault.name]} />{isUpdating && <Loader2 size={16} className="absolute left-1/2 top-1/2 -ml-2 -mt-2 animate-spin text-blue-200" />}</div><span className="w-20 text-right font-mono text-xs tabular-nums text-slate-500">{isUpdating ? "updating" : isOn ? "enabled" : "disabled"}</span></div>;
+          const switchControl = (
+            <div className="relative">
+              <Switch checked={isOn} aria-label={`Turn ${fault.name} ${isOn ? "off" : "on"}`} onCheckedChange={() => void toggle(fault.name)} disabled={DEMO_MODE || isUpdating || !variants[fault.name]} />
+              {isUpdating && <Loader2 size={16} className="absolute left-1/2 top-1/2 -ml-2 -mt-2 animate-spin text-blue-200" />}
+            </div>
+          );
+          return <div key={fault.name} className="glass-card flex flex-wrap items-center gap-5 p-5"><div className="min-w-[230px] flex-1"><p className="font-mono text-sm font-medium text-blue-300">{fault.name}</p><p className="mt-1 max-w-xl text-sm leading-5 text-slate-400">{fault.description}</p></div><Badge variant={isOn ? "danger" : "muted"}>{variants[fault.name] ?? "loading"}</Badge>{DEMO_MODE ? <Tooltip><TooltipTrigger asChild><span>{switchControl}</span></TooltipTrigger><TooltipContent>Demo mode: fault injection disabled</TooltipContent></Tooltip> : switchControl}<span className="w-20 text-right font-mono text-xs tabular-nums text-slate-500">{DEMO_MODE ? "demo" : isUpdating ? "updating" : isOn ? "enabled" : "disabled"}</span></div>;
         })}
       </div>
       {toast && <div className={`toast ${toast.tone === "success" ? "toast-success" : "toast-error"}`} role="status" aria-live="polite">{toast.tone === "success" ? <Check size={16} /> : <X size={16} />}{toast.message}</div>}

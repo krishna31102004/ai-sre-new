@@ -2,6 +2,7 @@ import { Activity, BarChart3, ChevronDown, ClipboardList, ShieldCheck, Signal, S
 import { NavLink } from "react-router-dom";
 import type { PropsWithChildren } from "react";
 
+import { DEMO_MODE } from "./api";
 import { Badge } from "./components/ui/badge";
 import { Progress } from "./components/ui/progress";
 
@@ -14,6 +15,11 @@ export function Shell({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen bg-canvas text-slate-100">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.10),transparent_34%),linear-gradient(180deg,rgba(20,29,46,0.52),transparent_280px)]" />
+      {DEMO_MODE && (
+        <div className="relative z-30 border-b border-accent/25 bg-accent/12 px-4 py-2 text-center text-xs text-blue-100">
+          Running in demo mode with sample data. See github.com/krishna31102004/ai-sre-new for full setup.
+        </div>
+      )}
       <header className="sticky top-0 z-20 border-b border-line bg-canvas/78 backdrop-blur-xl">
         <div className="mx-auto flex max-w-screen-2xl items-center gap-4 px-4 py-3 sm:gap-8 sm:px-5">
           <NavLink to="/" className="group flex shrink-0 items-center gap-3 font-semibold tracking-wide text-slate-100">
