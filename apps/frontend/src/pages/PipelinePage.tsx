@@ -12,7 +12,7 @@ import {
   Workflow,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getAllMockInvestigationDetails, mockBenchmark } from "../mockData";
 import { Badge } from "../components/ui/badge";
@@ -38,6 +38,8 @@ type PipelineEdge = {
 
 const SVG_WIDTH = 1100;
 const SVG_HEIGHT = 648;
+
+const rowLabels = ["Ingest", "Investigate", "Report"];
 
 const detailData = getAllMockInvestigationDetails();
 const adIncident = detailData[0];
@@ -203,58 +205,50 @@ const pipelineNodes: PipelineNode[] = [
   },
 ];
 
-const edges: PipelineEdge[] = [
-  {
-    from: "alert",
-    to: "queue",
-    path: "M 319 88 L 395 88",
-  },
-  {
-    from: "queue",
-    to: "orchestrator",
-    path: "M 705 88 L 781 88",
-  },
-  {
-    from: "orchestrator",
-    to: "commit",
-    path: "M 936 168 Q 936 202 550 244 Q 163 202 163 244",
-  },
-  {
-    from: "orchestrator",
-    to: "runbook",
-    path: "M 936 168 Q 936 202 550 244",
-  },
-  {
-    from: "orchestrator",
-    to: "impact",
-    path: "M 936 168 L 936 244",
-  },
-  {
-    from: "commit",
-    to: "synthesis",
-    path: "M 163 404 L 163 480",
-  },
-  {
-    from: "runbook",
-    to: "synthesis",
-    path: "M 550 404 Q 550 438 163 480",
-  },
-  {
-    from: "impact",
-    to: "synthesis",
-    path: "M 936 404 Q 936 438 163 480",
-  },
-  {
-    from: "synthesis",
-    to: "slack",
-    path: "M 319 560 L 395 560",
-  },
-  {
-    from: "slack",
-    to: "postmortem",
-    path: "M 705 560 L 781 560",
-  },
-];
+const edgeDefinitions = [
+  { from: "alert", to: "queue", kind: "horizontal" },
+  { from: "queue", to: "orchestrator", kind: "horizontal" },
+  { from: "orchestrator", to: "commit", kind: "curve" },
+  { from: "orchestrator", to: "runbook", kind: "curve" },
+  { from: "orchestrator", to: "impact", kind: "curve" },
+  { from: "commit", to: "synthesis", kind: "curve" },
+  { from: "runbook", to: "synthesis", kind: "curve" },
+  { from: "impact", to: "synthesis", kind: "curve" },
+  { from: "synthesis", to: "slack", kind: "horizontal" },
+  { from: "slack", to: "postmortem", kind: "horizontal" },
+] as const;
+
+type CardAnchor = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+  centerX: number;
+  centerY: number;
+};
+
+function buildConnectorPath(
+  edge: (typeof edgeDefinitions)[number],
+  anchors: Record<string, CardAnchor>,
+): PipelineEdge {
+  const source = anchors[edge.from];
+  const destination = anchors[edge.to];
+
+  if (edge.kind === "horizontal") {
+    return {
+      from: edge.from,
+      to: edge.to,
+      path: `M ${source.right} ${source.centerY} L ${destination.left} ${destination.centerY}`,
+    };
+  }
+
+  const curveOffset = Math.max(44, Math.abs(destination.top - source.bottom) * 0.7);
+  return {
+    from: edge.from,
+    to: edge.to,
+    path: `M ${source.centerX} ${source.bottom} C ${source.centerX} ${source.bottom + curveOffset}, ${destination.centerX} ${destination.top - curveOffset}, ${destination.centerX} ${destination.top}`,
+  };
+}
 
 function isEdgeHighlighted(edge: PipelineEdge, selectedId: string | null) {
   if (!selectedId) return false;
@@ -266,30 +260,31 @@ function PipelineCard({
   active,
   dimmed,
   onClick,
+  cardRef,
 }: {
   node: PipelineNode;
   active: boolean;
   dimmed: boolean;
   onClick: () => void;
+  cardRef: (card: HTMLButtonElement | null) => void;
 }) {
   const Icon = node.icon;
   return (
     <button
+      ref={cardRef}
       onClick={onClick}
       className={`glass-card pipeline-node relative h-40 w-full overflow-hidden px-4 py-4 text-left ${
-        active ? "pipeline-node-active border-accent/40 bg-accent/10 shadow-glow" : "hover:border-accent/25 hover:bg-white/[0.04]"
+        active ? "pipeline-node-active border-accent/40 bg-accent/10 shadow-glow" : ""
       } ${dimmed ? "pipeline-node-dimmed" : "pipeline-node-clear"} ${node.branch ? "pipeline-branch" : ""}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-md border border-line bg-white/[0.04] text-blue-200">
-          <Icon size={18} />
-        </span>
-        <Badge variant={active ? "accent" : "muted"} className="max-w-[150px] truncate">
-          {node.subtitle}
-        </Badge>
+      <div className="pipeline-node-icon flex h-9 w-9 items-center justify-center rounded-md text-blue-100">
+        <Icon size={17} />
       </div>
-      <h3 className="mt-4 truncate text-base font-semibold text-slate-100">{node.title}</h3>
-      <p className="mt-2 truncate text-sm leading-6 text-slate-400">{node.input}</p>
+      <h3 className="mt-3 text-base font-semibold text-slate-100">{node.title}</h3>
+      <Badge variant={active ? "accent" : "muted"} className="pipeline-node-pill mt-1.5 max-w-full whitespace-normal text-[10px] leading-4">
+        {node.subtitle}
+      </Badge>
+      <p className="mt-1.5 truncate text-sm leading-6 text-slate-400">{node.input}</p>
     </button>
   );
 }
@@ -363,6 +358,9 @@ function PipelineOverlay({
 export function PipelinePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hasExplored, setHasExplored] = useState(false);
+  const [layout, setLayout] = useState({ width: SVG_WIDTH, height: SVG_HEIGHT, edges: [] as PipelineEdge[] });
+  const gridRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const selectedNode = useMemo(
     () => pipelineNodes.find((node) => node.id === selectedId) ?? null,
@@ -381,6 +379,55 @@ export function PipelinePage() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedNode]);
+
+  useEffect(() => {
+    let resizeTimer: number | undefined;
+
+    const measureConnectors = () => {
+      const grid = gridRef.current;
+      if (!grid) return;
+
+      const gridRect = grid.getBoundingClientRect();
+      const anchors = Object.fromEntries(
+        pipelineNodes.flatMap((node) => {
+          const card = nodeRefs.current[node.id];
+          if (!card) return [];
+          const rect = card.getBoundingClientRect();
+          const left = rect.left - gridRect.left;
+          const top = rect.top - gridRect.top;
+          return [[node.id, {
+            left,
+            right: rect.right - gridRect.left,
+            top,
+            bottom: rect.bottom - gridRect.top,
+            centerX: left + rect.width / 2,
+            centerY: top + rect.height / 2,
+          } satisfies CardAnchor]];
+        }),
+      ) as Record<string, CardAnchor>;
+
+      if (Object.keys(anchors).length !== pipelineNodes.length) return;
+      setLayout({
+        width: gridRect.width,
+        height: gridRect.height,
+        edges: edgeDefinitions.map((edge) => buildConnectorPath(edge, anchors)),
+      });
+    };
+
+    measureConnectors();
+    const animationFrame = window.requestAnimationFrame(measureConnectors);
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(measureConnectors, 120);
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -404,7 +451,7 @@ export function PipelinePage() {
     <section className="pb-8">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Investigation graph</p>
+          <p className="eyebrow">System architecture</p>
           <h1>Pipeline</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
             This is the end-to-end Glassbox SRE flow from alert fire to postmortem generation. The three investigator branches pulse together to show the parallel evidence paths that feed one grounded incident brief.
@@ -413,48 +460,66 @@ export function PipelinePage() {
         <Badge variant="accent">Interactive walkthrough</Badge>
       </div>
 
-      <div className="glass-card overflow-x-auto p-6">
-        <div className="pipeline-grid relative mx-auto min-w-[1100px]">
+      <div className="pipeline-surface glass-card overflow-x-auto p-6">
+        <div className="pipeline-stage relative mx-auto w-[1180px]">
+          {rowLabels.map((label, index) => (
+            <span key={label} className={`pipeline-row-label pipeline-row-label-${index}`}>
+              {label}
+            </span>
+          ))}
+          <div ref={gridRef} className="pipeline-grid relative ml-auto min-w-[1100px]">
           <svg
             className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible"
-            viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+            viewBox={`0 0 ${layout.width} ${layout.height}`}
             fill="none"
             aria-hidden="true"
           >
             <defs>
+              <filter id="pipeline-dot-glow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
               <marker id="pipeline-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" fillOpacity="0.6" />
               </marker>
             </defs>
-            {edges.map((edge) => {
+            {layout.edges.map((edge, index) => {
               const highlighted = isEdgeHighlighted(edge, selectedId);
               return (
-                <path
-                  key={`${edge.from}-${edge.to}`}
-                  d={edge.path}
-                  markerEnd="url(#pipeline-arrow)"
-                  className={`pipeline-edge ${selectedId ? (highlighted ? "pipeline-edge-active" : "pipeline-edge-dimmed") : ""}`}
-                />
+                <g key={`${edge.from}-${edge.to}`} className={selectedId ? (highlighted ? "pipeline-edge-active" : "pipeline-edge-dimmed") : ""}>
+                  <path d={edge.path} markerEnd="url(#pipeline-arrow)" className="pipeline-edge" />
+                  <circle r="4" opacity="0" className="pipeline-flow-dot" filter="url(#pipeline-dot-glow)">
+                    <animateMotion dur="2.8s" begin={`${0.5 + index * 0.3}s`} repeatCount="indefinite" path={edge.path} />
+                    <animate attributeName="opacity" values="0;0.95;0.95;0" keyTimes="0;0.03;0.95;1" dur="2.8s" begin={`${0.5 + index * 0.3}s`} repeatCount="indefinite" />
+                  </circle>
+                </g>
               );
             })}
           </svg>
 
           <div className="pointer-events-none absolute inset-x-0 top-[220px] z-0 h-[192px] rounded-glass border border-dashed border-accent/20 bg-accent/[0.03]">
-            <div className="absolute left-4 top-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-200/70">
+            <div className="pipeline-parallel-label absolute left-4 top-[-9px] text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">
               Parallel execution
             </div>
           </div>
 
-          {pipelineNodes.map((node) => (
-            <div key={node.id} className="relative z-20 p-2">
+          {pipelineNodes.map((node, index) => (
+            <div key={node.id} className="pipeline-grid-row relative z-20 p-2" style={{ animationDelay: `${Math.floor(index / 3) * 150}ms` }}>
               <PipelineCard
                 node={node}
                 active={selectedId === node.id}
                 dimmed={selectedId !== null && selectedId !== node.id}
                 onClick={() => handleSelect(node.id)}
+                cardRef={(card) => {
+                  nodeRefs.current[node.id] = card;
+                }}
               />
             </div>
           ))}
+          </div>
         </div>
       </div>
 

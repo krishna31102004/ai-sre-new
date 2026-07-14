@@ -119,24 +119,20 @@ details[open] summary svg { transform: rotate(180deg); }
 }
 
 .pipeline-edge {
-  stroke: rgba(59, 130, 246, 0.9);
-  stroke-width: 1.5;
+  stroke: #3b82f6;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 7 7;
-  opacity: 0.4;
-  animation: pipeline-dash-flow 1.1s linear infinite;
-  transition: opacity 200ms ease, stroke 200ms ease;
+  opacity: 0.25;
+  transition: opacity 200ms ease;
 }
 
 .pipeline-edge-active {
-  opacity: 1;
-  stroke: rgba(96, 165, 250, 0.95);
+  opacity: 0.7;
 }
 
 .pipeline-edge-dimmed {
-  opacity: 0.2;
-  stroke: rgba(96, 165, 250, 0.35);
+  opacity: 0.1;
 }
 
 .pipeline-grid {
@@ -149,9 +145,74 @@ details[open] summary svg { transform: rotate(180deg); }
   row-gap: 60px;
 }
 
-@keyframes pipeline-dash-flow {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -28; }
+.pipeline-surface {
+  background:
+    radial-gradient(ellipse at center, rgba(30, 64, 175, 0.14), transparent 64%),
+    rgba(13, 20, 36, 0.9);
+}
+
+.pipeline-row-label {
+  position: absolute;
+  left: 0;
+  z-index: 1;
+  width: 66px;
+  color: rgb(100 116 139);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+  transform: translateY(-50%);
+}
+
+.pipeline-row-label-0 { top: 88px; }
+.pipeline-row-label-1 { top: 324px; }
+.pipeline-row-label-2 { top: 560px; }
+
+.pipeline-node {
+  cursor: pointer;
+  transition: opacity 200ms ease, transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background-color 200ms ease;
+}
+
+.pipeline-node:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.pipeline-node-icon {
+  border: 1px solid rgba(59, 130, 246, 0.32);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(59, 130, 246, 0));
+}
+
+.pipeline-node-pill {
+  display: inline-flex;
+  min-height: 20px;
+  max-width: 100%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.pipeline-parallel-label {
+  padding: 0 8px;
+  background: var(--canvas);
+}
+
+.pipeline-flow-dot {
+  fill: #3b82f6;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes pipeline-row-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pipeline-grid-row {
+  opacity: 0;
+  animation: pipeline-row-enter 360ms ease-out forwards;
 }
 
 @keyframes overlay-fade-in {
