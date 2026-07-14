@@ -72,6 +72,16 @@ details[open] summary svg { transform: rotate(180deg); }
 @keyframes status-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.82); } }
 .pulse-dot { animation: status-pulse 1.9s ease-in-out infinite; }
 
+@keyframes row-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.row-fade-in {
+  opacity: 0;
+  animation: row-fade-in 320ms ease-out forwards;
+}
+
 @keyframes pipeline-flow {
   0% { background-position: 0 0; }
   100% { background-position: 24px 0; }
