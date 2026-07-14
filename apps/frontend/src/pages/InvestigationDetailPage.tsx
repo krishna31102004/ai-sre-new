@@ -4,11 +4,15 @@ import {
   Check,
   CheckCircle2,
   ChartNoAxesCombined,
+  Clock3,
   Copy,
+  DatabaseZap,
   ExternalLink,
   GitCommit,
   MinusCircle,
   ShieldCheck,
+  Slack,
+  Workflow,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -22,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/toolti
 import { number, percent } from "../lib";
 
 type BriefRow = { label: string; value: string };
+type ViewMode = "brief" | "timeline";
 
 function evidenceItems(evidence: unknown): Array<{ kind?: string; summary: string; reference?: string }> {
   if (!Array.isArray(evidence)) return [];
@@ -66,6 +71,37 @@ function parseBriefRows(brief: string | null): BriefRow[] {
     });
 }
 
+function formatDelta(previous: string | null, current: string): string {
+  if (!previous) return "+0.0s";
+  const deltaMs = new Date(current).getTime() - new Date(previous).getTime();
+  return `+${(deltaMs / 1000).toFixed(1)}s`;
+}
+
+function timelinePresentation(eventType: string) {
+  switch (eventType) {
+    case "alert_received":
+      return { label: "Alert received", icon: ShieldCheck, tone: "border-firing" };
+    case "queued_to_redis":
+      return { label: "Queued to Redis", icon: DatabaseZap, tone: "border-accent" };
+    case "triage_completed":
+      return { label: "Triage completed", icon: Workflow, tone: "border-warning" };
+    case "commit_correlation_completed":
+      return { label: "Commit correlation completed", icon: GitCommit, tone: "border-accent" };
+    case "runbook_retrieval_completed":
+      return { label: "Runbook retrieval completed", icon: BookOpen, tone: "border-healthy" };
+    case "impact_estimation_completed":
+      return { label: "Impact estimation completed", icon: ChartNoAxesCombined, tone: "border-warning" };
+    case "brief_posted":
+      return { label: "Brief posted to Slack", icon: Slack, tone: "border-accent" };
+    case "resolved":
+      return { label: "Alert resolved", icon: CheckCircle2, tone: "border-healthy" };
+    case "postmortem_generated":
+      return { label: "Postmortem generated", icon: Clock3, tone: "border-slate-500" };
+    default:
+      return { label: eventType, icon: Clock3, tone: "border-slate-500" };
+  }
+}
+
 function InvestigatorCard({
   value,
   title,
@@ -104,6 +140,7 @@ export function InvestigationDetailPage() {
   const [detail, setDetail] = useState<InvestigationDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("brief");
 
   useEffect(() => {
     void api.investigation(id).then(setDetail).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Unable to load investigation"));
@@ -156,32 +193,72 @@ export function InvestigationDetailPage() {
             <span className="flex gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-firing" /><span className="h-2.5 w-2.5 rounded-full bg-warning" /><span className="h-2.5 w-2.5 rounded-full bg-healthy" /></span>
             <span className="truncate font-mono text-xs text-slate-500">{investigation.investigation_id}</span>
           </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="icon-button h-8 w-auto gap-1.5 px-2.5 text-xs" onClick={() => void copyBrief()} aria-label="Copy incident brief">
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Copy incident brief</TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-2">
+            <div className="rounded-md border border-line bg-white/[0.03] p-1">
+              <button className={`rounded px-2.5 py-1 text-xs ${viewMode === "brief" ? "bg-accent/15 text-blue-100" : "text-slate-400 hover:text-slate-200"}`} onClick={() => setViewMode("brief")}>Brief</button>
+              <button className={`rounded px-2.5 py-1 text-xs ${viewMode === "timeline" ? "bg-accent/15 text-blue-100" : "text-slate-400 hover:text-slate-200"}`} onClick={() => setViewMode("timeline")}>Timeline</button>
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="icon-button h-8 w-auto gap-1.5 px-2.5 text-xs" onClick={() => void copyBrief()} aria-label="Copy incident brief">
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Copy incident brief</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
         <div className="p-5">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Rendered incident brief</p>
-          {briefRows.length ? (
-            <div className="max-h-[520px] overflow-auto rounded-md border border-line/80 bg-white/[0.02] font-mono text-sm text-slate-200">
-              {briefRows.map((row, index) => (
-                <div
-                  key={`${row.label}-${index}`}
-                  className={`grid gap-2 px-4 py-3 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-4 ${index === briefRows.length - 1 ? "" : "border-b border-line/70"}`}
-                >
-                  <div className="text-[11px] font-semibold tracking-[0.12em] text-slate-500">{row.label}</div>
-                  <div className="whitespace-pre-wrap break-words leading-6 text-slate-200">{row.value}</div>
+          {viewMode === "brief" ? (
+            <>
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Rendered incident brief</p>
+              {briefRows.length ? (
+                <div className="max-h-[520px] overflow-auto rounded-md border border-line/80 bg-white/[0.02] font-mono text-sm text-slate-200">
+                  {briefRows.map((row, index) => (
+                    <div
+                      key={`${row.label}-${index}`}
+                      className={`grid gap-2 px-4 py-3 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-4 ${index === briefRows.length - 1 ? "" : "border-b border-line/70"}`}
+                    >
+                      <div className="text-[11px] font-semibold tracking-[0.12em] text-slate-500">{row.label}</div>
+                      <div className="whitespace-pre-wrap break-words leading-6 text-slate-200">{row.value}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : (
+                <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap font-mono text-sm leading-6 text-slate-200">{detail.brief ?? "No final brief was persisted."}</pre>
+              )}
+            </>
           ) : (
-            <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap font-mono text-sm leading-6 text-slate-200">{detail.brief ?? "No final brief was persisted."}</pre>
+            <>
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Investigation timeline</p>
+              <div className="space-y-3">
+                {detail.events.map((event, index) => {
+                  const presentation = timelinePresentation(event.event_type);
+                  const Icon = presentation.icon;
+                  const previousTimestamp = index > 0 ? detail.events[index - 1].occurred_at : null;
+                  return (
+                    <div key={`${event.event_type}-${event.occurred_at}`} className={`rounded-md border border-line bg-white/[0.02] border-l-4 ${presentation.tone} px-4 py-3`}>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md border border-line bg-black/20 text-blue-200">
+                            <Icon size={15} />
+                          </span>
+                          <div>
+                            <div className="font-medium text-slate-100">{presentation.label}</div>
+                            <div className="mt-1 text-sm leading-6 text-slate-400">{event.summary}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-mono text-xs tabular-nums text-slate-300">{new Date(event.occurred_at).toLocaleTimeString()}</div>
+                          <div className="mt-1 font-mono text-[11px] tabular-nums text-slate-500">{formatDelta(previousTimestamp, event.occurred_at)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>

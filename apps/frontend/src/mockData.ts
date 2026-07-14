@@ -7,6 +7,13 @@ import type {
 
 type FaultVariant = "on" | "off";
 type FaultResponse = { flag: string; variant: FaultVariant };
+type TimelineStep = {
+  event_type: string;
+  offset_ms: number;
+  source: string;
+  summary: string;
+  reference?: string | null;
+};
 
 const slackChannel = "C08GLASSBOX";
 const traceBase = "https://smith.langchain.com/public/";
@@ -22,6 +29,41 @@ function makeDetail(
   events: InvestigationDetail["events"],
 ): InvestigationDetail {
   return { investigation, brief, findings, events };
+}
+
+function buildTimelineEvents(
+  startedAt: string,
+  steps: TimelineStep[],
+  resolvedAt: string | null,
+): InvestigationDetail["events"] {
+  const startMs = new Date(startedAt).getTime();
+  const events = steps.map((step) => ({
+    event_type: step.event_type,
+    occurred_at: new Date(startMs + step.offset_ms).toISOString(),
+    source: step.source,
+    summary: step.summary,
+    reference: step.reference ?? null,
+  }));
+
+  if (resolvedAt) {
+    const resolvedMs = new Date(resolvedAt).getTime();
+    events.push({
+      event_type: "resolved",
+      occurred_at: resolvedAt,
+      source: "alertmanager",
+      summary: "Resolved webhook received after the alert window drained.",
+      reference: null,
+    });
+    events.push({
+      event_type: "postmortem_generated",
+      occurred_at: new Date(resolvedMs + 12400).toISOString(),
+      source: "worker",
+      summary: "Grounded postmortem generated from the stored event log.",
+      reference: null,
+    });
+  }
+
+  return events;
 }
 
 const investigations: InvestigationSummary[] = [
@@ -238,12 +280,15 @@ for (const investigation of investigations) {
           reasoning: "The deploy window and diff both align with the observed frontend 500s when the ad service fails.",
         },
       ];
-      events = [
-        { event_type: "alert_received", occurred_at: "2026-07-10T23:57:14Z", source: "alertmanager", summary: "Alertmanager delivered firing alert for OTelDemoAdServiceErrors.", reference: null },
-        { event_type: "investigation_started", occurred_at: "2026-07-10T23:57:15Z", source: "worker", summary: "Worker dequeued alert and started graph run.", reference: null },
-        { event_type: "brief_posted", occurred_at: "2026-07-10T23:57:34Z", source: "slack", summary: "Incident brief posted to Slack thread.", reference: investigation.slack_thread_ts },
-        { event_type: "resolved", occurred_at: "2026-07-11T00:03:28Z", source: "alertmanager", summary: "Resolved webhook received after lookback window drained.", reference: null },
-      ];
+      events = buildTimelineEvents(investigation.started_at, [
+        { event_type: "alert_received", offset_ms: 0, source: "alertmanager", summary: "Alertmanager delivered firing alert for OTelDemoAdServiceErrors." },
+        { event_type: "queued_to_redis", offset_ms: 180, source: "api", summary: "FastAPI acknowledged the webhook and enqueued the investigation job." },
+        { event_type: "triage_completed", offset_ms: 1210, source: "worker", summary: "Triage classified the alert as a frontend ad failure with visible 500s." },
+        { event_type: "commit_correlation_completed", offset_ms: 4820, source: "worker", summary: "Commit correlation ranked the frontend ad failure ground-truth commit first." },
+        { event_type: "runbook_retrieval_completed", offset_ms: 5180, source: "worker", summary: "Runbook retrieval selected the frontend ad failure Signals section." },
+        { event_type: "impact_estimation_completed", offset_ms: 5490, source: "worker", summary: "Impact estimation measured 8 failed requests out of 5,797." },
+        { event_type: "brief_posted", offset_ms: 20000, source: "slack", summary: "Incident brief posted to Slack thread.", reference: investigation.slack_thread_ts },
+      ], investigation.resolved_at);
       break;
     case "0d5ccf29-1acd-4e83-834c-d9ea0d0e5a8d":
       brief = [
@@ -276,11 +321,15 @@ for (const investigation of investigations) {
           reasoning: "The timeout reduction explains the checkout failures better than the benign payment distractors in the same deploy window.",
         },
       ];
-      events = [
-        { event_type: "alert_received", occurred_at: "2026-07-11T09:12:44Z", source: "alertmanager", summary: "Firing alert received for checkout payment failures.", reference: null },
-        { event_type: "investigation_started", occurred_at: "2026-07-11T09:12:45Z", source: "worker", summary: "Worker started commit correlation, runbook retrieval, and impact estimation.", reference: null },
-        { event_type: "brief_posted", occurred_at: "2026-07-11T09:13:03Z", source: "slack", summary: "Firing brief posted to Slack thread.", reference: investigation.slack_thread_ts },
-      ];
+      events = buildTimelineEvents(investigation.started_at, [
+        { event_type: "alert_received", offset_ms: 0, source: "alertmanager", summary: "Firing alert received for checkout payment failures." },
+        { event_type: "queued_to_redis", offset_ms: 210, source: "api", summary: "Webhook accepted and investigation queued in Redis." },
+        { event_type: "triage_completed", offset_ms: 980, source: "worker", summary: "Triage tagged the incident as checkout and payment related." },
+        { event_type: "commit_correlation_completed", offset_ms: 4550, source: "worker", summary: "Commit correlation ranked the payment timeout commit above same-service distractors." },
+        { event_type: "runbook_retrieval_completed", offset_ms: 5030, source: "worker", summary: "Runbook retrieval selected checkout-payment-failure / Signals." },
+        { event_type: "impact_estimation_completed", offset_ms: 5410, source: "worker", summary: "Impact estimation measured 64 failed requests out of 2,843." },
+        { event_type: "brief_posted", offset_ms: 19000, source: "slack", summary: "Firing brief posted to Slack thread.", reference: investigation.slack_thread_ts },
+      ], investigation.resolved_at);
       break;
     case "be59979c-3c49-48e9-aec0-05ea566566ff":
       brief = [
@@ -313,12 +362,15 @@ for (const investigation of investigations) {
           reasoning: "The product-catalog change explains the frontend symptom and the runbook match reinforced that dependency path.",
         },
       ];
-      events = [
-        { event_type: "alert_received", occurred_at: "2026-07-11T10:18:02Z", source: "alertmanager", summary: "Frontend product catalog alert fired.", reference: null },
-        { event_type: "investigation_started", occurred_at: "2026-07-11T10:18:03Z", source: "worker", summary: "Worker began investigation.", reference: null },
-        { event_type: "brief_posted", occurred_at: "2026-07-11T10:18:22Z", source: "slack", summary: "Brief posted to Slack thread.", reference: investigation.slack_thread_ts },
-        { event_type: "resolved", occurred_at: "2026-07-11T10:25:49Z", source: "alertmanager", summary: "Resolved webhook recorded.", reference: null },
-      ];
+      events = buildTimelineEvents(investigation.started_at, [
+        { event_type: "alert_received", offset_ms: 0, source: "alertmanager", summary: "Frontend product catalog alert fired." },
+        { event_type: "queued_to_redis", offset_ms: 190, source: "api", summary: "Webhook accepted and added to the Redis queue." },
+        { event_type: "triage_completed", offset_ms: 1120, source: "worker", summary: "Triage flagged the alert as frontend degradation with a product-catalog dependency." },
+        { event_type: "commit_correlation_completed", offset_ms: 4680, source: "worker", summary: "Commit correlation isolated the product-catalog fail-closed deploy." },
+        { event_type: "runbook_retrieval_completed", offset_ms: 5020, source: "worker", summary: "Runbook retrieval kept the product-catalog runbook in scope for the frontend alert." },
+        { event_type: "impact_estimation_completed", offset_ms: 5430, source: "worker", summary: "Impact estimation measured 112 failed product page requests." },
+        { event_type: "brief_posted", offset_ms: 20000, source: "slack", summary: "Incident brief posted to Slack thread.", reference: investigation.slack_thread_ts },
+      ], investigation.resolved_at);
       break;
     default:
       brief = [
@@ -349,14 +401,15 @@ for (const investigation of investigations) {
           reasoning: "The candidate survived deterministic narrowing and remained the strongest explanation after diff review.",
         },
       ] : [];
-      events = [
-        { event_type: "alert_received", occurred_at: investigation.started_at, source: "alertmanager", summary: `Alert received for ${investigation.alert_name}.`, reference: null },
-        { event_type: "investigation_started", occurred_at: new Date(new Date(investigation.started_at).getTime() + 1000).toISOString(), source: "worker", summary: "Worker started the investigation graph.", reference: null },
-        { event_type: "brief_posted", occurred_at: new Date(new Date(investigation.started_at).getTime() + 18000).toISOString(), source: "slack", summary: "Incident brief posted.", reference: investigation.slack_thread_ts },
-      ];
-      if (investigation.resolved_at) {
-        events.push({ event_type: "resolved", occurred_at: investigation.resolved_at, source: "alertmanager", summary: "Resolved webhook received.", reference: null });
-      }
+      events = buildTimelineEvents(investigation.started_at, [
+        { event_type: "alert_received", offset_ms: 0, source: "alertmanager", summary: `Alert received for ${investigation.alert_name}.` },
+        { event_type: "queued_to_redis", offset_ms: 180, source: "api", summary: "Webhook accepted and queued for async processing." },
+        { event_type: "triage_completed", offset_ms: 960, source: "worker", summary: "Triage completed and enriched the incident state." },
+        { event_type: "commit_correlation_completed", offset_ms: 4210, source: "worker", summary: "Commit correlation ranked the strongest candidate for the alert window." },
+        { event_type: "runbook_retrieval_completed", offset_ms: 4580, source: "worker", summary: "Runbook retrieval selected the highest-ranked matching section." },
+        { event_type: "impact_estimation_completed", offset_ms: 4970, source: "worker", summary: "Impact estimation computed the blast radius from replay telemetry." },
+        { event_type: "brief_posted", offset_ms: 18000, source: "slack", summary: "Incident brief posted.", reference: investigation.slack_thread_ts },
+      ], investigation.resolved_at);
   }
 
   detailMap.set(investigation.investigation_id, makeDetail(investigation, brief, findings, events));
