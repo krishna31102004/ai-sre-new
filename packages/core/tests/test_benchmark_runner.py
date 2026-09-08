@@ -8,6 +8,7 @@ from glassbox_sre.benchmark_runner import (
     run_replay_fast_benchmark,
     run_replay_fast_scenario,
 )
+from glassbox_sre.run_benchmark import select_scenario_path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCENARIOS_DIR = REPO_ROOT / "scenarios" / "benchmark"
@@ -37,6 +38,16 @@ def test_discover_scenario_paths_finds_initial_scenario_corpus() -> None:
 
     assert len(paths) == 15
     assert all(path.name == "scenario.json" for path in paths)
+
+
+def test_select_scenario_path_filters_to_named_scenario() -> None:
+    selected = select_scenario_path(
+        SCENARIOS_DIR,
+        "frontend-ad-failure-visible-500s",
+    )
+
+    assert selected.parent.name == "frontend-ad-failure-visible-500s"
+    assert selected.name == "scenario.json"
 
 
 def test_run_replay_fast_scenario_returns_prediction_and_score() -> None:

@@ -197,6 +197,22 @@ python -m glassbox_sre.compare_benchmarks \
   --output-dir artifacts/evaluation-comparisons/<comparison-name>
 ```
 
+To show one scenario in isolation during a live demo, add `--scenario` and
+`--verbose`. The deterministic mode is instant and does not call OpenAI; the
+model-eval mode makes one real LLM call and prints its reasoning alongside the
+ranked candidates, runbook scores, and computed impact.
+
+```bash
+# Deterministic baseline (instant, no OpenAI call)
+python -m glassbox_sre.run_benchmark --mode replay-fast --scenario frontend-ad-failure-visible-500s --verbose
+
+# Full agent with LLM reasoning (calls OpenAI, takes ~10 seconds)
+python -m glassbox_sre.run_benchmark --mode model-eval --scenario frontend-ad-failure-visible-500s --verbose
+```
+
+Both commands write the usual JSON and Markdown artifacts under
+`artifacts/evaluations/`, with `scenario_count: 1` in the generated summary.
+
 ## Troubleshooting
 
 - If the fault flag is on but no ad errors appear, restart `flagd`, wait until it
