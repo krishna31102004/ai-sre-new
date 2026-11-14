@@ -1,0 +1,21 @@
+{
+  "bad_commit_top1_accuracy": 1.0,
+  "bad_commit_top3_accuracy": 1.0,
+  "confidence_semantics": "deterministic_pre_rank_score_not_model_confidence",
+  "failed_runs": 0,
+  "impact_classification_accuracy": 1.0,
+  "input_tokens": 39066,
+  "latency_p50_ms": 4549.486625001009,
+  "latency_p95_ms": 6206.197341901134,
+  "llm_calls_in_benchmark": "commit_diff_ranking_only",
+  "model": "gpt-6-luna",
+  "output_format": "strict_json_schema",
+  "output_tokens": 5876,
+  "reasoning_effort": "medium",
+  "reasoning_tokens": 2435,
+  "runbook_hit_rate": 1.0,
+  "runbook_retrieval": "local_lexical_not_pgvector",
+  "runbook_section_hit_rate": 1.0,
+  "scenario_count": 15,
+  "total_tokens": 44942
+}

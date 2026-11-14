@@ -1,0 +1,14 @@
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+INFO:glassbox_sre_worker.graph:triage OpenAI token usage: {'input_tokens': 250, 'output_tokens': 64, 'total_tokens': 314, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 0}}
+{
+  "alert_status": "firing",
+  "alert_names": [
+    "OTelDemoAdServiceErrors"
+  ],
+  "affected_services": [
+    "frontend"
+  ],
+  "severity": "ticket",
+  "incident_type": "HTTP 500 errors",
+  "summary": "The frontend is returning visible HTTP 500 responses while ad service failures are active."
+}
