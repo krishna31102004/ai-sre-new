@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Protocol
 from uuid import uuid4
 
-from openai import OpenAI
+from openai import NotFoundError, OpenAI
 from pydantic import BaseModel, Field, field_validator
 
 from glassbox_sre.benchmark import BenchmarkScenario, load_benchmark_scenario
@@ -59,7 +59,8 @@ class OpenAIModelEvalClient:
         if not self.settings.openai_api_key:
             raise RuntimeError("OPENAI_API_KEY must be set for model-eval mode.")
         self.client = OpenAI(api_key=self.settings.openai_api_key)
-        self.model = self.settings.openai_triage_model
+        self.model = self.settings.glassbox_llm_model
+        self.reasoning_effort = self.settings.glassbox_reasoning_effort
 
     def evaluate_commit_candidates(
         self,
@@ -67,10 +68,16 @@ class OpenAIModelEvalClient:
         alert: AlertmanagerWebhook,
         candidates: list[dict[str, object]],
     ) -> tuple[ModelEvalResult, dict[str, int]]:
-        response = self.client.chat.completions.create(
+        self.last_usage = {}
+        self.last_reasoning_tokens = 0
+        response = self.client.responses.create(
             model=self.model,
-            temperature=0,
-            messages=[
+            **(
+                {"reasoning": {"effort": self.reasoning_effort}}
+                if not self.model.startswith("gpt-4")
+                else {}
+            ),
+            input=[
                 {
                     "role": "system",
                     "content": (
@@ -92,16 +99,34 @@ class OpenAIModelEvalClient:
                     ),
                 },
             ],
-            response_format={"type": "json_object"},
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": "commit_ranking",
+                    "strict": True,
+                    "schema": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "ranked_commit_shas": {"type": "array", "items": {"type": "string"}},
+                            "reasoning": {"type": "string"},
+                        },
+                        "required": ["ranked_commit_shas", "reasoning"],
+                    },
+                }
+            },
         )
-        content = response.choices[0].message.content or "{}"
-        result = ModelEvalResult.model_validate_json(content)
         usage = response.usage
-        return result, {
-            "input_tokens": usage.prompt_tokens if usage else 0,
-            "output_tokens": usage.completion_tokens if usage else 0,
+        self.last_usage = {
+            "input_tokens": usage.input_tokens if usage else 0,
+            "output_tokens": usage.output_tokens if usage else 0,
             "total_tokens": usage.total_tokens if usage else 0,
+            "reasoning_tokens": usage.output_tokens_details.reasoning_tokens if usage else 0,
         }
+        self.last_reasoning_tokens = self.last_usage["reasoning_tokens"]
+        result = ModelEvalResult.model_validate_json(response.output_text or "{}")
+        self.last_result = result
+        return result, self.last_usage
 
 
 def discover_scenario_paths(scenarios_dir: Path) -> list[Path]:
@@ -141,6 +166,8 @@ def run_replay_fast_scenario(
             ),
             latency_ms=(time.perf_counter() - started) * 1000,
         )
+    except NotFoundError:
+        raise
     except Exception as exc:
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,
@@ -159,6 +186,10 @@ def run_model_eval_scenario(
     started = time.perf_counter()
     scenario = load_benchmark_scenario(scenario_path)
     scenario_dir = scenario_path.parent
+    delegate = getattr(model_client, "delegate", model_client)
+    if isinstance(delegate, OpenAIModelEvalClient):
+        delegate.last_usage = {}
+        delegate.last_reasoning_tokens = 0
     try:
         alert = AlertmanagerWebhook.model_validate_json(
             (scenario_dir / scenario.alert_fixture).read_text()
@@ -217,11 +248,18 @@ def run_model_eval_scenario(
             output_tokens=token_usage["output_tokens"],
             total_tokens=token_usage["total_tokens"],
         )
+    except NotFoundError:
+        raise
     except Exception as exc:
+        delegate = getattr(model_client, "delegate", model_client)
+        usage = getattr(delegate, "last_usage", {})
         prediction = BenchmarkPrediction(
             scenario_id=scenario.id,
             latency_ms=(time.perf_counter() - started) * 1000,
             error=f"{type(exc).__name__}: {exc}",
+            input_tokens=usage.get("input_tokens", 0),
+            output_tokens=usage.get("output_tokens", 0),
+            total_tokens=usage.get("total_tokens", 0),
         )
     return scenario, prediction, score_prediction(scenario, prediction)
 
@@ -273,6 +311,7 @@ def _run_benchmark(
     scenario_paths = discover_scenario_paths(scenarios_dir)
     rows: list[dict[str, object]] = []
     scores: list[ScenarioScore] = []
+    reasoning_tokens = 0
     for scenario_path in scenario_paths:
         if mode == "model-eval":
             if model_client is None:
@@ -289,12 +328,20 @@ def _run_benchmark(
                 repo_root=repo_root,
                 runbook_root=runbook_root,
             )
+        if mode == "model-eval":
+            delegate = getattr(model_client, "delegate", model_client)
+            reasoning_tokens += getattr(delegate, "last_reasoning_tokens", 0)
         scores.append(score)
         rows.append(
             {
                 "scenario": scenario.model_dump(mode="json"),
                 "prediction": prediction.model_dump(mode="json"),
                 "score": score.model_dump(mode="json"),
+                "model_reasoning": (
+                    getattr(getattr(delegate, "last_result", None), "reasoning", None)
+                    if mode == "model-eval" and not prediction.error
+                    else None
+                ),
             }
         )
 
@@ -303,8 +350,18 @@ def _run_benchmark(
     (output_dir / "results.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
-    _write_json(output_dir / "summary.json", summary.model_dump(mode="json"))
-    (output_dir / "summary.md").write_text(_summary_markdown(run_id, mode, summary, scores))
+    delegate = getattr(model_client, "delegate", model_client)
+    metadata = {
+        "model": getattr(delegate, "model", None),
+        "reasoning_effort": getattr(delegate, "reasoning_effort", None),
+        "reasoning_tokens": reasoning_tokens,
+    }
+    _write_json(output_dir / "summary.json", {**summary.model_dump(mode="json"), **metadata})
+    (output_dir / "summary.md").write_text(
+        _summary_markdown(run_id, mode, summary, scores)
+        + f"\n- Model: {metadata['model']}\n- Reasoning effort: {metadata['reasoning_effort']}\n"
+        + f"- Reasoning tokens: {reasoning_tokens}\n"
+    )
     return output_dir
 
 

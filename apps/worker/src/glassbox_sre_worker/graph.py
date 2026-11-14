@@ -213,13 +213,18 @@ def _build_commit_correlation_node(settings: Settings, repo_root: Path):
     session_factory = make_session_factory(settings.postgres_url)
     init_db(session_factory)
     llm = ChatOpenAI(
-        model=settings.openai_triage_model,
+        model=settings.glassbox_llm_model,
         api_key=settings.openai_api_key,
-        temperature=0,
+        use_responses_api=True,
+        **(
+            {"reasoning": {"effort": settings.glassbox_reasoning_effort}}
+            if not settings.glassbox_llm_model.startswith("gpt-4")
+            else {}
+        ),
     ).with_structured_output(
         CommitCorrelationResult,
         include_raw=True,
-        method="function_calling",
+        method="json_schema",
     )
 
     def commit_correlation_node(

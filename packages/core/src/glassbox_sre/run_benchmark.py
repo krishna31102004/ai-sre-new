@@ -19,6 +19,7 @@ from glassbox_sre.benchmark_runner import (
 )
 from glassbox_sre.benchmark_scoring import BenchmarkPrediction, ScenarioScore
 from glassbox_sre.commit_correlation import rank_commit_candidates
+from glassbox_sre.config import get_settings
 from glassbox_sre.impact import classify_severity
 from glassbox_sre.runbooks import load_runbook_chunks, retrieve_runbook_chunks
 from glassbox_sre.schemas import AlertmanagerWebhook
@@ -40,6 +41,7 @@ class _CapturingModelClient:
     ) -> tuple[ModelEvalResult, dict[str, int]]:
         self.candidates = candidates
         self.result, usage = self.delegate.evaluate_commit_candidates(scenario, alert, candidates)
+        self.last_reasoning_tokens = usage.get("reasoning_tokens", 0)
         return self.result, usage
 
 
@@ -75,10 +77,7 @@ def _rewrite_single_scenario_manifest(output_dir: Path, scenario_path: Path) -> 
 def _load_snapshot(snapshot_path: Path) -> tuple[list[dict[str, object]], dict[str, int]]:
     snapshot = json.loads(snapshot_path.read_text())
     query_rows = snapshot.get("prometheus", {}).get("queries", [])
-    values = {
-        str(query["name"]): int(round(float(query["value"])))
-        for query in query_rows
-    }
+    values = {str(query["name"]): int(round(float(query["value"]))) for query in query_rows}
     total_requests = next(
         (value for name, value in values.items() if name.endswith("_total_requests")),
         0,
@@ -137,9 +136,7 @@ def _print_single_scenario_report(
         str(candidate["commit_sha"]): candidate
         for candidate in (captured_model.candidates if captured_model else [])
     }
-    runbook_findings = retrieve_runbook_chunks(
-        alert, load_runbook_chunks(runbook_root), limit=3
-    )
+    runbook_findings = retrieve_runbook_chunks(alert, load_runbook_chunks(runbook_root), limit=3)
     query_rows, impact_values = _load_snapshot(scenario_path.parent / scenario.world_snapshot)
     error_rate = (
         impact_values["error_requests"] / impact_values["total_requests"]
@@ -191,7 +188,9 @@ def _print_single_scenario_report(
     print(f"  Latency: {prediction.latency_ms:.2f} ms")
     print(
         f"  Tokens: input={prediction.input_tokens}, "
-        f"output={prediction.output_tokens}, total={prediction.total_tokens}"
+        f"output={prediction.output_tokens}, "
+        f"reasoning={getattr(captured_model, 'last_reasoning_tokens', 0)}, "
+        f"total={prediction.total_tokens}"
     )
     if prediction.error:
         print(f"  Error: {prediction.error}")
@@ -232,14 +231,12 @@ def _print_single_scenario_report(
 
         print("\nImpact computation inputs:")
         for query in query_rows:
-            print(
-                f"  {query['name']}: value={query['value']} "
-                f"query={query['query']}"
-            )
+            print(f"  {query['name']}: value={query['value']} query={query['query']}")
         print(
             f"  classify_severity(error_rate={error_rate:.6f}, "
             f"affected_requests={impact_values['affected_requests']}) -> {computed_severity}"
         )
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run Glassbox SRE benchmark scenarios.")
@@ -253,6 +250,8 @@ def main() -> None:
         action="store_true",
         help="Show detailed reasoning and intermediate evidence for --scenario.",
     )
+    parser.add_argument("--model")
+    parser.add_argument("--reasoning-effort")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument(
         "--scenarios-dir",
@@ -267,6 +266,17 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    settings = get_settings().model_copy(
+        update={
+            **({"glassbox_llm_model": args.model} if args.model else {}),
+            **(
+                {"glassbox_reasoning_effort": args.reasoning_effort}
+                if args.reasoning_effort
+                else {}
+            ),
+        }
+    )
+
     if args.verbose and not args.scenario:
         parser.error("--verbose requires --scenario")
 
@@ -277,6 +287,7 @@ def main() -> None:
                 repo_root=args.repo_root,
                 runbook_root=args.runbook_root,
                 artifact_root=args.artifact_root,
+                model_client=OpenAIModelEvalClient(settings),
             )
         else:
             output_dir = run_replay_fast_benchmark(
@@ -296,7 +307,7 @@ def main() -> None:
     captured_model: _CapturingModelClient | None = None
     with _single_scenario_view(scenario_path) as filtered_scenarios_dir:
         if args.mode == "model-eval":
-            captured_model = _CapturingModelClient(OpenAIModelEvalClient())
+            captured_model = _CapturingModelClient(OpenAIModelEvalClient(settings))
             output_dir = run_model_eval_benchmark(
                 scenarios_dir=filtered_scenarios_dir,
                 repo_root=args.repo_root,

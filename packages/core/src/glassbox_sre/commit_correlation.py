@@ -163,8 +163,9 @@ def rank_commit_candidates(
                 validation_state=state,
                 evidence=evidence,
                 reasoning=(
-                    "Ranked by deploy timing, alert-service match, and changed-path "
-                    "hints. Diff ranking will become LLM-assisted later in Phase 1."
+                    "Deterministic baseline: ranked by deploy timing, alert-service match, "
+                    "and changed-path "
+                    "hints. No LLM diff reading in this mode."
                 ),
             )
         )
