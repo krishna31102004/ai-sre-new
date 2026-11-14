@@ -156,10 +156,11 @@ def _build_triage_node(settings: Settings):
         )
 
     llm = ChatOpenAI(
-        model=settings.openai_triage_model,
+        model=settings.glassbox_triage_model,
         api_key=settings.openai_api_key,
-        temperature=0,
-    ).with_structured_output(TriageResult, include_raw=True)
+        use_responses_api=True,
+        reasoning={"effort": settings.glassbox_triage_reasoning_effort},
+    ).with_structured_output(TriageResult, include_raw=True, method="json_schema")
 
     def triage_node(state: InvestigationState) -> dict[str, TriageResult]:
         payload = state["alert_payload"]

@@ -38,6 +38,8 @@ class ModelEvalResult(BaseModel):
     @field_validator("reasoning", mode="before")
     @classmethod
     def normalize_reasoning(cls, value: object) -> str:
+        if isinstance(value, dict):
+            return "\n".join(f"{str(sha)[:8]}: {explanation}" for sha, explanation in value.items())
         if isinstance(value, list):
             return " ".join(str(item) for item in value)
         return str(value)
@@ -356,11 +358,20 @@ def _run_benchmark(
         "reasoning_effort": getattr(delegate, "reasoning_effort", None),
         "reasoning_tokens": reasoning_tokens,
     }
+    if mode == "model-eval":
+        metadata.update({
+            "output_format": "strict_json_schema",
+            "runbook_retrieval": "local_lexical_not_pgvector",
+            "confidence_semantics": "deterministic_pre_rank_score_not_model_confidence",
+            "llm_calls_in_benchmark": "commit_diff_ranking_only",
+        })
     _write_json(output_dir / "summary.json", {**summary.model_dump(mode="json"), **metadata})
     (output_dir / "summary.md").write_text(
         _summary_markdown(run_id, mode, summary, scores)
         + f"\n- Model: {metadata['model']}\n- Reasoning effort: {metadata['reasoning_effort']}\n"
         + f"- Reasoning tokens: {reasoning_tokens}\n"
+        + "".join(f"- {key}: {value}\n" for key, value in metadata.items()
+                  if key not in {"model", "reasoning_effort", "reasoning_tokens"})
     )
     return output_dir
 

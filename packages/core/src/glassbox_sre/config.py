@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,7 +10,9 @@ class Settings(BaseSettings):
         "postgresql+psycopg://glassbox_sre:glassbox_sre@localhost:15432/glassbox_sre"
     )
     openai_api_key: str | None = None
-    openai_triage_model: str = "gpt-4.1-mini"
+    openai_triage_model: str | None = Field(default=None, exclude=True)
+    glassbox_triage_model: str = "gpt-6-luna"
+    glassbox_triage_reasoning_effort: str = "low"
     glassbox_llm_model: str = "gpt-6-luna"
     glassbox_reasoning_effort: str = "medium"
     openai_embedding_model: str = "text-embedding-3-small"

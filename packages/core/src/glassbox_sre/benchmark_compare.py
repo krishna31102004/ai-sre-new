@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+from glassbox_sre.benchmark_runner import ModelEvalResult
 
 
 class MetricDelta(BaseModel):
@@ -103,7 +106,22 @@ def write_comparison_artifacts(
     comparison = compare_evaluation_runs(before_dir, after_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "comparison.json").write_text(comparison.model_dump_json(indent=2) + "\n")
-    (output_dir / "comparison.md").write_text(comparison_to_markdown(comparison))
+    explanations = []
+    for line in (after_dir / "results.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        value = row.get("model_reasoning")
+        if value:
+            if isinstance(value, str) and value.startswith("{"):
+                try:
+                    value = ast.literal_eval(value)
+                except (ValueError, SyntaxError):
+                    pass
+            text = ModelEvalResult(reasoning=value).reasoning
+            explanations.append(f"### {row['scenario']['id']}\n\n{text}\n")
+    (output_dir / "comparison.md").write_text(
+        comparison_to_markdown(comparison) + "\n## Model explanations\n\n"
+        + "\n".join(explanations)
+    )
     return comparison
 
 

@@ -163,6 +163,8 @@ def _print_single_scenario_report(
             if finding
             else str(candidate.get("deterministic_confidence", "n/a"))
         )
+        if confidence in {"None", "n/a"}:
+            confidence = "not ranked by model"
         validation_state = (
             finding.validation_state.value
             if finding
@@ -174,11 +176,15 @@ def _print_single_scenario_report(
             else _evidence_summaries(candidate.get("evidence", []))
         )
         print(
-            f"  {rank}. {commit_sha} | {title} | confidence={confidence} "
+            f"  {rank}. {commit_sha} | {title} | pre-rank score={confidence} "
             f"| validation={validation_state}"
         )
         for item in evidence:
             print(f"     evidence: {item}")
+
+    if mode == "model-eval":
+        print("Score is the deterministic pre-ranking score. The LLM provides ordering and "
+              "explanation, not a confidence value.")
 
     print("\nMetric results:")
     print(f"  Commit top-1: {'PASS' if score.bad_commit_top1 else 'FAIL'}")
