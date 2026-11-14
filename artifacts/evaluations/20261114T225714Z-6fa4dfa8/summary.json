@@ -1,0 +1,17 @@
+{
+  "bad_commit_top1_accuracy": 1.0,
+  "bad_commit_top3_accuracy": 1.0,
+  "failed_runs": 0,
+  "impact_classification_accuracy": 1.0,
+  "input_tokens": 39066,
+  "latency_p50_ms": 4208.834540993848,
+  "latency_p95_ms": 5547.196487299516,
+  "model": "gpt-6-luna",
+  "output_tokens": 5526,
+  "reasoning_effort": "medium",
+  "reasoning_tokens": 2186,
+  "runbook_hit_rate": 1.0,
+  "runbook_section_hit_rate": 1.0,
+  "scenario_count": 15,
+  "total_tokens": 44592
+}

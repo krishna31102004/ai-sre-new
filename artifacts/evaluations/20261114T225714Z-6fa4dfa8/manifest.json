@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-11-14T22:58:16.761620+00:00",
+  "mode": "model-eval",
+  "repo_root": "/Users/kb4086/dev/ai-new",
+  "run_id": "20261114T225714Z-6fa4dfa8",
+  "scenario_count": 15,
+  "scenarios": [
+    "scenarios/benchmark/cart-checkout-failure/scenario.json",
+    "scenarios/benchmark/cart-price-staleness/scenario.json",
+    "scenarios/benchmark/checkout-payment-decline-spike/scenario.json",
+    "scenarios/benchmark/checkout-payment-timeout/scenario.json",
+    "scenarios/benchmark/frontend-ad-failure-visible-500s/scenario.json",
+    "scenarios/benchmark/frontend-product-catalog-latency/scenario.json",
+    "scenarios/benchmark/frontend-product-catalog-unavailable/scenario.json",
+    "scenarios/benchmark/image-cdn-errors/scenario.json",
+    "scenarios/benchmark/image-slow-load/scenario.json",
+    "scenarios/benchmark/kafka-checkout-queue-lag/scenario.json",
+    "scenarios/benchmark/kafka-email-consumer-errors/scenario.json",
+    "scenarios/benchmark/recommendation-cache-leak/scenario.json",
+    "scenarios/benchmark/recommendation-timeout/scenario.json",
+    "scenarios/benchmark/shipping-rate-timeout/scenario.json",
+    "scenarios/benchmark/shipping-zone-rate-cache/scenario.json"
+  ]
+}
