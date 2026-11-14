@@ -432,14 +432,30 @@ export const mockFaults: Record<string, FaultResponse> = {
 
 export const mockBenchmark: BenchmarkSummary = {
   scenario_count: 15,
-  bad_commit_top1_accuracy: 0.8666666666666667,
+  bad_commit_top1_accuracy: 1,
   bad_commit_top3_accuracy: 1,
   runbook_hit_rate: 1,
   impact_classification_accuracy: 1,
-  latency_p50_ms: 6533.594208000068,
-  latency_p95_ms: 16974.079045699706,
-  total_tokens: 44562,
+  latency_p50_ms: 4322.359104000498,
+  latency_p95_ms: 6075.239172898181,
+  total_tokens: 44672.5,
 };
+
+export const benchmarkModes = [
+  { label: "replay-fast", result: {
+    scenario_count: 15, bad_commit_top1_accuracy: 0.1333333333,
+    bad_commit_top3_accuracy: 0.6666666667, runbook_hit_rate: 1,
+    impact_classification_accuracy: 1, latency_p50_ms: 27,
+    latency_p95_ms: 56, total_tokens: 0,
+  }, cost: "$0" },
+  { label: "gpt-4.1-mini (baseline)", result: {
+    scenario_count: 15, bad_commit_top1_accuracy: 0.8666666666666667,
+    bad_commit_top3_accuracy: 1, runbook_hit_rate: 1,
+    impact_classification_accuracy: 1, latency_p50_ms: 6533.594208000068,
+    latency_p95_ms: 16974.079045699706, total_tokens: 44562,
+  }, cost: "$0.02514" },
+  { label: "gpt-6-luna (current, four-run mean)", result: mockBenchmark, cost: "$0.00670985" },
+] satisfies { label: string; result: BenchmarkSummary; cost: string }[];
 
 export function getMockInvestigationsResponse() {
   return { investigations: mockInvestigations };

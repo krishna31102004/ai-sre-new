@@ -206,12 +206,64 @@ ranked candidates, runbook scores, and computed impact.
 # Deterministic baseline (instant, no OpenAI call)
 python -m glassbox_sre.run_benchmark --mode replay-fast --scenario frontend-ad-failure-visible-500s --verbose
 
-# Full agent with LLM reasoning (calls OpenAI, takes ~10 seconds)
+# Benchmark diff ranking with gpt-6-luna medium (one OpenAI call)
 python -m glassbox_sre.run_benchmark --mode model-eval --scenario frontend-ad-failure-visible-500s --verbose
 ```
 
 Both commands write the usual JSON and Markdown artifacts under
 `artifacts/evaluations/`, with `scenario_count: 1` in the generated summary.
+
+## Recorded Luna output
+
+Worker triage uses gpt-6-luna at low reasoning effort; benchmark diff ranking
+uses medium effort with strict JSON schema. On this 15-scenario benchmark,
+Luna scored 15/15 in 4 of 4 runs (mean p50 4.32 s, p95 6.08 s).
+
+The following values are copied from
+`artifacts/evaluations/20261114T225456Z-0906492c/`.
+The token line combines the recorded input/output/total values and the
+186 reasoning tokens in its summary. This excerpt formats stored values
+with current token labels; it is not a fresh execution transcript.
+
+```text
+Scenario: frontend-ad-failure-visible-500s
+Ground truth commit: 41080eb518884c6aeede13111f8214a7c87db3fb
+First ranked commit: 41080eb518884c6aeede13111f8214a7c87db3fb
+Commit top-1: PASS
+Commit top-3: PASS
+Runbook hit: PASS
+Impact classification: PASS
+Latency: 7167.98 ms
+Tokens: input=3344, output=484, reasoning=186, total=3828
+```
+
+The current CLI labels candidate scores `pre-rank score=`. These scores come
+from deterministic candidate evidence; they are not
+model confidence. The benchmark makes one LLM call per scenario, not the full
+worker investigation. Triage is separate; this parsed output and usage are
+copied from `artifacts/evaluations/triage-luna-low-smoke.txt`:
+
+```json
+{
+  "alert_status": "firing",
+  "alert_names": [
+    "OTelDemoAdServiceErrors"
+  ],
+  "affected_services": [
+    "frontend"
+  ],
+  "severity": "ticket",
+  "incident_type": "HTTP 500 errors",
+  "summary": "The frontend is returning visible HTTP 500 responses while ad service failures are active."
+}
+```
+
+```text
+input_tokens: 250
+output_tokens: 64
+total_tokens: 314
+reasoning: 0
+```
 
 ## Troubleshooting
 

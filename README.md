@@ -79,51 +79,44 @@ as future work rather than presented as implemented capability.
 
 ## Benchmark Results
 
-The evaluation corpus contains **15 hardened scenarios**: **1 live-captured**
-from the real `adFailure` alert path and **14 synthetic replays** with fixed
-telemetry snapshots. Every scenario has a known bad commit, four to six deploy
-candidates, and at least one benign same-service or affected-service distractor.
-The synthetic replays make runs fast and deterministic; they are not presented
-as live production observations.
+On this 15-scenario benchmark, **gpt-6-luna scored 100% commit top-1
+(15/15 in 4 of 4 runs)** with medium reasoning and strict JSON schema.
 
-| Mode | Commit top-1 | Commit top-3 | Runbook hit | Impact class | p50 latency | p95 latency |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `replay-fast` deterministic heuristic | 13.3% | 66.7% | 100% | 100% | 27 ms | 56 ms |
-| `model-eval` with `gpt-4.1-mini` | 86.7% | 100% | 100% | 100% | 6.53 s | 16.97 s |
+| Mode | Commit top-1 | Commit top-3 | Runbook hit | Impact class | p50 latency | p95 latency | Tokens/run | Estimated USD/run |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `replay-fast` deterministic heuristic | 13.3% | 66.7% | 100% | 100% | 27 ms | 56 ms | 0 | $0 |
+| `model-eval` `gpt-4.1-mini` (baseline) | 86.7% (13/15) | 100% | 100% | 100% | 6.53 s | 16.97 s | 44,562 | $0.02514 |
+| `model-eval` `gpt-6-luna` (current, four-run mean) | 100% (15/15 in 4 of 4 runs) | 100% | 100% | 100% | 4.32 s | 6.08 s | 44,672.5 | $0.00670985 |
 
-The important result is not a claim that the model is perfect. The hardened
-corpus makes service matching insufficient: the deterministic ranking reaches
-only 13.3% top-1, while model-assisted diff reasoning reaches 86.7% (13/15).
-The two model top-1 misses are retained in the artifacts and still appear in
-the top three candidates. The model-eval run used 44,562 tokens across all
-15 scenarios.
+Luna used about 44.7k tokens per run, including a mean of 2,224 reasoning
+tokens (already included in output tokens). Costs use $0.10 per million input
+and $0.50 per million output tokens for Luna, without cached-input discounts.
+Latency columns for Luna are means of per-run percentiles, not pooled percentiles.
+Luna correctly ranked `recommendation-timeout` and
+`frontend-product-catalog-latency`, the two scenarios missed by the mini baseline.
 
-The deterministic baseline cannot solve this corpus by service matching alone:
-each deploy window includes benign same-service or affected-service changes, so
-ranking requires reading the diffs. The 86.7% model result is meaningful for
-the same reason: it holds on those adversarial candidate sets, not easy
-single-candidate incidents.
+Luna scored 15/15 in 4 of 4 runs. The mini baseline ranged from 86.7% to
+93.3% top-1 on the same corpus. This observed zero-variation Luna result does
+not guarantee repeatability on future runs or different incidents.
 
-Across repeated `model-eval` runs on the same 15 scenarios, commit top-1
-accuracy ranged from 86.7% to 93.3%: a one-to-two-scenario variance caused by
-inherent LLM non-determinism at fixed temperature. That spread is published as
-part of the benchmark result rather than hidden behind a single best run.
+### What this benchmark does and does not show
 
-This is a deliberately narrower task than [IBM Research's ITBench][itbench],
-where reported end-to-end SRE scenario resolution was about 11-14% across a
-broader, real-world-style benchmark. Glassbox's 86.7% is **commit top-1 on this
-repository's fixed 15-scenario corpus**, not a claim of comparable autonomous
-incident resolution. The point of publishing both modes and every miss is to
-make that distinction inspectable.
+- (a) 14 of 15 scenarios are synthetic replays; 1 is live-captured.
+- (b) Deploy history is seeded.
+- (c) The benchmark has one LLM call per scenario: commit diff ranking.
+- (d) Runbook retrieval in the benchmark is local lexical, while the live pipeline uses pgvector.
+- (e) The displayed score is a deterministic pre-rank score, not model confidence.
+- (f) Results measure this fixed corpus, not general incident-response accuracy. The inspected scenario commits add short Markdown change notes, not application source-code changes. Their bad-change notes describe the expected fault and symptom, and the distractor notes explicitly say they are benign or harmless and have no expected error or latency impact.
+- (g) The worker triage step now uses gpt-6-luna at low reasoning effort and is not part of the benchmark.
 
 Root-cause precision/recall is intentionally not reported as a separate metric.
 In the current design, the actionable root-cause output is the ranked suspect
 commit with its evidence; introducing a second label would duplicate commit
 ranking or require a distinct evaluator that does not yet exist.
 
-Evaluation outputs are local and intentionally ignored by Git. Generate a new
-run and compare it with a baseline before changing prompts, models, or ranking
-logic:
+Published clean-run artifacts and their comparison are preserved under
+`artifacts/evaluations/`. Compare new runs with a baseline before changing
+prompts, models, or ranking logic:
 
 ```bash
 python -m glassbox_sre.run_benchmark --mode replay-fast \
@@ -147,6 +140,27 @@ python -m glassbox_sre.compare_benchmarks \
 `replay-fast` requires no Docker, Postgres, or OpenAI key. `model-eval` makes
 one OpenAI commit-ranking call per scenario and therefore requires
 `OPENAI_API_KEY`.
+
+### Model configuration
+
+The `.env.example` entries are:
+
+```dotenv
+GLASSBOX_LLM_MODEL=gpt-6-luna
+GLASSBOX_REASONING_EFFORT=medium
+GLASSBOX_TRIAGE_MODEL=gpt-6-luna
+GLASSBOX_TRIAGE_REASONING_EFFORT=low
+```
+
+`GLASSBOX_LLM_MODEL` and `GLASSBOX_REASONING_EFFORT` configure commit diff
+ranking. `GLASSBOX_TRIAGE_MODEL` and `GLASSBOX_TRIAGE_REASONING_EFFORT`
+configure worker triage separately. Benchmark flags `--model` and
+`--reasoning-effort` override the ranking environment settings for that run:
+
+```bash
+python -m glassbox_sre.run_benchmark --mode model-eval \
+  --model gpt-6-luna --reasoning-effort medium
+```
 
 ## Quick Start
 
