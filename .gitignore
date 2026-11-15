@@ -41,3 +41,7 @@ node_modules/
 
 # Docker/local infra
 docker-compose.override.yml
+
+# Local agent skills and settings
+.claude/skills/
+.claude/settings.json
