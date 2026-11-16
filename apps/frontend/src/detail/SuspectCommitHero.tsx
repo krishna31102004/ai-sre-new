@@ -37,7 +37,7 @@ export function SuspectCommitHero({ top }: { top: Candidate | null }) {
                     <span className={cn(T.small, "min-w-0")}>
                       {item.summary}
                       {item.reference ? (
-                        <span className={cn(T.dataSm, "block break-all")}>{displayReference(item.reference, item.kind)}</span>
+                        <span className={cn(T.dataSm, "block break-all")}>{displayReference(item.reference, item.kind, top.service)}</span>
                       ) : null}
                     </span>
                   </li>

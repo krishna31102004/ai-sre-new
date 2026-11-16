@@ -17,10 +17,11 @@ export function deployCandidateCount(sha: string | undefined | null): number | n
   return scenario ? scenario.candidates.length : null;
 }
 
-/** Evidence reference as shown to people. Internal deploy ids ("bench-...", "...-bad") read as "frontend deploy". The Raw tab keeps the original. */
-export function displayReference(reference: string | undefined | null, kind?: string): string | null {
+/** Evidence reference as shown to people. Internal deploy ids ("bench-...", "...-bad") read as "<service> deploy". The Raw tab keeps the original. */
+export function displayReference(reference: string | undefined | null, kind?: string, service?: string | null): string | null {
   if (!reference) return null;
-  return kind === "deploy" && /bench-|bad/i.test(reference) ? "frontend deploy" : reference;
+  if (kind === "deploy" && /bench-|bad/i.test(reference)) return service ? `${service} deploy` : "deploy";
+  return reference;
 }
 
 export type Candidate = {
@@ -28,6 +29,7 @@ export type Candidate = {
   title: string | null;
   score: number | null;
   validation: string | null;
+  service: string | null;
   evidence: Evidence[];
 };
 
@@ -40,6 +42,7 @@ export function candidatesFrom(detail: InvestigationDetail): Candidate[] {
           title: finding.commit_title,
           score: finding.confidence,
           validation: finding.validation_state,
+          service: finding.service,
           evidence: evidenceItems(finding.evidence),
         }
       : null;
@@ -50,7 +53,7 @@ export function candidatesFrom(detail: InvestigationDetail): Candidate[] {
   if (ranked.length) return ranked;
   const inv = detail.investigation;
   return inv.suspect_commit_sha
-    ? [{ sha: inv.suspect_commit_sha, title: inv.suspect_commit_title, score: inv.confidence, validation: inv.validation_state, evidence: [] }]
+    ? [{ sha: inv.suspect_commit_sha, title: inv.suspect_commit_title, score: inv.confidence, validation: inv.validation_state, service: inv.service, evidence: [] }]
     : [];
 }
 
