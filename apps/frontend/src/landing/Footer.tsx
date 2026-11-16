@@ -55,7 +55,6 @@ export function Footer({ linkedinUrl }: { linkedinUrl: string }) {
           >
             GitHub
           </a>
-          <p className={cn(T.small, "mt-2 text-ink-3")}>Demo mode: this site runs on recorded sample data.</p>
         </div>
       </div>
     </footer>

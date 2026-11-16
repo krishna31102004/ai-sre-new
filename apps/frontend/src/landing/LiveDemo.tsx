@@ -1,7 +1,8 @@
-import { Check, RotateCcw, Signal } from "lucide-react";
+import { Check, RotateCcw } from "lucide-react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { Logo } from "../components/Logo";
 import { SignalLine } from "../components/SignalLine";
 import { SeverityBadge } from "../components";
 import { cn, sentenceCase, T } from "../components/primitives";
@@ -385,7 +386,7 @@ function BriefCard() {
     <Slot on={on} dur={BEATS.briefDur} y={16} ghost={0.14} innerClassName="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2.5">
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ink/[0.08] text-ink" aria-hidden="true">
-          <Signal size={16} />
+          <Logo size={20} />
         </span>
         <span className={T.h3}>{brief.app}</span>
         <span className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-ink/[0.06] px-2 text-ink-2")}>{sentenceCase(brief.tag)}</span>

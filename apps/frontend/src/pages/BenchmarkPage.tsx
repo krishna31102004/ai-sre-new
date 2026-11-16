@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { api, type BenchmarkSummary } from "../api";
-import { ErrorState, LoadingState } from "../components";
+import { Collapsible, ErrorState, LoadingState } from "../components";
 import { Badge } from "../components/ui/badge";
 import { cn, FilterChips, ScoreBar as PreRankBar, sentenceCase, T } from "../components/primitives";
 import { benchmarkModes, commitLabel, benchmarkScenarios, type BenchmarkModeId, type BenchmarkScenario } from "../mockData";
@@ -183,13 +183,16 @@ export function BenchmarkPage() {
       </div>
     </div>
     <ScenarioDrilldown reduce={reduce} />
-    <div className="mt-8 max-w-[760px] md:mt-10"><p className={T.label}>Limitations</p><ul className={cn(T.small, "mt-3 space-y-2")}>
-      <li className="flex gap-2"><span className={cn(T.small, "w-6 shrink-0 text-ink-3")}>(a)</span><span>14 of 15 scenarios are synthetic replays; 1 is live-captured.</span></li>
-      <li className="flex gap-2"><span className={cn(T.small, "w-6 shrink-0 text-ink-3")}>(b)</span><span>Deploy history is seeded.</span></li>
-      <li className="flex gap-2"><span className={cn(T.small, "w-6 shrink-0 text-ink-3")}>(c)</span><span>One LLM call per scenario: commit diff ranking.</span></li>
-      <li className="flex gap-2"><span className={cn(T.small, "w-6 shrink-0 text-ink-3")}>(d)</span><span>Benchmark runbook retrieval is local lexical; the live pipeline uses pgvector.</span></li>
-      <li className="flex gap-2"><span className={cn(T.small, "w-6 shrink-0 text-ink-3")}>(e)</span><span>The displayed score is a deterministic pre-rank score, not model confidence.</span></li>
-      <li className="flex gap-2"><span className={cn(T.small, "w-6 shrink-0 text-ink-3")}>(f)</span><span>Results measure this fixed corpus, not general incident-response accuracy. Inspected commits add short Markdown change notes, not application source-code changes; distractor notes explicitly identify benign or harmless changes with no expected error or latency impact.</span></li>
-    </ul></div>
+    <div className="mt-8 max-w-[760px] md:mt-10">
+      <p className={cn(T.small, "text-ink-3")}>15 scenarios: 1 live-captured, 14 synthetic replays with seeded deploy history.</p>
+      <Collapsible title="Methodology notes">
+        <ul className={cn(T.small, "space-y-2")}>
+          <li>One LLM call per scenario: commit diff ranking.</li>
+          <li>Benchmark runbook retrieval is lexical; the live pipeline uses pgvector.</li>
+          <li>The displayed score is a deterministic pre-rank score, not model confidence.</li>
+          <li>Results measure this fixed corpus, not general incident-response accuracy. Scenario commits are short change notes rather than source diffs, and benign notes say so.</li>
+        </ul>
+      </Collapsible>
+    </div>
   </section>;
 }

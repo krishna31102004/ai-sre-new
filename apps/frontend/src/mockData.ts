@@ -594,7 +594,7 @@ function buildDemoReplay(): DemoReplay {
         suspectCommitLine(briefLine("suspect commit: ")),
         { label: "Runbook", value: briefLine("runbook: ") },
         { label: "Impact", value: briefLine("impact: ") },
-        { label: "Confidence", value: (inv.confidence ?? 0).toFixed(2) },
+        { label: "Pre-rank score", value: (inv.confidence ?? 0).toFixed(2) },
       ],
     },
     reply: { status: "Resolved", text: event("resolved") },
