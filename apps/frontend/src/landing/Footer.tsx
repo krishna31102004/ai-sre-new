@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { cn, T } from "../components/primitives";
 
 const REPO_URL = "https://github.com/krishna31102004/ai-sre-new";
 
@@ -10,21 +11,21 @@ const LINKS = [
   { to: "/status", label: "Status" },
 ];
 
-const linkClass = "text-sm text-ink-2 transition-colors duration-[160ms] hover:text-ink";
+const linkClass = cn(T.small, "text-ink-2 transition-colors duration-[160ms] hover:text-ink");
 
 export function Footer({ linkedinUrl }: { linkedinUrl: string }) {
   return (
     <footer className="border-t border-white/[0.07]">
-      <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
         <div>
-          <p className="text-[15px] font-semibold text-ink">Glassbox SRE</p>
-          <p className="mt-2 text-sm text-ink-2">
+          <p className={T.h3}>Glassbox SRE</p>
+          <p className={cn(T.small, "mt-2 text-ink-3")}>
             Built by{" "}
             <a
               href={linkedinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 transition-colors duration-[160ms] hover:text-ink"
+              className="text-ink-2 underline underline-offset-2 transition-colors duration-[160ms] hover:text-ink"
             >
               Krishna Balaji
             </a>
@@ -50,7 +51,7 @@ export function Footer({ linkedinUrl }: { linkedinUrl: string }) {
           >
             GitHub
           </a>
-          <p className="mt-2 text-[13px] leading-5 text-ink-3">Demo mode: this site runs on recorded sample data.</p>
+          <p className={cn(T.small, "mt-2 text-ink-3")}>Demo mode: this site runs on recorded sample data.</p>
         </div>
       </div>
     </footer>

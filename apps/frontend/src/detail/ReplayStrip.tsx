@@ -5,11 +5,10 @@ import type { ReactNode } from "react";
 
 import type { InvestigationDetail } from "../api";
 import { SeverityBadge } from "../components";
-import { Eyebrow, Panel } from "../components/primitives";
+import { cn, T } from "../components/primitives";
 import { Lane, ReplayCtx, BEATS, type Ctx } from "../landing/LiveDemo";
 import { useReplayClock } from "../landing/useReplayClock";
 import { number } from "../lib";
-import { cn } from "../lib/utils";
 import { commitLabel } from "../mockData";
 import { candidatesFrom, eventMs, formatOffset } from "./helpers";
 
@@ -36,7 +35,7 @@ function Result({ head, children }: { head: ReactNode; children?: ReactNode }) {
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <Check size={14} className="shrink-0 text-healthy" aria-hidden="true" />
-        <span className="break-all font-mono text-[13px] tabular-nums text-ink">{head}</span>
+        <span className={cn(T.data, "break-all")}>{head}</span>
       </div>
       {children}
     </div>
@@ -81,14 +80,14 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
 
   const finished = !reduce && clock.done;
   const buttonClass =
-    "press inline-flex h-11 items-center justify-center gap-2 rounded-lg border px-3.5 text-[13px] font-medium nav:h-8";
+    cn(T.body, "press inline-flex h-11 items-center justify-center gap-2 rounded-lg border px-3.5 font-medium nav:h-9");
 
   return (
-    <Panel as="section" className="flex flex-col gap-4">
+    <section className="flex flex-col gap-4 md:gap-6" aria-label="Replay this investigation">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
-          <h3 className="text-[14px] font-medium text-ink">Replay this investigation</h3>
-          <Eyebrow className="tracking-normal normal-case">Replay, timing compressed</Eyebrow>
+          <h2 className={T.h2}>Replay this investigation</h2>
+          <p className={T.label}>Replay, timing compressed</p>
         </div>
         <button
           type="button"
@@ -98,7 +97,7 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
           }}
           className={cn(
             buttonClass,
-            finished ? "border-accent text-ink" : "border-white/[0.07] text-ink-2 hover:border-white/[0.12] hover:text-ink",
+            finished ? "border-accent text-ink" : "border-white/[0.12] text-ink-2 hover:text-ink",
             reduce || beats.length < 2 ? "cursor-not-allowed opacity-50" : "",
           )}
         >
@@ -108,47 +107,50 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
       </div>
 
       <ReplayCtx.Provider value={ctx}>
-        <div ref={frameRef} key={clock.runId} className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div ref={frameRef} key={clock.runId} className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
           <Lane
+            surface="card"
             title="Commits"
             resolveAt={resolveAt("commit_correlation_completed")}
             result={
               top ? (
                 <Result head={top.sha.slice(0, 7)}>
-                  <p className="text-[14px] leading-5 text-ink" title={top.title ?? undefined}>
+                  <p className={cn(T.small, "text-ink")} title={top.title ?? undefined}>
                     {commitLabel(top.sha) ?? top.title ?? "No change summary recorded"}
                   </p>
-                  <p className="font-mono text-[13px] tabular-nums text-ink-2">
+                  <p className={T.data}>
                     pre-rank score {top.score === null ? "--" : top.score.toFixed(2)}
                   </p>
                 </Result>
               ) : (
-                <p className="text-[13px] leading-5 text-ink-2">No commit candidates.</p>
+                <p className={T.small}>No commit candidates.</p>
               )
             }
           />
           <Lane
+            surface="card"
             title="Runbook"
             resolveAt={resolveAt("runbook_retrieval_completed")}
             result={
               inv.runbook_id ? (
                 <Result head={inv.runbook_id}>
-                  <p className="text-[14px] leading-5 text-ink">{inv.runbook_section ?? "Section not recorded"}</p>
-                  <p className="font-mono text-[13px] tabular-nums text-ink-2">
+                  <p className={cn(T.small, "text-ink")}>{inv.runbook_section ?? "Section not recorded"}</p>
+                  <p className={T.data}>
                     retrieval score {inv.runbook_score === null ? "--" : inv.runbook_score.toFixed(2)}
                   </p>
                 </Result>
               ) : (
-                <p className="text-[13px] leading-5 text-ink-2">No runbook matched.</p>
+                <p className={T.small}>No runbook matched.</p>
               )
             }
           />
           <Lane
+            surface="card"
             title="Impact"
             resolveAt={resolveAt("impact_estimation_completed")}
             result={
               <Result head={`${inv.error_rate === null ? "--" : `${(inv.error_rate * 100).toFixed(2)}%`} errors`}>
-                <p className="font-mono text-[13px] tabular-nums text-ink-2">{number(inv.affected_requests)} affected requests</p>
+                <p className={T.data}>{number(inv.affected_requests)} affected requests</p>
                 <div>{inv.severity ? <SeverityBadge severity={inv.severity} /> : null}</div>
               </Result>
             }
@@ -173,10 +175,10 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
             />
           ))}
         </div>
-        <p className="mt-3 min-h-10 text-[13px] leading-5 text-ink-2 sm:min-h-5">
+        <p className={cn(T.small, "mt-3 min-h-10 sm:min-h-5")}>
           {current ? (
             <>
-              <span className="mr-2 font-mono text-[12px] tabular-nums text-ink-3">{formatOffset(current.real)}</span>
+              <span className={cn(T.dataSm, "mr-2")}>{formatOffset(current.real)}</span>
               {current.summary}
             </>
           ) : (
@@ -184,6 +186,6 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
           )}
         </p>
       </div>
-    </Panel>
+    </section>
   );
 }

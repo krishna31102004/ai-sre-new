@@ -16,7 +16,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { getAllMockInvestigationDetails, mockBenchmark } from "../mockData";
 import { Badge } from "../components/ui/badge";
-import { Eyebrow, Panel } from "../components/primitives";
+import { cn, Eyebrow, Panel, T } from "../components/primitives";
 
 type PipelineNode = {
   id: string;
@@ -283,11 +283,11 @@ function PipelineCard({
       <div className="pipeline-node-icon flex h-9 w-9 items-center justify-center rounded-md text-blue-100">
         <Icon size={17} />
       </div>
-      <h3 className="mt-3 text-base font-semibold text-slate-100">{node.title}</h3>
+      <h3 className="mt-3 text-base font-semibold text-ink">{node.title}</h3>
       <Badge variant={active ? "accent" : "muted"} className="pipeline-node-pill mt-1.5 max-w-full whitespace-normal text-[10px] leading-4">
         {node.subtitle}
       </Badge>
-      <p className="mt-1.5 truncate text-sm leading-6 text-slate-400">{node.input}</p>
+      <p className="mt-1.5 truncate text-sm leading-6 text-ink-2">{node.input}</p>
     </button>
   );
 }
@@ -317,8 +317,8 @@ function PipelineOverlay({
                 </span>
                 <Badge variant="accent">{node.subtitle}</Badge>
               </div>
-              <h2 className="mt-5 text-xl font-semibold text-slate-50">{node.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-300">{node.input}</p>
+              <h2 className="mt-5 text-xl font-semibold text-ink">{node.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-ink-2">{node.input}</p>
             </div>
           </div>
 
@@ -326,24 +326,24 @@ function PipelineOverlay({
             <div className="space-y-5">
               <div className="soft-card p-4">
                 <p className="label">What this node does</p>
-                <p className="text-sm leading-6 text-slate-300">{node.description[0]}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-400">{node.description[1]}</p>
+                <p className="text-sm leading-6 text-ink-2">{node.description[0]}</p>
+                <p className="mt-3 text-sm leading-6 text-ink-2">{node.description[1]}</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="soft-card p-4">
                   <p className="label">Input</p>
-                  <p className="text-sm leading-6 text-slate-300">{node.input}</p>
+                  <p className="text-sm leading-6 text-ink-2">{node.input}</p>
                 </div>
                 <div className="soft-card p-4">
                   <p className="label">Output</p>
-                  <p className="text-sm leading-6 text-slate-300">{node.output}</p>
+                  <p className="text-sm leading-6 text-ink-2">{node.output}</p>
                 </div>
               </div>
             </div>
             <div className="soft-card p-4">
               <p className="label">Real example</p>
-              <h3 className="text-sm font-semibold text-slate-100">{node.exampleTitle}</h3>
-              <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-slate-300">
+              <h3 className="text-sm font-semibold text-ink">{node.exampleTitle}</h3>
+              <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-ink-2">
                 {node.exampleBody.map((line) => (
                   <div key={line} className="rounded-md border border-line bg-black/20 px-3 py-2">
                     {line}
@@ -477,12 +477,12 @@ export function PipelinePage() {
   };
 
   return (
-    <section className="pb-8">
-      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <section>
+      <div className="mb-6 flex md:mb-8 flex-wrap items-end justify-between gap-4">
         <div>
           <Eyebrow>System architecture</Eyebrow>
-          <h1 className="font-display text-[26px] font-normal leading-tight tracking-normal text-ink md:text-[32px]">Pipeline</h1>
-          <p className="mt-2 max-w-3xl text-[14px] leading-6 text-ink-2">
+          <h1 className={cn(T.h1, "mt-2")}>Pipeline</h1>
+          <p className={cn(T.body, "mt-2 max-w-3xl")}>
             This is the end-to-end Glassbox SRE flow from alert fire to postmortem generation. The three investigator branches pulse together to show the parallel evidence paths that feed one grounded incident brief.
           </p>
         </div>
@@ -491,11 +491,11 @@ export function PipelinePage() {
 
       <Panel className="pipeline-surface md:p-6">
         {isMobile && (
-          <p className="mb-3 text-[12px] leading-4 text-ink-3">Best viewed on desktop. Scroll sideways to explore.</p>
+          <p className={cn(T.small, "mb-3 text-ink-3")}>Best viewed on desktop. Scroll sideways to explore.</p>
         )}
         <div
           ref={holderRef}
-          className={isMobile ? "overflow-x-auto rounded-xl border border-white/[0.12]" : ""}
+          className={isMobile ? "overflow-x-auto rounded-xl" : ""}
           style={isMobile ? undefined : { height: SVG_HEIGHT * scale, width: "100%" }}
         >
         <div
@@ -546,7 +546,7 @@ export function PipelinePage() {
           </svg>
 
           <div className="pointer-events-none absolute inset-x-0 top-[220px] z-0 h-[192px] rounded-glass border border-dashed border-accent/20 bg-accent/[0.03]">
-            <div className="pipeline-parallel-label absolute left-4 top-[-9px] text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">
+            <div className="pipeline-parallel-label absolute left-4 top-[-9px] text-[10px] font-medium text-ink-3">
               Parallel execution
             </div>
           </div>
@@ -570,7 +570,7 @@ export function PipelinePage() {
       </Panel>
 
       {!hasExplored && (
-        <p className="mt-4 text-center text-[14px] text-ink-3">
+        <p className={cn(T.small, "mt-4 text-center text-ink-3")}>
           Click to explore each stage of the Glassbox SRE investigation pipeline.
         </p>
       )}

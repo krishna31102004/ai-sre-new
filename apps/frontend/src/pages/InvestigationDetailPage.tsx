@@ -6,7 +6,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import { api, DEMO_MODE, type InvestigationDetail } from "../api";
 import { ErrorState, LoadingState } from "../components";
-import { ServiceChip, StatusDot } from "../components/primitives";
+import { cn, ServiceChip, StatusDot, T } from "../components/primitives";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
 import { CommitCorrelationCard, ImpactCard, RunbookCard } from "../detail/FindingCards";
 import { RawTab } from "../detail/RawTab";
@@ -14,7 +14,6 @@ import { ReplayStrip } from "../detail/ReplayStrip";
 import { SuspectCommitHero } from "../detail/SuspectCommitHero";
 import { TimelineTab } from "../detail/TimelineTab";
 import { candidatesFrom, formatDuration, formatTime } from "../detail/helpers";
-import { cn } from "../lib/utils";
 import { DUR, EASE } from "../motion";
 
 const TABS = [
@@ -44,7 +43,7 @@ function Tabs({ active, onChange }: { active: TabId; onChange: (id: TabId) => vo
     refs.current[next]?.focus();
   };
   return (
-    <div role="tablist" aria-label="Investigation views" onKeyDown={onKeyDown} className="flex border-b border-white/[0.07]">
+    <div role="tablist" aria-label="Investigation views" onKeyDown={onKeyDown} className="flex border-b border-line">
       {TABS.map((tab, index) => {
         const selected = tab.id === active;
         return (
@@ -61,7 +60,8 @@ function Tabs({ active, onChange }: { active: TabId; onChange: (id: TabId) => vo
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "relative h-11 px-4 text-[13px] transition-colors duration-[160ms] focus-visible:outline-offset-[-2px] nav:h-10",
+              T.body,
+              "relative h-11 px-4 font-medium transition-colors duration-[160ms] focus-visible:outline-offset-[-2px] nav:h-10",
               selected ? "text-ink" : "text-ink-2 hover:text-ink",
             )}
           >
@@ -98,7 +98,7 @@ function ExternalLinks({ detail }: { detail: InvestigationDetail }) {
     </Tooltip>
   );
   return (
-    <div className="flex flex-wrap gap-3 text-sm">
+    <div className="flex flex-wrap gap-3">
       {slackUrl &&
         (DEMO_MODE ? (
           demoButton("Slack thread", "Slack thread available in live deployment")
@@ -111,7 +111,7 @@ function ExternalLinks({ detail }: { detail: InvestigationDetail }) {
         ) : (
           <a className="link-button" href={traceUrl} target="_blank" rel="noreferrer">LangSmith trace <ExternalLink size={15} /></a>
         ))}
-      {!slackUrl && !traceUrl && <span className="text-[13px] text-ink-3">No external links were recorded.</span>}
+      {!slackUrl && !traceUrl && <span className={cn(T.small, "text-ink-3")}>No external links were recorded.</span>}
     </div>
   );
 }
@@ -164,21 +164,21 @@ export function InvestigationDetailPage() {
   };
 
   return (
-    <section className="pb-8">
+    <section>
       <Link
         to="/investigations"
-        className="press inline-flex min-h-11 items-center gap-1.5 rounded-md text-[13px] text-ink-3 hover:text-ink nav:min-h-0"
+        className={cn(T.small, "press inline-flex min-h-11 items-center gap-1.5 rounded-md text-ink-3 hover:text-ink nav:min-h-0")}
       >
         <ArrowLeft size={14} aria-hidden="true" /> Investigations
       </Link>
 
-      <header className="mb-6 mt-3 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <header className="mb-6 mt-3 md:mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <h1 className="break-words font-display text-[26px] font-normal leading-[1.1] text-ink md:text-[32px]">{investigation.alert_name}</h1>
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h1 className={cn(T.h1, "break-words")}>{investigation.alert_name}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
             <StatusDot status={investigation.status} />
             <ServiceChip>{investigation.service}</ServiceChip>
-            <span className="font-mono text-[12px] tabular-nums text-ink-3">{timing}</span>
+            <span className={cn(T.small, "text-ink-3")}>{timing}</span>
           </div>
         </div>
         <ExternalLinks detail={detail} />
@@ -186,11 +186,11 @@ export function InvestigationDetailPage() {
 
       <Tabs active={tab} onChange={setTab} />
 
-      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="mt-6">
+      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="mt-6 md:mt-8">
         {tab === "brief" ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-8 md:gap-10">
             <SuspectCommitHero top={candidates[0] ?? null} />
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-3">
               <CommitCorrelationCard candidates={candidates} />
               <RunbookCard investigation={investigation} />
               <ImpactCard investigation={investigation} />

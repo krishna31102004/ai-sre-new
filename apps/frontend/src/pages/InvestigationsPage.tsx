@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 import { api, type InvestigationSummary } from "../api";
 import { ErrorState } from "../components";
-import { CommitSummary, FilterChips, Panel, ScoreBar, ServiceChip, StatusDot } from "../components/primitives";
+import { cn, CommitSummary, FilterChips, Panel, ScoreBar, ServiceChip, StatusDot, T } from "../components/primitives";
 import { SignalLine } from "../components/SignalLine";
 import { relativeTime } from "../lib";
 
@@ -86,30 +86,30 @@ export function InvestigationsPage() {
     : [];
 
   return (
-    <section className="pb-8">
-      <div className="mb-7">
-        <h1 className="font-display text-[26px] font-normal leading-tight md:text-[32px]">Investigations</h1>
-        <p className="mt-1 text-sm text-ink-2">Recorded sample data. The live system runs locally against a fault-injected stack.</p>
+    <section>
+      <div className="mb-6 md:mb-8">
+        <h1 className={T.h1}>Investigations</h1>
+        <p className={cn(T.body, "mt-2")}>Recorded sample data. The live system runs locally against a fault-injected stack.</p>
       </div>
 
       {error && <ErrorState message={error} />}
 
       {summary && (
-        <Panel className="mb-6 grid grid-cols-2 p-0 md:grid-cols-4 md:p-0">
+        <Panel className="mb-8 grid grid-cols-2 p-0 md:mb-10 md:grid-cols-4 md:p-0">
           {metrics.map((metric, index) => (
             <div
               key={metric.label}
-              className={`p-4 md:px-5 ${index % 2 === 1 ? "border-l border-white/[0.07]" : ""} ${index >= 2 ? "border-t border-white/[0.07] md:border-t-0" : ""} ${index > 0 ? "md:border-l md:border-white/[0.07]" : ""}`}
+              className={`p-4 md:p-6 ${index % 2 === 1 ? "border-l border-white/[0.07]" : ""} ${index >= 2 ? "border-t border-white/[0.07] md:border-t-0" : ""} ${index > 0 ? "md:border-l md:border-white/[0.07]" : ""}`}
             >
-              <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3">{metric.label}</p>
-              <p className="mt-1 font-mono text-xl tabular-nums text-ink-2">{metric.value}</p>
+              <p className={T.label}>{metric.label}</p>
+              <p className={cn(T.dataLg, "mt-1 text-ink-2")}>{metric.value}</p>
             </div>
           ))}
         </Panel>
       )}
 
       {summary && summary.total > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 md:mb-6">
           <FilterChips
             ariaLabel="Filter by status"
             value={statusFilter}
@@ -134,7 +134,7 @@ export function InvestigationsPage() {
         <div aria-busy="true" aria-label="Loading investigations">
           <Panel className="overflow-hidden p-0 md:p-0">
             {[0, 1, 2, 3, 4].map((row) => (
-              <div key={row} className="flex h-[52px] items-center gap-4 border-b border-white/[0.07] px-4 last:border-b-0 md:px-5">
+              <div key={row} className="flex h-[52px] items-center gap-4 border-b border-line px-4 last:border-b-0">
                 <span className="h-3 w-16 rounded bg-white/[0.04]" />
                 <span className="h-3 w-1/3 rounded bg-white/[0.04]" />
                 <span className="hidden h-3 w-1/4 rounded bg-white/[0.04] md:block" />
@@ -148,12 +148,12 @@ export function InvestigationsPage() {
       {investigations !== null && visible.length === 0 && (
         <Panel className="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
           <SignalLine variant="hero" flat className="h-2 w-[120px] text-ink-3" />
-          <p className="text-sm text-ink-2">No investigations match these filters.</p>
+          <p className={T.body}>No investigations match these filters.</p>
           {(statusFilter !== "all" || serviceFilter !== "all") && (
             <button
               type="button"
               onClick={clearFilters}
-              className="press inline-flex h-11 items-center rounded-lg border border-white/[0.07] px-4 text-[13px] text-ink hover:border-white/[0.12] nav:h-8"
+              className={cn(T.body, "press inline-flex h-11 items-center rounded-lg border border-white/[0.12] px-4 font-medium text-ink nav:h-9")}
             >
               Clear filters
             </button>
@@ -165,7 +165,7 @@ export function InvestigationsPage() {
         <>
           {/* From 768: table rows. */}
           <Panel className="hidden overflow-hidden p-0 md:block md:p-0">
-            <div className={`${GRID} border-b border-l-2 border-white/[0.07] border-l-transparent px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3`}>
+            <div className={cn(T.label, GRID, "border-b border-l-2 border-line border-l-transparent px-4 py-2.5")}>
               <span>Status</span>
               <span>Alert</span>
               <span>Suspect commit</span>
@@ -175,14 +175,14 @@ export function InvestigationsPage() {
             </div>
             <ul>
               {visible.map((item) => (
-                <li key={item.investigation_id} className="border-b border-white/[0.07] last:border-b-0">
+                <li key={item.investigation_id} className="border-b border-line last:border-b-0">
                   <Link
                     to={`/investigations/${item.investigation_id}`}
-                    className={`group ${GRID} h-[52px] border-l-2 px-5 transition-colors duration-[120ms] hover:bg-white/[0.03] ${ROW_FOCUS} ${isFiring(item) ? "border-l-firing" : "border-l-transparent"}`}
+                    className={`group ${GRID} h-[52px] border-l-2 px-4 transition-colors duration-[120ms] hover:bg-white/[0.03] ${ROW_FOCUS} ${isFiring(item) ? "border-l-firing" : "border-l-transparent"}`}
                   >
                     <StatusDot status={item.status} />
                     <span className="flex min-w-0 items-center gap-2">
-                      <span className="truncate text-[14px] font-medium text-ink">{item.alert_name}</span>
+                      <span className={cn(T.body, "truncate font-medium text-ink")}>{item.alert_name}</span>
                       <ServiceChip className="shrink-0">{item.service}</ServiceChip>
                     </span>
                     {item.suspect_commit_sha ? (
@@ -191,7 +191,7 @@ export function InvestigationsPage() {
                       <span className="text-ink-3" aria-label="No suspect commit">-</span>
                     )}
                     <ScoreBar value={item.confidence} />
-                    <span className="truncate font-mono text-[12px] tabular-nums text-ink-3" title={absoluteTime(item.started_at)}>
+                    <span className={cn(T.small, "truncate text-ink-3")} title={absoluteTime(item.started_at)}>
                       {relativeTime(item.started_at)}
                     </span>
                     <ChevronRight size={16} aria-hidden="true" className="text-ink-3 opacity-0 transition-opacity duration-[120ms] group-hover:opacity-100 group-focus-visible:opacity-100" />
@@ -212,11 +212,11 @@ export function InvestigationsPage() {
                   <Panel className={`flex flex-col gap-2 hover:border-white/[0.12] ${isFiring(item) ? "border-l-2 border-l-firing" : ""}`}>
                     <div className="flex items-center justify-between gap-3">
                       <StatusDot status={item.status} />
-                      <span className="font-mono text-[12px] tabular-nums text-ink-3" title={absoluteTime(item.started_at)}>
+                      <span className={cn(T.small, "text-ink-3")} title={absoluteTime(item.started_at)}>
                         {relativeTime(item.started_at)}
                       </span>
                     </div>
-                    <p className="text-[15px] font-medium text-ink">{item.alert_name}</p>
+                    <p className={cn(T.body, "font-medium text-ink")}>{item.alert_name}</p>
                     <div><ServiceChip>{item.service}</ServiceChip></div>
                     {item.suspect_commit_sha ? (
                       <CommitSummary sha={item.suspect_commit_sha} title={item.suspect_commit_title} />

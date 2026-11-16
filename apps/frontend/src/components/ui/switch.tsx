@@ -1,7 +1,7 @@
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import type { ComponentPropsWithoutRef } from "react";
 
-import { cn } from "../../lib/utils";
+import { cn } from "../primitives";
 
 export function Switch({
   className,
@@ -20,7 +20,7 @@ export function Switch({
     >
       <SwitchPrimitive.Thumb
         className={cn(
-          "pointer-events-none block h-6 w-6 rounded-full bg-slate-100 shadow-lg transition-transform duration-150 ease-out",
+          "pointer-events-none block h-6 w-6 rounded-full bg-ink shadow-lg transition-transform duration-150 ease-out",
           checked ? "translate-x-[29px]" : "translate-x-0",
         )}
       />

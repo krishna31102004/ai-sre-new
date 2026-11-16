@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { SignalLine } from "../components/SignalLine";
 import { EASE } from "../motion";
 import { landingStats } from "../mockData";
+import { cn, T } from "../components/primitives";
 
 const REPO_URL = "https://github.com/krishna31102004/ai-sre-new";
 
@@ -15,8 +16,10 @@ const H1_LINES = [
 ];
 
 /** Pressable button-like link styles shared by the CTAs. */
-const CTA_BASE =
-  "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-lg px-3 text-sm font-medium transition sm:px-5-[transform,color,border-color,background-color] duration-[120ms] active:scale-[0.97]";
+const CTA_BASE = cn(
+  T.body,
+  "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-lg px-3 font-medium transition sm:px-5-[transform,color,border-color,background-color] duration-[120ms] active:scale-[0.97]",
+);
 
 function Bar({
   fraction,
@@ -41,32 +44,32 @@ function Bar({
 function ProofCard() {
   const { llm, heuristic } = landingStats.top1;
   return (
-    <div className="rounded-2xl border border-white/[0.12] bg-white/[0.03] p-4 backdrop-blur-md sm:p-6">
-      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
+    <div className="rounded-2xl border border-white/[0.12] bg-white/[0.03] p-4 backdrop-blur-md md:p-6">
+      <p className={T.label}>
         Commit top-1
       </p>
       <div className="mt-4 grid grid-cols-2 gap-6">
         <div className="min-w-0">
-          <p className="font-mono text-[40px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-accent xl:text-[56px]">
+          <p className={cn(T.dataXl, "text-accent")}>
             {llm.display}
           </p>
           <Bar fraction={llm.fraction} tone="accent" />
-          <p className="mt-3 text-xs text-ink-2">{llm.label}</p>
+          <p className={cn(T.small, "mt-2")}>{llm.label}</p>
         </div>
         <div className="min-w-0">
-          <p className="font-mono text-[40px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-ink-3 xl:text-[56px]">
+          <p className={cn(T.dataXl, "text-ink-3")}>
             {heuristic.display}
           </p>
           <Bar fraction={heuristic.fraction} tone="muted" />
-          <p className="mt-3 text-xs text-ink-2">{heuristic.label}</p>
+          <p className={cn(T.small, "mt-2")}>{heuristic.label}</p>
         </div>
       </div>
-      <p className="mt-4 text-xs leading-4 text-ink-2 sm:mt-5 sm:leading-5">
+      <p className={cn(T.small, "mt-4 sm:mt-5")}>
         {landingStats.caption}
       </p>
       <Link
         to="/benchmark"
-        className="mt-1 inline-flex min-h-[44px] items-center text-xs font-medium text-accent transition-[color,transform] duration-[160ms] hover:text-ink active:scale-[0.97] md:mt-2 md:min-h-0"
+        className={cn(T.body, "mt-1 inline-flex min-h-[44px] items-center font-medium text-accent transition-[color,transform] duration-[160ms] hover:text-ink active:scale-[0.97] md:mt-2 md:min-h-0")}
       >
         How we measured
       </Link>
@@ -114,11 +117,11 @@ export function Hero() {
         }}
       />
 
-      <div className="relative mx-auto w-full max-w-[1200px] px-4 py-6 sm:px-6 sm:pb-16 sm:pt-12 lg:pb-20 lg:pt-8">
+      <div className="relative mx-auto w-full max-w-[1200px] px-4 py-6 md:px-6 sm:pb-16 sm:pt-12 lg:pb-20 lg:pt-8">
         <div className="grid items-center gap-4 sm:gap-8 lg:grid-cols-12 lg:gap-0">
           <div className="min-w-0 lg:col-span-7">
             <motion.div {...enter(0)}>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.07] px-3 py-1 font-mono text-xs text-ink-2">
+              <span className={cn(T.label, "inline-flex h-[22px] items-center gap-2 rounded-md bg-white/[0.06] px-2 text-ink-2")}>
                 <span
                   className="h-1.5 w-1.5 rounded-full bg-healthy"
                   aria-hidden="true"
@@ -144,7 +147,7 @@ export function Hero() {
             </h1>
 
             <motion.p
-              className="mt-4 max-w-[560px] text-[15px] leading-6 sm:mt-5 sm:text-[17px] sm:leading-7 text-ink-2"
+              className={cn(T.lead, "mt-4 max-w-[560px] sm:mt-5")}
               {...enter(0.25)}
             >
               When a Prometheus alert fires, Glassbox finds the bad commit,
@@ -160,13 +163,13 @@ export function Hero() {
                 <a
                   href="#demo"
                   onClick={scrollToDemo}
-                  className={`${CTA_BASE} flex-1 bg-accent text-[#05070d] hover:bg-accent/90 sm:flex-none`}
+                  className={cn(CTA_BASE, "flex-1 bg-accent text-[#05070d] hover:bg-accent/90 sm:flex-none")}
                 >
                   Watch it investigate
                 </a>
                 <Link
                   to="/pipeline"
-                  className={`${CTA_BASE} flex-1 border border-white/[0.07] text-ink hover:border-white/[0.12] sm:flex-none`}
+                  className={cn(CTA_BASE, "flex-1 border border-white/[0.12] text-ink sm:flex-none")}
                 >
                   See the pipeline
                 </Link>
@@ -175,7 +178,7 @@ export function Hero() {
                 href={REPO_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-11 items-center gap-1 px-2 text-sm font-medium text-ink-2 transition-colors duration-[160ms] hover:text-ink"
+                className={cn(T.body, "inline-flex h-11 items-center gap-1 px-2 font-medium text-ink-2 transition-colors duration-[160ms] hover:text-ink")}
               >
                 View on GitHub
                 <ArrowUpRight size={14} aria-hidden="true" />

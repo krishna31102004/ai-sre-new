@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { Link } from "react-router-dom";
 import { Activity, ArrowRight, Database, Layers, MessageSquare, Server, Workflow, type LucideIcon } from "lucide-react";
+import { cn, T } from "../components/primitives";
 import { DUR, EASE, STAGGER } from "../motion";
 
 type Node = { label: string; icon: LucideIcon; parallel?: boolean };
@@ -44,16 +45,16 @@ export function Architecture() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 md:py-16" aria-labelledby="architecture-heading">
-      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">Architecture</p>
+    <section className="mx-auto max-w-[1200px] px-4 pt-20 md:px-6 md:pt-32" aria-labelledby="architecture-heading">
+      <p className={T.label}>Architecture</p>
       <h2
         id="architecture-heading"
-        className="mt-3 font-display text-[28px] leading-[1.1] tracking-[-0.01em] text-ink sm:text-4xl"
+        className={cn(T.h1, "mt-2")}
       >
         Six hops from alert to answer.
       </h2>
 
-      <ol className="mt-10 flex flex-col nav:flex-row nav:items-center">
+      <ol className="mt-4 md:mt-6 flex flex-col nav:flex-row nav:items-center">
         {NODES.map((node, i) => {
           const Icon = node.icon;
           const last = i === NODES.length - 1;
@@ -71,9 +72,11 @@ export function Architecture() {
                   })}
             >
               <div
-                className={`flex shrink-0 self-start rounded-lg border border-white/[0.07] bg-panel px-3 font-mono text-[12px] text-ink ${
-                  node.parallel ? "min-h-[40px] flex-col justify-center gap-2 py-3" : "h-10 items-center gap-2"
-                }`}
+                className={cn(
+                  T.small,
+                  "flex shrink-0 self-start rounded-xl border border-line bg-panel px-3 font-medium text-ink",
+                  node.parallel ? "min-h-[40px] flex-col justify-center gap-2 py-3" : "h-10 items-center gap-2",
+                )}
               >
                 <span className="flex items-center gap-2">
                   <Icon className="h-3.5 w-3.5 text-ink-2" aria-hidden="true" />
@@ -86,7 +89,7 @@ export function Architecture() {
                       <span className="h-1.5 rounded-full bg-accent/60" />
                       <span className="h-1.5 rounded-full bg-accent/60" />
                     </span>
-                    <span className="text-[11px] text-ink-3">3 parallel nodes</span>
+                    <span className={T.label}>3 parallel nodes</span>
                   </span>
                 )}
               </div>
@@ -110,7 +113,7 @@ export function Architecture() {
 
       <Link
         to="/pipeline"
-        className="mt-10 inline-flex min-h-[44px] items-center gap-1.5 text-[14px] font-medium text-accent transition-[color,transform] duration-[120ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-ink active:scale-[0.97]"
+        className={cn(T.body, "mt-6 inline-flex min-h-[44px] items-center gap-1.5 font-medium text-accent transition-[color,transform] duration-[120ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-ink active:scale-[0.97]")}
       >
         Open the interactive pipeline
         <ArrowRight className="h-4 w-4" aria-hidden="true" />

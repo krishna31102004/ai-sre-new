@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { SignalLine } from "../components/SignalLine";
 import { SeverityBadge } from "../components";
+import { cn, sentenceCase, T } from "../components/primitives";
 import { commitLabel, demoReplay } from "../mockData";
 import { EASE } from "../motion";
 import { useReplayClock } from "./useReplayClock";
@@ -106,14 +107,14 @@ function Slot({
   children: ReactNode;
 }) {
   return (
-    <div className={`relative rounded-xl ${className}`}>
-      <div className="pointer-events-none absolute inset-0 rounded-xl border border-white/[0.07] opacity-40" aria-hidden="true" />
+    <div className={`relative rounded-lg ${className}`}>
+      <div className="pointer-events-none absolute inset-0 rounded-lg bg-white/[0.03] opacity-40" aria-hidden="true" />
       <Reveal
         on={on}
         dur={dur}
         y={y}
         ghost={ghost}
-        className={`relative h-full rounded-xl border border-white/[0.12] bg-elevated ${innerClassName}`}
+        className={`relative h-full rounded-lg bg-white/[0.03] ${innerClassName}`}
       >
         {children}
       </Reveal>
@@ -149,11 +150,11 @@ function AlertCard() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="badge badge-red">
           <FiringDot ringing={ringing} />
-          {alert.status}
+          {sentenceCase(alert.status)}
         </span>
-        <span className="font-mono text-[12px] tabular-nums text-ink-3">{alert.service}</span>
+        <span className={T.label}>{alert.service}</span>
       </div>
-      <p className="break-all font-mono text-[13px] tabular-nums text-ink">{alert.name}</p>
+      <p className={cn(T.h3, "break-all")}>{alert.name}</p>
     </Slot>
   );
 }
@@ -220,12 +221,12 @@ function TriageChip() {
   const { triage } = demoReplay;
   return (
     <Slot on={loading} dur={BEATS.laneFade} className="min-h-[88px] md:flex-1" innerClassName="flex flex-col justify-center gap-2 p-4">
-      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">{triage.label}</span>
+      <span className={T.label}>{triage.label}</span>
       <Crossfade
         loading={loading}
         done={done}
         loader={<SignalLine variant="loader" />}
-        result={<p className="text-[14px] leading-5 text-ink">{triage.result}</p>}
+        result={<p className={cn(T.small, "text-ink")}>{triage.result}</p>}
       />
     </Slot>
   );
@@ -235,10 +236,13 @@ export function Lane({
   title,
   resolveAt,
   result,
+  surface = "inset",
 }: {
   title: string;
   resolveAt: number;
   result: ReactNode;
+  /** "inset" sits inside a level 1 surface (demo frame); "card" is itself a level 1 surface. */
+  surface?: "inset" | "card";
 }) {
   const { reduce } = useContext(ReplayCtx);
   const active = useOn(BEATS.lanesActive);
@@ -248,17 +252,17 @@ export function Lane({
   const dimBody = { opacity: 0.4 };
   const status = done ? "done" : active ? "running" : "waiting";
   return (
-    <div className="relative flex flex-col gap-3 rounded-xl bg-panel p-4">
+    <div className={cn("relative flex flex-col gap-3", surface === "card" ? "rounded-xl bg-panel p-4 md:p-6" : "rounded-lg bg-white/[0.03] p-4")}>
       <motion.div
-        className="pointer-events-none absolute inset-0 rounded-xl border border-white/[0.12]"
+        className={cn("pointer-events-none absolute inset-0 border border-white/[0.12]", surface === "card" ? "rounded-xl" : "rounded-lg")}
         initial={reduce ? false : dimBorder}
         animate={active ? { opacity: 1 } : dimBorder}
         transition={transition}
         aria-hidden="true"
       />
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-[14px] font-medium text-ink">{title}</h3>
-        <span className={`font-mono text-[11px] uppercase tracking-[0.14em] ${done ? "text-healthy" : "text-ink-3"}`}>{status}</span>
+        <h3 className={T.h3}>{title}</h3>
+        <span className={cn(T.label, done ? "text-healthy" : "text-ink-3")}>{sentenceCase(status)}</span>
       </div>
       <motion.div
         initial={reduce ? false : dimBody}
@@ -271,11 +275,11 @@ export function Lane({
   );
 }
 
-function ResultHead({ children }: { children: ReactNode }) {
+function ResultHead({ children, accent = false }: { children: ReactNode; accent?: boolean }) {
   return (
     <div className="flex items-center gap-2">
       <Check size={14} className="shrink-0 text-healthy" aria-hidden="true" />
-      <span className="break-all font-mono text-[13px] tabular-nums text-ink">{children}</span>
+      <span className={cn(T.data, "break-all", accent && "text-accent")}>{children}</span>
     </div>
   );
 }
@@ -283,17 +287,17 @@ function ResultHead({ children }: { children: ReactNode }) {
 function Lanes() {
   const { commit, runbook, impact } = demoReplay.lanes;
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
       <Lane
         title="Commit correlation"
         resolveAt={BEATS.commit}
         result={
           <div className="flex flex-col gap-2">
-            <ResultHead>{commit.sha}</ResultHead>
-            <p className="text-[14px] leading-5 text-ink" title={commit.title}>
+            <ResultHead accent>{commit.sha}</ResultHead>
+            <p className={cn(T.small, "text-ink")} title={commit.title}>
               {commitLabel(commit.sha) ?? commit.title}
             </p>
-            <p className="text-[13px] leading-5 text-ink-2">{commit.evidence}</p>
+            <p className={T.small}>{commit.evidence}</p>
           </div>
         }
       />
@@ -303,8 +307,8 @@ function Lanes() {
         result={
           <div className="flex flex-col gap-2">
             <ResultHead>{runbook.runbookId}</ResultHead>
-            <p className="text-[14px] leading-5 text-ink">{runbook.section}</p>
-            <p className="font-mono text-[13px] tabular-nums text-ink-2">score {runbook.score.toFixed(2)}</p>
+            <p className={cn(T.small, "text-ink")}>{runbook.section}</p>
+            <p className={T.data}>score {runbook.score.toFixed(2)}</p>
           </div>
         }
       />
@@ -332,7 +336,7 @@ function SynthesisBar() {
   const text = useTransition(BEATS.laneFade);
   const { synthesis } = demoReplay;
   return (
-    <div className="relative min-h-11 overflow-hidden rounded-xl border border-white/[0.07]">
+    <div className="relative min-h-11 overflow-hidden rounded-lg bg-white/[0.03]">
       <motion.div
         className="absolute inset-0 origin-left bg-accent/[0.14]"
         initial={reduce ? false : { scaleX: 0 }}
@@ -342,7 +346,7 @@ function SynthesisBar() {
       />
       <div className="relative flex min-h-11 flex-col justify-center gap-0.5 px-4 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-0">
         <motion.span
-          className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-2"
+          className={T.label}
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: on ? 1 : 0 }}
           transition={text}
@@ -351,7 +355,7 @@ function SynthesisBar() {
           {synthesis.label}
         </motion.span>
         <motion.span
-          className="text-[13px] text-ink sm:truncate"
+          className={cn(T.small, "text-ink sm:truncate")}
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: summaryOn ? 1 : 0 }}
           transition={text}
@@ -368,8 +372,8 @@ function BriefLine({ index, label, value, title }: { index: number; label: strin
   const on = useOn(BEATS.briefLines + index * BEATS.briefLineStagger);
   return (
     <Reveal on={on} dur={BEATS.laneFade} ghost={0.6} className="grid grid-cols-1 gap-0.5 sm:grid-cols-[120px_1fr] sm:gap-3">
-      <span className="text-[13px] leading-5 text-ink-3">{label}</span>
-      <span className="text-[13px] leading-5 text-ink" title={title}>{value}</span>
+      <span className={T.label}>{label}</span>
+      <span className={cn(T.small, "text-ink")} title={title}>{value}</span>
     </Reveal>
   );
 }
@@ -383,8 +387,8 @@ function BriefCard() {
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-canvas" aria-hidden="true">
           <Signal size={16} />
         </span>
-        <span className="text-[14px] font-semibold text-ink">{brief.app}</span>
-        <span className="rounded bg-white/[0.08] px-1.5 py-0.5 font-mono text-[10px] tracking-[0.1em] text-ink-2">{brief.tag}</span>
+        <span className={T.h3}>{brief.app}</span>
+        <span className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-white/[0.06] px-2 text-ink-2")}>{sentenceCase(brief.tag)}</span>
       </div>
       <div className="flex flex-col gap-2">
         {brief.lines.map((line, index) => (
@@ -402,8 +406,8 @@ function ReplyCard() {
     <div className="ml-8">
       <Slot on={on} dur={BEATS.replyDur} y={8} className="min-h-[56px]" innerClassName="flex items-start gap-2.5 p-3.5">
         <Check size={16} className="mt-0.5 shrink-0 text-healthy" aria-hidden="true" />
-        <p className="text-[13px] leading-5 text-ink-2">
-          <span className="font-medium text-ink">{reply.status}</span> {reply.text}
+        <p className={T.small}>
+          <span className={T.h3}>{reply.status}</span> {reply.text}
         </p>
       </Slot>
     </div>
@@ -426,29 +430,27 @@ export function LiveDemo() {
   const ctx: Ctx = { t, started: reduce || clock.started, speed, reduce };
 
   const buttonBase =
-    "inline-flex min-h-11 items-center justify-center gap-2 px-3.5 text-[13px] font-medium transition-[color,border-color,transform] duration-[160ms] active:scale-[0.97] active:duration-[120ms] md:min-h-9";
+    T.label + " inline-flex min-h-11 items-center justify-center gap-2 px-3.5 transition-[color,border-color,transform] duration-[160ms] active:scale-[0.97] active:duration-[120ms] md:min-h-9";
 
   return (
-    <section id="demo" className="mx-auto max-w-[1200px] scroll-mt-14 px-4 py-12 sm:px-6 md:py-16" aria-labelledby="demo-title">
-      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-3">
-          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">Replay of a recorded investigation</p>
-          <h2 id="demo-title" className="font-display text-[28px] leading-[1.1] tracking-[-0.01em] text-ink sm:text-4xl">
+    <section id="demo" className="mx-auto max-w-[1200px] scroll-mt-14 px-4 pt-20 md:px-6 md:pt-32" aria-labelledby="demo-title">
+      <div className="mb-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between md:mb-6">
+        <div className="flex flex-col gap-2">
+          <p className={T.label}>Replay of a recorded investigation</p>
+          <h2 id="demo-title" className={T.h1}>
             Watch one alert become an answer.
           </h2>
         </div>
         <div className="flex items-center gap-2">
           {!reduce ? (
-            <div role="group" aria-label="Replay speed" className="inline-flex rounded-lg border border-white/[0.07] p-0.5">
+            <div role="group" aria-label="Replay speed" className="inline-flex rounded-lg border border-white/[0.12] p-0.5">
               {([1, 2] as const).map((value) => (
                 <button
                   key={value}
                   type="button"
                   aria-pressed={speed === value}
                   onClick={() => setSpeed(value)}
-                  className={`${buttonBase} rounded-md font-mono ${
-                    speed === value ? "bg-white/[0.08] text-ink" : "text-ink-2 hover:text-ink"
-                  }`}
+                  className={cn(buttonBase, "rounded-md", speed === value ? "bg-white/[0.08] text-ink" : "text-ink-2 hover:text-ink")}
                 >
                   {value}x
                 </button>
@@ -461,9 +463,12 @@ export function LiveDemo() {
             onClick={() => {
               if (!reduce) clock.restart();
             }}
-            className={`${buttonBase} rounded-lg border ${
-              finished ? "border-accent text-ink" : "border-white/[0.07] text-ink-2 hover:border-white/[0.12] hover:text-ink"
-            } ${reduce ? "cursor-not-allowed opacity-50" : ""}`}
+            className={cn(
+              buttonBase,
+              "rounded-lg border",
+              finished ? "border-accent text-ink" : "border-white/[0.12] text-ink-2 hover:text-ink",
+              reduce && "cursor-not-allowed opacity-50",
+            )}
           >
             <RotateCcw size={14} aria-hidden="true" />
             Replay
@@ -472,8 +477,8 @@ export function LiveDemo() {
       </div>
 
       <ReplayCtx.Provider value={ctx}>
-        <div ref={frameRef} className="rounded-2xl border border-white/[0.07] bg-panel p-4 sm:p-6">
-          <div key={clock.runId} className="flex flex-col gap-4">
+        <div ref={frameRef} className="rounded-xl border border-line bg-panel p-4 md:p-6">
+          <div key={clock.runId} className="flex flex-col gap-3 md:gap-4">
             <div className="flex flex-col md:flex-row md:items-stretch">
               <AlertCard />
               <Connector />
@@ -481,7 +486,7 @@ export function LiveDemo() {
             </div>
             <Lanes />
             <SynthesisBar />
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 md:gap-4">
               <BriefCard />
               <ReplyCard />
             </div>

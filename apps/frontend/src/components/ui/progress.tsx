@@ -1,7 +1,7 @@
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 import type { ComponentPropsWithoutRef } from "react";
 
-import { cn } from "../../lib/utils";
+import { cn } from "../primitives";
 
 type ProgressProps = ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
   value: number;

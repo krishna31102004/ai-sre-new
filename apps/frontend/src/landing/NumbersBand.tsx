@@ -1,12 +1,13 @@
 import { motion, useReducedMotion } from "motion/react";
 import { Link } from "react-router-dom";
+import { cn, T } from "../components/primitives";
 import { SCROLL_IN } from "../motion";
 import { landingStats } from "../mockData";
 
 export function NumbersBand() {
   const reduce = useReducedMotion();
   return (
-    <section aria-label="Benchmark numbers" className="py-10 md:py-14">
+    <section aria-label="Benchmark numbers" className="pt-20 md:pt-32">
       <h2 className="sr-only">Benchmark numbers</h2>
       <div className="border-y border-white/[0.07]">
         <motion.dl
@@ -20,17 +21,17 @@ export function NumbersBand() {
             return (
               <div
                 key={cell.label}
-                className={`px-4 py-8 sm:px-6 ${i % 2 === 1 ? "border-l border-white/[0.07]" : ""} ${
+                className={`px-4 py-8 md:px-6 ${i % 2 === 1 ? "border-l border-white/[0.07]" : ""} ${
                   i > 0 ? "md:border-l md:border-white/[0.07]" : ""
                 } ${i >= 2 ? "border-t border-white/[0.07] md:border-t-0" : ""}`}
               >
                 <div className="flex flex-col-reverse">
-                  <dt className="mt-3 text-[13px] leading-5 text-ink-2">
+                  <dt className={cn(T.small, "mt-1")}>
                     {cell.label}
                   </dt>
-                  <dd className="flex h-7 items-baseline whitespace-nowrap font-mono text-[28px] font-semibold leading-none tabular-nums text-ink sm:h-10 sm:text-[40px]">
+                  <dd className={cn(T.dataLg, "flex items-baseline whitespace-nowrap")}>
                     {prefix ? (
-                      <span className="mr-1.5 text-base font-normal text-ink-2">
+                      <span className={cn(T.small, "mr-2 text-ink-3")}>
                         {prefix}
                       </span>
                     ) : null}
@@ -42,7 +43,7 @@ export function NumbersBand() {
           })}
         </motion.dl>
       </div>
-      <p className="mx-auto mt-4 max-w-[1200px] px-4 text-[13px] leading-5 text-ink-3 sm:px-6">
+      <p className={cn(T.small, "mx-auto mt-4 max-w-[1200px] px-4 text-ink-3 md:px-6")}>
         1 live-captured and 14 synthetic-replay scenarios.{" "}
         <Link
           to="/benchmark"

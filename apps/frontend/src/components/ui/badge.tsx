@@ -1,19 +1,19 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import type { HTMLAttributes } from "react";
 
-import { cn } from "../../lib/utils";
+import { cn } from "../primitives";
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset",
+  "inline-flex min-h-[22px] items-center gap-1.5 rounded-md px-2 font-sans text-label font-medium",
   {
     variants: {
       variant: {
-        default: "bg-white/5 text-slate-300 ring-white/10",
-        accent: "bg-accent/10 text-blue-200 ring-accent/25",
-        success: "bg-healthy/10 text-emerald-300 ring-healthy/25",
-        danger: "bg-firing/10 text-red-300 ring-firing/25",
-        warning: "bg-warning/10 text-amber-200 ring-warning/25",
-        muted: "bg-slate-500/10 text-slate-400 ring-white/10",
+        default: "bg-white/[0.06] text-ink-2",
+        accent: "bg-accent/[0.12] text-accent",
+        success: "bg-healthy/[0.12] text-healthy",
+        danger: "bg-firing/[0.12] text-firing",
+        warning: "bg-warning/[0.12] text-warning",
+        muted: "bg-white/[0.06] text-ink-3",
       },
     },
     defaultVariants: {

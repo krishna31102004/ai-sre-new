@@ -42,7 +42,7 @@ export function OgPage() {
 
   return (
     <div className="relative h-[630px] w-[1200px] overflow-hidden bg-canvas">
-      <div className="absolute left-16 top-14 flex items-center gap-3.5 text-[26px] font-semibold text-ink">
+      <div className="absolute left-16 top-14 flex items-center gap-3.5 font-sans text-[26px] font-semibold text-ink">
         <LogoTile size={44} />
         Glassbox SRE
       </div>
@@ -52,11 +52,11 @@ export function OgPage() {
       <div className="absolute bottom-[112px] left-16 flex gap-16">
         <div>
           <div className="font-mono text-[88px] font-medium leading-none tabular-nums text-accent">{llm.display}</div>
-          <div className="mt-3 font-mono text-[20px] text-ink-2">{llm.label}</div>
+          <div className="mt-3 font-sans text-[20px] text-ink-2">{llm.label}</div>
         </div>
         <div>
           <div className="font-mono text-[88px] font-medium leading-none tabular-nums text-ink-3">{heuristic.display}</div>
-          <div className="mt-3 font-mono text-[20px] text-ink-2">{heuristic.label}</div>
+          <div className="mt-3 font-sans text-[20px] text-ink-2">{heuristic.label}</div>
         </div>
       </div>
       <SignalLine variant="hero" className="absolute bottom-10 left-16 h-12 w-[1072px]" />
