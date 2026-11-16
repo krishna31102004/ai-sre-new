@@ -220,3 +220,4 @@ Done means a small Go service improves the realism of traffic or telemetry gener
 - [x] Verify tests, lint, frontend build, and server-side routes; confirm the OTel submodule remains untouched.
 - [x] Phase 8 complete.
 - 2026-11-15: Frontend revamp phase 1 complete: landing page at `/` (hero, recorded investigation replay, heuristic tie strip, architecture, numbers band), new app shell and nav, investigations table moved to `/investigations`, benchmark restyle with final values on first paint, 404 page, `/system` redirect, pipeline diagram overflow fix, meta tags and OG image. Phase 2 not started.
+- 2026-11-16: Frontend revamp phase 2 complete: investigation detail redesign with suspect commit hero, finding cards, replay strip and tabs; investigations table with filters and mobile cards; benchmark drilldown of all 15 scenarios; Status and Pipeline token polish.

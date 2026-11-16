@@ -1,18 +1,30 @@
-import { Activity, ChevronRight, TerminalSquare } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { api, type InvestigationSummary } from "../api";
-import { ConfidencePill, ErrorState, LoadingState, SeverityBadge, StatusBadge } from "../components";
-import { Badge } from "../components/ui/badge";
-import { relativeTime, truncate } from "../lib";
+import { ErrorState } from "../components";
+import { CommitSummary, FilterChips, Panel, ScoreBar, ServiceChip, StatusDot } from "../components/primitives";
+import { SignalLine } from "../components/SignalLine";
+import { relativeTime } from "../lib";
+
+const GRID = "grid grid-cols-[96px_minmax(0,2fr)_minmax(0,1fr)_120px_96px_20px] lg:grid-cols-[96px_minmax(360px,auto)_minmax(0,1fr)_120px_96px_20px] items-center gap-x-4";
+const ROW_FOCUS = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px]";
+
+function absoluteTime(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function isFiring(item: InvestigationSummary): boolean {
+  return item.status.toLowerCase() === "firing";
+}
 
 export function InvestigationsPage() {
   const [investigations, setInvestigations] = useState<InvestigationSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const knownIds = useRef(new Set<string>());
-  const [newIds, setNewIds] = useState(new Set<string>());
-  const navigate = useNavigate();
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [serviceFilter, setServiceFilter] = useState("all");
 
   useEffect(() => {
     let active = true;
@@ -20,14 +32,6 @@ export function InvestigationsPage() {
       try {
         const data = await api.investigations();
         if (!active) return;
-        const previous = knownIds.current;
-        const incoming = new Set(data.investigations.map((item) => item.investigation_id));
-        if (previous.size) {
-          const added = new Set([...incoming].filter((id) => !previous.has(id)));
-          setNewIds(added);
-          window.setTimeout(() => active && setNewIds(new Set()), 2200);
-        }
-        knownIds.current = incoming;
         setInvestigations(data.investigations);
         setError(null);
       } catch (loadError) {
@@ -42,99 +46,190 @@ export function InvestigationsPage() {
     };
   }, []);
 
-  const summary = investigations ? {
-    total: investigations.length,
-    resolved: investigations.filter((item) => item.status.toLowerCase() === "resolved").length,
-    firing: investigations.filter((item) => item.status.toLowerCase() === "firing").length,
-    averageConfidence: investigations.reduce((total, item) => total + (item.confidence ?? 0), 0) / investigations.length,
-  } : null;
+  const summary = useMemo(() => {
+    if (!investigations) return null;
+    const firing = investigations.filter(isFiring).length;
+    const resolved = investigations.filter((item) => item.status.toLowerCase() === "resolved").length;
+    const average = investigations.length
+      ? investigations.reduce((total, item) => total + (item.confidence ?? 0), 0) / investigations.length
+      : 0;
+    return { total: investigations.length, resolved, firing, average };
+  }, [investigations]);
+
+  const services = useMemo(
+    () => (investigations ? [...new Set(investigations.map((item) => item.service))].sort() : []),
+    [investigations],
+  );
+
+  const visible = useMemo(
+    () =>
+      (investigations ?? []).filter(
+        (item) =>
+          (statusFilter === "all" || item.status.toLowerCase() === statusFilter) &&
+          (serviceFilter === "all" || item.service === serviceFilter),
+      ),
+    [investigations, statusFilter, serviceFilter],
+  );
+
+  const clearFilters = () => {
+    setStatusFilter("all");
+    setServiceFilter("all");
+  };
+
+  const metrics = summary
+    ? [
+        { label: "Total investigations", value: String(summary.total) },
+        { label: "Resolved", value: String(summary.resolved) },
+        { label: "Firing", value: String(summary.firing) },
+        { label: "Average pre-rank score", value: `${Math.round(summary.average * 100)}%` },
+      ]
+    : [];
 
   return (
     <section className="pb-8">
-      <div className="mb-7 flex items-end justify-between gap-4">
-        <div>
-          <p className="eyebrow">Live investigation queue</p>
-          <h1>Investigations</h1>
-          <p className="mt-1 text-sm text-ink-2">Recorded sample data. The live system runs locally against a fault-injected stack.</p>
-          <p className="mt-2 text-sm text-slate-400">The latest 20 evidence-backed investigations, refreshed every 5 seconds.</p>
-        </div>
-        <Badge variant="accent" className="hidden sm:inline-flex">
-          <Activity size={13} />
-          Live polling
-        </Badge>
+      <div className="mb-7">
+        <h1 className="font-display text-[26px] font-normal leading-tight md:text-[32px]">Investigations</h1>
+        <p className="mt-1 text-sm text-ink-2">Recorded sample data. The live system runs locally against a fault-injected stack.</p>
       </div>
+
       {error && <ErrorState message={error} />}
-      {investigations === null && !error && <LoadingState />}
+
       {summary && (
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="soft-card p-4">
-            <p className="label">Total investigations</p>
-            <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{summary.total}</p>
-          </div>
-          <div className="soft-card p-4">
-            <p className="label">Resolved</p>
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-healthy" />
-              <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{summary.resolved}</p>
+        <Panel className="mb-6 grid grid-cols-2 p-0 md:grid-cols-4 md:p-0">
+          {metrics.map((metric, index) => (
+            <div
+              key={metric.label}
+              className={`p-4 md:px-5 ${index % 2 === 1 ? "border-l border-white/[0.07]" : ""} ${index >= 2 ? "border-t border-white/[0.07] md:border-t-0" : ""} ${index > 0 ? "md:border-l md:border-white/[0.07]" : ""}`}
+            >
+              <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3">{metric.label}</p>
+              <p className="mt-1 font-mono text-xl tabular-nums text-ink-2">{metric.value}</p>
             </div>
-          </div>
-          <div className="soft-card p-4">
-            <p className="label">Firing</p>
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-firing pulse-dot" />
-              <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{summary.firing}</p>
-            </div>
-          </div>
-          <div className="soft-card p-4">
-            <p className="label">Average confidence</p>
-            <p className="font-mono text-2xl font-semibold tabular-nums text-slate-100">{Math.round(summary.averageConfidence * 100)}%</p>
-          </div>
+          ))}
+        </Panel>
+      )}
+
+      {summary && summary.total > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <FilterChips
+            ariaLabel="Filter by status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { value: "all", label: "All", count: summary.total },
+              { value: "firing", label: "Firing", count: summary.firing },
+              { value: "resolved", label: "Resolved", count: summary.resolved },
+            ]}
+          />
+          <span className="hidden h-4 w-px bg-white/[0.07] sm:block" aria-hidden="true" />
+          <FilterChips
+            ariaLabel="Filter by service"
+            value={serviceFilter}
+            onChange={setServiceFilter}
+            options={[{ value: "all", label: "All services" }, ...services.map((service) => ({ value: service, label: service }))]}
+          />
         </div>
       )}
-      {investigations?.length === 0 && (
-        <div className="glass-card flex min-h-72 flex-col items-center justify-center border-dashed px-6 text-center">
-          <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-accent/25 bg-accent/10 text-blue-200 shadow-glow"><TerminalSquare size={22} /></span>
-          <h2>No investigations yet</h2>
-          <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">Trigger a supported demo fault from <a className="text-cyan-300 hover:text-cyan-200" href="/status">System status</a> to start an evidence-backed investigation.</p>
+
+      {investigations === null && !error && (
+        <div aria-busy="true" aria-label="Loading investigations">
+          <Panel className="overflow-hidden p-0 md:p-0">
+            {[0, 1, 2, 3, 4].map((row) => (
+              <div key={row} className="flex h-[52px] items-center gap-4 border-b border-white/[0.07] px-4 last:border-b-0 md:px-5">
+                <span className="h-3 w-16 rounded bg-white/[0.04]" />
+                <span className="h-3 w-1/3 rounded bg-white/[0.04]" />
+                <span className="hidden h-3 w-1/4 rounded bg-white/[0.04] md:block" />
+                <span className="ml-auto h-3 w-12 rounded bg-white/[0.04]" />
+              </div>
+            ))}
+          </Panel>
         </div>
       )}
-      {!!investigations?.length && (
-        <div className="glass-card overflow-hidden">
-          <div className="overflow-x-auto">
-          <table className="min-w-[1050px] w-full text-left text-sm">
-            <thead className="border-b border-line bg-black/20 text-[11px] uppercase tracking-[0.12em] text-slate-500">
-              <tr>
-                <th>Started</th><th>Alert</th><th>Service</th><th>Status</th><th>Suspect commit</th><th>Confidence</th><th>Severity</th><th>Runbook</th><th aria-label="Open" />
-              </tr>
-            </thead>
-            <tbody>
-              {investigations.map((item) => {
-                const status = item.status?.toLowerCase();
-                const borderTone = status === "resolved" ? "border-l-healthy" : status === "firing" ? "border-l-accent" : "border-l-transparent";
-                return (
-                <tr
-                  key={item.investigation_id}
-                  onClick={() => navigate(`/investigations/${item.investigation_id}`)}
-                  className={`group cursor-pointer border-b border-l-2 border-b-line/60 ${borderTone} transition duration-150 hover:bg-white/[0.04] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] ${newIds.has(item.investigation_id) ? "new-row" : ""}`}
+
+      {investigations !== null && visible.length === 0 && (
+        <Panel className="flex min-h-64 flex-col items-center justify-center gap-4 text-center">
+          <SignalLine variant="hero" flat className="h-2 w-[120px] text-ink-3" />
+          <p className="text-sm text-ink-2">No investigations match these filters.</p>
+          {(statusFilter !== "all" || serviceFilter !== "all") && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="press inline-flex h-11 items-center rounded-lg border border-white/[0.07] px-4 text-[13px] text-ink hover:border-white/[0.12] nav:h-8"
+            >
+              Clear filters
+            </button>
+          )}
+        </Panel>
+      )}
+
+      {visible.length > 0 && (
+        <>
+          {/* From 768: table rows. */}
+          <Panel className="hidden overflow-hidden p-0 md:block md:p-0">
+            <div className={`${GRID} border-b border-l-2 border-white/[0.07] border-l-transparent px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-3`}>
+              <span>Status</span>
+              <span>Alert</span>
+              <span>Suspect commit</span>
+              <span>Pre-rank score</span>
+              <span>Started</span>
+              <span aria-hidden="true" />
+            </div>
+            <ul>
+              {visible.map((item) => (
+                <li key={item.investigation_id} className="border-b border-white/[0.07] last:border-b-0">
+                  <Link
+                    to={`/investigations/${item.investigation_id}`}
+                    className={`group ${GRID} h-[52px] border-l-2 px-5 transition-colors duration-[120ms] hover:bg-white/[0.03] ${ROW_FOCUS} ${isFiring(item) ? "border-l-firing" : "border-l-transparent"}`}
+                  >
+                    <StatusDot status={item.status} />
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-[14px] font-medium text-ink">{item.alert_name}</span>
+                      <ServiceChip className="shrink-0">{item.service}</ServiceChip>
+                    </span>
+                    {item.suspect_commit_sha ? (
+                      <CommitSummary sha={item.suspect_commit_sha} title={item.suspect_commit_title} />
+                    ) : (
+                      <span className="text-ink-3" aria-label="No suspect commit">-</span>
+                    )}
+                    <ScoreBar value={item.confidence} />
+                    <span className="truncate font-mono text-[12px] tabular-nums text-ink-3" title={absoluteTime(item.started_at)}>
+                      {relativeTime(item.started_at)}
+                    </span>
+                    <ChevronRight size={16} aria-hidden="true" className="text-ink-3 opacity-0 transition-opacity duration-[120ms] group-hover:opacity-100 group-focus-visible:opacity-100" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          {/* Under 768: stacked cards. */}
+          <ul className="flex flex-col gap-3 md:hidden">
+            {visible.map((item) => (
+              <li key={item.investigation_id}>
+                <Link
+                  to={`/investigations/${item.investigation_id}`}
+                  className={`block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2`}
                 >
-                  <td className="whitespace-nowrap font-mono text-xs tabular-nums text-slate-400">{relativeTime(item.started_at)}</td>
-                  <td className="font-medium text-slate-100">{item.alert_name}</td>
-                  <td className="font-mono text-blue-300">{item.service}</td>
-                  <td><StatusBadge status={item.status} /></td>
-                  <td className="max-w-[270px] font-mono text-xs text-slate-300">
-                    {item.suspect_commit_sha ? <span className="flex min-w-0 items-center gap-2"><span className="shrink-0 rounded-md border border-line bg-white/[0.04] px-2 py-1 text-blue-200">{item.suspect_commit_sha.slice(0, 7)}</span><span className="min-w-0 truncate text-slate-400" title={item.suspect_commit_title ?? undefined}>{truncate(item.suspect_commit_title, 40)}</span></span> : "--"}
-                  </td>
-                  <td><ConfidencePill confidence={item.confidence} /></td>
-                  <td><SeverityBadge severity={item.severity} /></td>
-                  <td className="max-w-[180px] truncate text-slate-400">{item.runbook_id ?? "--"}</td>
-                  <td className="pr-5 text-right"><ChevronRight size={16} className="ml-auto text-slate-600 opacity-0 transition duration-150 group-hover:translate-x-0.5 group-hover:text-blue-300 group-hover:opacity-100" /></td>
-                </tr>
-              );})}
-            </tbody>
-          </table>
-          </div>
-          <div className="flex items-center justify-between border-t border-line bg-black/20 px-4 py-2.5 text-xs text-slate-500"><span>Newest investigations appear first.</span><span className="font-mono tabular-nums">{investigations.length} shown</span></div>
-        </div>
+                  <Panel className={`flex flex-col gap-2 hover:border-white/[0.12] ${isFiring(item) ? "border-l-2 border-l-firing" : ""}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <StatusDot status={item.status} />
+                      <span className="font-mono text-[12px] tabular-nums text-ink-3" title={absoluteTime(item.started_at)}>
+                        {relativeTime(item.started_at)}
+                      </span>
+                    </div>
+                    <p className="text-[15px] font-medium text-ink">{item.alert_name}</p>
+                    <div><ServiceChip>{item.service}</ServiceChip></div>
+                    {item.suspect_commit_sha ? (
+                      <CommitSummary sha={item.suspect_commit_sha} title={item.suspect_commit_title} />
+                    ) : (
+                      <span className="text-ink-3" aria-label="No suspect commit">-</span>
+                    )}
+                    <ScoreBar value={item.confidence} />
+                  </Panel>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </section>
   );

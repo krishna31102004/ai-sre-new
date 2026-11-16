@@ -285,7 +285,7 @@ for (const investigation of investigations) {
         { event_type: "alert_received", offset_ms: 0, source: "alertmanager", summary: "Alertmanager delivered firing alert for OTelDemoAdServiceErrors." },
         { event_type: "queued_to_redis", offset_ms: 180, source: "api", summary: "FastAPI acknowledged the webhook and enqueued the investigation job." },
         { event_type: "triage_completed", offset_ms: 1210, source: "worker", summary: "Triage classified the alert as a frontend ad failure with visible 500s." },
-        { event_type: "commit_correlation_completed", offset_ms: 4820, source: "worker", summary: "Commit correlation ranked the frontend ad failure ground-truth commit first." },
+        { event_type: "commit_correlation_completed", offset_ms: 4820, source: "worker", summary: "Commit correlation ranked the frontend ad failure commit that caused it first." },
         { event_type: "runbook_retrieval_completed", offset_ms: 5180, source: "worker", summary: "Runbook retrieval selected the frontend ad failure Signals section." },
         { event_type: "impact_estimation_completed", offset_ms: 5490, source: "worker", summary: `Impact estimation measured 8 failed requests out of ${AD_TOTAL_REQUESTS.toLocaleString("en-US")}.` },
         { event_type: "brief_posted", offset_ms: 20000, source: "slack", summary: "Incident brief posted to Slack thread.", reference: investigation.slack_thread_ts },
@@ -319,14 +319,14 @@ for (const investigation of investigations) {
             makeEvidence("deploy", "payment deploy landed inside the correlation window", "bench-payment-timeout-bad"),
             makeEvidence("diff", "diff lowered authorization timeout below normal p95", "scenarios/benchmark/checkout-payment-timeout/bad-change.md"),
           ],
-          reasoning: "The timeout reduction explains the checkout failures better than the benign payment distractors in the same deploy window.",
+          reasoning: "The timeout reduction explains the checkout failures better than the benign, unrelated payment commits in the same deploy window.",
         },
       ];
       events = buildTimelineEvents(investigation.started_at, [
         { event_type: "alert_received", offset_ms: 0, source: "alertmanager", summary: "Firing alert received for checkout payment failures." },
         { event_type: "queued_to_redis", offset_ms: 210, source: "api", summary: "Webhook accepted and investigation queued in Redis." },
         { event_type: "triage_completed", offset_ms: 980, source: "worker", summary: "Triage tagged the incident as checkout and payment related." },
-        { event_type: "commit_correlation_completed", offset_ms: 4550, source: "worker", summary: "Commit correlation ranked the payment timeout commit above same-service distractors." },
+        { event_type: "commit_correlation_completed", offset_ms: 4550, source: "worker", summary: "Commit correlation ranked the payment timeout commit above unrelated same-service commits." },
         { event_type: "runbook_retrieval_completed", offset_ms: 5030, source: "worker", summary: "Runbook retrieval selected checkout-payment-failure / Signals." },
         { event_type: "impact_estimation_completed", offset_ms: 5410, source: "worker", summary: "Impact estimation measured 64 failed requests out of 2,843." },
         { event_type: "brief_posted", offset_ms: 19000, source: "slack", summary: "Firing brief posted to Slack thread.", reference: investigation.slack_thread_ts },
@@ -396,7 +396,7 @@ for (const investigation of investigations) {
           confidence: investigation.confidence,
           validation_state: investigation.validation_state,
           evidence: [
-            makeEvidence("deploy", "deploy-window correlation favored the top candidate over same-service distractors", `deploy-${investigation.investigation_id}`),
+            makeEvidence("deploy", "deploy-window correlation favored the top candidate over unrelated same-service commits", `deploy-${investigation.investigation_id}`),
             makeEvidence("diff", "diff summary matched the alert symptom and affected service path", `scenario:${investigation.runbook_id}`),
           ],
           reasoning: "The candidate survived deterministic narrowing and remained the strongest explanation after diff review.",
@@ -505,12 +505,40 @@ export type DemoReplay = {
  * Short human summaries of the three frontend commits, taken from the "Change summary"
  * line of each commit's change note in scenarios/ (benchmark/frontend-benign-accessibility-labels/change.md,
  * benchmark/frontend-benign-banner-copy/change.md, otel-demo/frontend/ad-failure-visible-500s.md).
+ * Also covers every candidate commit in the 15 benchmark scenarios: each entry is the "Change summary" line of the
+ * change note that the scenario's deploy_history.json points to (repo_path), lightly capitalised.
  * Keyed by the first 7 characters of the commit SHA.
  */
 export const commitLabels: Record<string, string> = {
   "41080eb": "Ad recommendation failures now surface as visible frontend HTTP 500s",
   d56b8b3: "Add accessible labels to product-card action buttons",
   bcc8aa3: "Update homepage promotional banner copy and button text",
+  "5b82dea": "Lower the payment authorization timeout without adding a retry budget",
+  "4908b73": "Route catalog lookups through a stricter availability check that fails closed",
+  "6f4eb04": "Drop optional fraud metadata before payment authorization, increasing declines",
+  "5147f68": "Add a synchronous inventory enrichment call to catalog listing responses",
+  "23f839d": "Require cart price validation at checkout without handling stale cart rows",
+  a44d68f: "Lower the recommendation client timeout below normal p95 latency",
+  "7f989b8": "Cache zone-rate lookups using an incomplete region key",
+  "8527cb5": "Remove obsolete cart cookie compatibility handling",
+  "6b19fe9": "Normalize card-brand display labels in receipt metadata",
+  bbeffa5: "Rename internal shipping zone labels in structured logs",
+  cc0efff: "Cache cart item prices too aggressively across product updates",
+  f7927bc: "Add structured receipt log fields after successful authorization",
+  "85d3251": "Round displayed exchange rates consistently for product cards",
+  "8aaf682": "Cache zone-rate lookups for repeated checkout estimates",
+  "700abd2": "Adjust default page size for product listing responses",
+  "582281a": "Populate image alt text in catalog API response metadata",
+  "1f88fac": "Add fallback alt text for missing product image descriptions",
+  "243aa8d": "Rewrite image CDN URLs with an invalid variant parameter",
+  f81b7e7: "Switch product images to a transformation endpoint that is not cached",
+  "7e1d2bb": "Add extra consumer lag dimensions to checkout metrics",
+  a5608ff: "Increase checkout event payload size without increasing producer batch limits",
+  "9e38e5b": "Update notification footer copy in email template metadata",
+  "6bb59b7": "Require a new notification template field before the producer sends it",
+  "12ec93f": "Adjust recommendation explanation copy returned in debug metadata",
+  bdee60d: "Keep per-user recommendation candidates in an unbounded in-memory cache",
+  a821fc6: "Add a synchronous carrier quote lookup without timeout isolation",
 };
 
 export function commitLabel(sha: string): string | undefined {
@@ -632,3 +660,82 @@ function buildLandingStats(): LandingStats {
 }
 
 export const landingStats: LandingStats = buildLandingStats();
+
+// ---------------------------------------------------------------------------
+// Benchmark drilldown: per-scenario results for the 15-scenario corpus.
+// Sources (all under artifacts/evaluations/ and scenarios/benchmark/):
+// - comparison-gpt-6-luna-strict-schema.md, section C: scenario source, actual cause, per-mode first picks and the
+//   scenario pre-rank score (null where the table says n/a).
+// - replay-fast: 20260710T091438Z-d63e7dae/results.jsonl; gpt-4.1-mini: 20260710T091445Z-2fc57259/results.jsonl.
+// - gpt-6-luna: the four clean runs 20261114T225714Z-6fa4dfa8, 20261114T225823Z-3dba8984, 20261114T231504Z-bbc3101a,
+//   20261114T231624Z-eed88045 (results.jsonl); `runsRight` counts how many of the four ranked the actual cause first.
+// - candidates and their order: ranked_commit_shas of the first clean luna run (20261114T225714Z-6fa4dfa8); the set
+//   equals each scenario's deploy_history.json. Titles come from scenario.json (via results.jsonl).
+// - per-candidate pre-rank scores are not recorded in the artifacts (only one score per scenario), so they are null.
+// ---------------------------------------------------------------------------
+
+export type BenchmarkModeId = "replay-fast" | "gpt-4.1-mini" | "gpt-6-luna";
+
+export type BenchmarkScenario = {
+  id: string;
+  title: string;
+  capture: "live" | "synthetic";
+  /** 8-char SHA of the commit that caused the incident. */
+  actualCause: string;
+  /** Scenario-level pre-rank score from the comparison table; null when the table says n/a. */
+  preRankScore: number | null;
+  candidates: { sha: string; score: number | null }[];
+  modes: {
+    "replay-fast": { firstPick: string | null; right: boolean | null };
+    "gpt-4.1-mini": { firstPick: string | null; right: boolean | null };
+    "gpt-6-luna": { firstPick: string | null; right: boolean | null; runsRight: number | null };
+  };
+};
+
+export const benchmarkScenarios: BenchmarkScenario[] = [
+  { id: "cart-checkout-failure", title: "Cart checkout failure", capture: "synthetic", actualCause: "23f839de", preRankScore: 0.55,
+    candidates: [{ sha: "23f839de", score: null }, { sha: "8527cb5a", score: null }, { sha: "6b19fe93", score: null }, { sha: "bbeffa5a", score: null }, { sha: "bcc8aa32", score: null }],
+    modes: { "replay-fast": { firstPick: "bbeffa5a", right: false }, "gpt-4.1-mini": { firstPick: "23f839de", right: true }, "gpt-6-luna": { firstPick: "23f839de", right: true, runsRight: 4 } } },
+  { id: "cart-price-staleness", title: "Cart price staleness", capture: "synthetic", actualCause: "cc0efffc", preRankScore: 0.55,
+    candidates: [{ sha: "cc0efffc", score: null }, { sha: "8527cb5a", score: null }, { sha: "f7927bcb", score: null }, { sha: "d56b8b31", score: null }],
+    modes: { "replay-fast": { firstPick: "d56b8b31", right: false }, "gpt-4.1-mini": { firstPick: "cc0efffc", right: true }, "gpt-6-luna": { firstPick: "cc0efffc", right: true, runsRight: 4 } } },
+  { id: "checkout-payment-decline-spike", title: "Checkout payment decline spike", capture: "synthetic", actualCause: "6f4eb04d", preRankScore: 0.55,
+    candidates: [{ sha: "6f4eb04d", score: null }, { sha: "6b19fe93", score: null }, { sha: "f7927bcb", score: null }, { sha: "8aaf682f", score: null }, { sha: "85d3251f", score: null }],
+    modes: { "replay-fast": { firstPick: "6b19fe93", right: false }, "gpt-4.1-mini": { firstPick: "6f4eb04d", right: true }, "gpt-6-luna": { firstPick: "6f4eb04d", right: true, runsRight: 4 } } },
+  { id: "checkout-payment-timeout", title: "Checkout payment timeout", capture: "synthetic", actualCause: "5b82deae", preRankScore: 0.55,
+    candidates: [{ sha: "5b82deae", score: null }, { sha: "6b19fe93", score: null }, { sha: "f7927bcb", score: null }, { sha: "8aaf682f", score: null }, { sha: "85d3251f", score: null }],
+    modes: { "replay-fast": { firstPick: "6b19fe93", right: false }, "gpt-4.1-mini": { firstPick: "5b82deae", right: true }, "gpt-6-luna": { firstPick: "5b82deae", right: true, runsRight: 4 } } },
+  { id: "frontend-ad-failure-visible-500s", title: "Frontend ad failure visible 500s", capture: "live", actualCause: "41080eb5", preRankScore: 0.9,
+    candidates: [{ sha: "41080eb5", score: null }, { sha: "d56b8b31", score: null }, { sha: "bcc8aa32", score: null }, { sha: "f7927bcb", score: null }, { sha: "85d3251f", score: null }, { sha: "8aaf682f", score: null }],
+    modes: { "replay-fast": { firstPick: "d56b8b31", right: false }, "gpt-4.1-mini": { firstPick: "41080eb5", right: true }, "gpt-6-luna": { firstPick: "41080eb5", right: true, runsRight: 4 } } },
+  { id: "frontend-product-catalog-latency", title: "Frontend product catalog latency", capture: "synthetic", actualCause: "5147f682", preRankScore: null,
+    candidates: [{ sha: "5147f682", score: null }, { sha: "700abd2f", score: null }, { sha: "582281ad", score: null }, { sha: "d56b8b31", score: null }, { sha: "85d3251f", score: null }],
+    modes: { "replay-fast": { firstPick: "d56b8b31", right: false }, "gpt-4.1-mini": { firstPick: "d56b8b31", right: false }, "gpt-6-luna": { firstPick: "5147f682", right: true, runsRight: 4 } } },
+  { id: "frontend-product-catalog-unavailable", title: "Frontend product catalog unavailable", capture: "synthetic", actualCause: "4908b736", preRankScore: null,
+    candidates: [{ sha: "4908b736", score: null }, { sha: "700abd2f", score: null }, { sha: "582281ad", score: null }, { sha: "bcc8aa32", score: null }, { sha: "8aaf682f", score: null }],
+    modes: { "replay-fast": { firstPick: "bcc8aa32", right: false }, "gpt-4.1-mini": { firstPick: "4908b736", right: true }, "gpt-6-luna": { firstPick: "4908b736", right: true, runsRight: 4 } } },
+  { id: "image-cdn-errors", title: "Image CDN errors", capture: "synthetic", actualCause: "243aa8d7", preRankScore: 0.9,
+    candidates: [{ sha: "243aa8d7", score: null }, { sha: "1f88fac4", score: null }, { sha: "d56b8b31", score: null }, { sha: "85d3251f", score: null }],
+    modes: { "replay-fast": { firstPick: "d56b8b31", right: false }, "gpt-4.1-mini": { firstPick: "243aa8d7", right: true }, "gpt-6-luna": { firstPick: "243aa8d7", right: true, runsRight: 4 } } },
+  { id: "image-slow-load", title: "Image slow load", capture: "synthetic", actualCause: "f81b7e7e", preRankScore: 0.9,
+    candidates: [{ sha: "f81b7e7e", score: null }, { sha: "bcc8aa32", score: null }, { sha: "1f88fac4", score: null }, { sha: "700abd2f", score: null }],
+    modes: { "replay-fast": { firstPick: "bcc8aa32", right: false }, "gpt-4.1-mini": { firstPick: "f81b7e7e", right: true }, "gpt-6-luna": { firstPick: "f81b7e7e", right: true, runsRight: 4 } } },
+  { id: "kafka-checkout-queue-lag", title: "Kafka checkout queue lag", capture: "synthetic", actualCause: "a5608ff5", preRankScore: 0.9,
+    candidates: [{ sha: "a5608ff5", score: null }, { sha: "7e1d2bbd", score: null }, { sha: "9e38e5b3", score: null }, { sha: "6b19fe93", score: null }],
+    modes: { "replay-fast": { firstPick: "a5608ff5", right: true }, "gpt-4.1-mini": { firstPick: "a5608ff5", right: true }, "gpt-6-luna": { firstPick: "a5608ff5", right: true, runsRight: 4 } } },
+  { id: "kafka-email-consumer-errors", title: "Kafka email consumer errors", capture: "synthetic", actualCause: "6bb59b78", preRankScore: 0.9,
+    candidates: [{ sha: "6bb59b78", score: null }, { sha: "9e38e5b3", score: null }, { sha: "7e1d2bbd", score: null }, { sha: "f7927bcb", score: null }],
+    modes: { "replay-fast": { firstPick: "6bb59b78", right: true }, "gpt-4.1-mini": { firstPick: "6bb59b78", right: true }, "gpt-6-luna": { firstPick: "6bb59b78", right: true, runsRight: 4 } } },
+  { id: "recommendation-cache-leak", title: "Recommendation cache leak", capture: "synthetic", actualCause: "bdee60d6", preRankScore: null,
+    candidates: [{ sha: "bdee60d6", score: null }, { sha: "12ec93f8", score: null }, { sha: "41080eb5", score: null }, { sha: "1f88fac4", score: null }],
+    modes: { "replay-fast": { firstPick: "1f88fac4", right: false }, "gpt-4.1-mini": { firstPick: "bdee60d6", right: true }, "gpt-6-luna": { firstPick: "bdee60d6", right: true, runsRight: 4 } } },
+  { id: "recommendation-timeout", title: "Recommendation timeout", capture: "synthetic", actualCause: "a44d68f3", preRankScore: null,
+    candidates: [{ sha: "a44d68f3", score: null }, { sha: "d56b8b31", score: null }, { sha: "12ec93f8", score: null }, { sha: "582281ad", score: null }],
+    modes: { "replay-fast": { firstPick: "d56b8b31", right: false }, "gpt-4.1-mini": { firstPick: "d56b8b31", right: false }, "gpt-6-luna": { firstPick: "a44d68f3", right: true, runsRight: 4 } } },
+  { id: "shipping-rate-timeout", title: "Shipping rate timeout", capture: "synthetic", actualCause: "a821fc67", preRankScore: 0.55,
+    candidates: [{ sha: "a821fc67", score: null }, { sha: "bbeffa5a", score: null }, { sha: "8527cb5a", score: null }, { sha: "f7927bcb", score: null }],
+    modes: { "replay-fast": { firstPick: "8527cb5a", right: false }, "gpt-4.1-mini": { firstPick: "a821fc67", right: true }, "gpt-6-luna": { firstPick: "a821fc67", right: true, runsRight: 4 } } },
+  { id: "shipping-zone-rate-cache", title: "Shipping zone rate cache", capture: "synthetic", actualCause: "7f989b87", preRankScore: 0.55,
+    candidates: [{ sha: "7f989b87", score: null }, { sha: "bbeffa5a", score: null }, { sha: "8527cb5a", score: null }, { sha: "85d3251f", score: null }],
+    modes: { "replay-fast": { firstPick: "85d3251f", right: false }, "gpt-4.1-mini": { firstPick: "7f989b87", right: true }, "gpt-6-luna": { firstPick: "7f989b87", right: true, runsRight: 4 } } },
+];

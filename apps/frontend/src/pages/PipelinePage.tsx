@@ -16,6 +16,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { getAllMockInvestigationDetails, mockBenchmark } from "../mockData";
 import { Badge } from "../components/ui/badge";
+import { Eyebrow, Panel } from "../components/primitives";
 
 type PipelineNode = {
   id: string;
@@ -479,16 +480,16 @@ export function PipelinePage() {
     <section className="pb-8">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">System architecture</p>
-          <h1>Pipeline</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+          <Eyebrow>System architecture</Eyebrow>
+          <h1 className="font-display text-[26px] font-normal leading-tight tracking-normal text-ink md:text-[32px]">Pipeline</h1>
+          <p className="mt-2 max-w-3xl text-[14px] leading-6 text-ink-2">
             This is the end-to-end Glassbox SRE flow from alert fire to postmortem generation. The three investigator branches pulse together to show the parallel evidence paths that feed one grounded incident brief.
           </p>
         </div>
         <Badge variant="accent">Interactive walkthrough</Badge>
       </div>
 
-      <div className="pipeline-surface glass-card p-6">
+      <Panel className="pipeline-surface md:p-6">
         {isMobile && (
           <p className="mb-3 text-[12px] leading-4 text-ink-3">Best viewed on desktop. Scroll sideways to explore.</p>
         )}
@@ -566,10 +567,10 @@ export function PipelinePage() {
           </div>
         </div>
         </div>
-      </div>
+      </Panel>
 
       {!hasExplored && (
-        <p className="mt-4 text-center text-sm text-slate-500">
+        <p className="mt-4 text-center text-[14px] text-ink-3">
           Click to explore each stage of the Glassbox SRE investigation pipeline.
         </p>
       )}

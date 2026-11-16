@@ -139,3 +139,8 @@ This file is the running log for architectural and scope decisions. Add a dated 
 - 2026-11-15: Motion uses `motion` (motion/react) only, easing cubic-bezier(0.23, 1, 0.32, 1), press scale 0.97 over 120 ms, 300 ms maximum for UI motion except the landing hero intro and the investigation replay. No GSAP, smooth-scroll libraries, Three.js or WebGL. Every animation has a reduced-motion fallback.
 - 2026-11-15: Landing and OG figures are derived from `mockData.ts` (`landingStats`, `demoReplay`, `heuristicTie`); benchmark numbers are never typed into components. The heuristic tie rows are the real deploy records from `scenarios/benchmark/frontend-ad-failure-visible-500s/deploy_history.json`.
 - 2026-11-15: Stay on Tailwind 3; do not migrate to Tailwind 4 or shadcn CLI v4. Pages other than the landing page are lazy-loaded.
+- 2026-11-16: Model scores are labelled "pre-rank score" everywhere in the UI, never "confidence".
+- 2026-11-16: Benchmark drilldown data is copied from `artifacts/evaluations/comparison-gpt-6-luna-strict-schema.md` and the four clean run folders, with per-candidate scores left null because the artifacts record one score per scenario.
+- 2026-11-16: Commit text in the UI is the human change summary from each scenario's change notes, with the raw title in a tooltip.
+- 2026-11-16: The header demo pill was removed in favour of a subtitle on `/investigations` and the footer note.
+- 2026-11-16: Shared UI primitives live in `apps/frontend/src/components/primitives.tsx`.

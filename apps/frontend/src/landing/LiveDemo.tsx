@@ -41,8 +41,8 @@ export const BEATS = {
 
 const RING_END = BEATS.alert + BEATS.ringPulses * BEATS.ringDur;
 
-type Ctx = { t: number; started: boolean; speed: number; reduce: boolean };
-const ReplayCtx = createContext<Ctx>({ t: 0, started: false, speed: 1, reduce: false });
+export type Ctx = { t: number; started: boolean; speed: number; reduce: boolean };
+export const ReplayCtx = createContext<Ctx>({ t: 0, started: false, speed: 1, reduce: false });
 
 function useOn(beat: number) {
   const { t, started, reduce } = useContext(ReplayCtx);
@@ -231,7 +231,7 @@ function TriageChip() {
   );
 }
 
-function Lane({
+export function Lane({
   title,
   resolveAt,
   result,

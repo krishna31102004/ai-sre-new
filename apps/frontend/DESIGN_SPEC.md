@@ -173,3 +173,60 @@ The diagram's natural size stays 1100x648. Wrap the existing grid in a scaler: m
 ## 8. Budgets
 
 Lighthouse desktop performance 90 or higher, FCP under 1.5s, CLS 0, added JS under 120 KB gzip. `npm run build` passes with zero TypeScript errors. No horizontal scroll or overlap at 390, 768, 1024, 1280, 1440.
+
+## 9. Phase 2
+
+Sections 0, 1 and 8 still apply. Model scores are always labelled "pre-rank score", never "confidence". No visible copy contains "Seed", "distractor" or "ground truth"; commit text is always the human summary from `commitLabel(sha)` with the raw title in the `title` attribute.
+
+### 9a. Shared primitives (`src/components/primitives.tsx`, built in P1, reused by P2 to P4)
+
+- `Panel`: `bg-panel`, 1px `line` border, radius 12, padding 20 (16 under 768).
+- `Eyebrow`: 11px mono uppercase, tracking 0.08em, `ink-3`.
+- `StatusDot`: 6px dot plus 12px mono uppercase label. firing: `firing` colour, dot opacity pulses 1 to 0.4 over 2s (static under reduced motion). resolved: `healthy`. Anything else: `ink-3`.
+- `ServiceChip`: 22px tall, 12px mono `ink-2`, 1px `line` border, radius 6, 8px side padding.
+- `ScoreBar`: 48px by 2px track (white 7%), `accent` fill, then the number in 12px mono with 2 decimals. Props `value`, `label` (default "pre-rank score", used as aria-label and `title`).
+- `CommitSummary`: 7-char SHA in 12px mono `accent`, then the summary in 14px `ink`, single line, truncated.
+- `FilterChips`: 28px pills, 12px, 1px `line` border, `ink-2`; selected is `bg-white/[0.08]` and `ink`; `aria-pressed`; `.press`; optional count in `ink-3`.
+- Focus everywhere: `focus-visible` 2px `accent` ring, 2px offset.
+- Page heading on every app page: display font 32px (26px under 768), then one 14px `ink-2` subtitle.
+
+### 9b. Investigation detail
+
+Order, top to bottom:
+
+1. Back link "Investigations" with a left arrow, 13px `ink-3`.
+2. Header: alert name as the page heading. Below it one wrapping row: `StatusDot`, `ServiceChip`, then 12px mono `ink-3` "Started {time} · Resolved {time} · Duration 6m 14s". Firing: "Started {time} · Not resolved", no duration. The disabled Slack and LangSmith buttons with their tooltips sit at the right (below the row under 768).
+3. Tabs: Brief, Timeline, Raw. Text tabs, 13px, 40px tall, a bottom 1px `line`; the active tab is `ink` with a 2px `accent` underline that slides (`layoutId`, 200ms, instant under reduced motion). Arrow keys move between tabs. State lives in `?tab=`. Tab content swaps with no animation.
+
+Brief tab:
+
+- Suspect commit hero: `bg-elevated` panel, 2px `accent` left border, padding 24. Left: Eyebrow "Suspect commit", 14px mono SHA, the summary in the display font at 28px (20px under 768), then "Top evidence": up to 3 evidence lines from the top finding, each an 11px mono `ink-3` kind tag, a 13px `ink-2` summary and a 12px mono `ink-3` reference. Right, 200px wide (stacked below under 768): the score in mono 40px `ink`, label "pre-rank score", a full-width 2px bar, then a validation badge (validated: `healthy` outline; otherwise `ink-3` outline).
+- No candidates: same panel with a dashed border and no accent: "No commit candidates in the lookback window." and "The agent reports that instead of guessing."
+- Three finding cards, equal height, 3 columns from 1024, 1 column below, gap 16:
+  - Commit correlation: "{n} candidates ranked", then up to 3 rows in the HeuristicTie row style (`CommitSummary` plus `ScoreBar`); the top row carries a 2px `healthy` left bar.
+  - Runbook: runbook id in 14px mono `ink`, "Section: {section}", `ScoreBar` with label "retrieval score". Empty: "No runbook matched."
+  - Impact: three stat blocks in a row (label 11px mono `ink-3`, value 24px mono `ink`): Error rate, Affected requests, Severity. Under Error rate a 2px bar scaled 0 to 5% with the caption "scale 0 to 5%". Severity "page" is `firing`, anything else `ink-2`.
+- Replay strip: a Panel. Header: "Replay this investigation", the 11px mono `ink-3` label "Replay, timing compressed", and a secondary Replay button on the right. Body: three lanes (Commits, Runbook, Impact) using the exported `Lane` from `LiveDemo.tsx`, pending until the lane's first event, running until its last, then showing the same value as its finding card. Under the lanes a 2px progress line with a tick per event at its proportional position, and the current event's summary in 13px `ink-2` with its real offset ("+2.4s"). Use the stored event timestamps from the first event to the last one before `resolved`, scaled linearly to 8s. Starts at 30% in view. Reduced motion: final state, no clock.
+
+Timeline tab: a 1px `line` rail with 8px dots (`firing` for the alert, `healthy` for resolved, `accent` otherwise). Each row: a 72px column with the offset from the first event in 12px mono `ink-3` ("+0.0s", "+6m 14s"), the event label in 14px `ink`, the summary in 13px `ink-2`, the source as a `ServiceChip`, the reference in 12px mono. No entrance animation.
+
+Raw tab: a terminal block (`bg-canvas`, 1px `line`, radius 12). Header bar: "rendered brief" in 11px mono `ink-3` and a Copy button that switches to a check for 1.5s. Body: `pre` in 13px/22px mono `ink-2`, wrapping. No fake window dots.
+
+### 9c. Investigations table
+
+- The metric cards become one quiet strip: a single Panel, 4 cells split by `line` dividers (2 by 2 under 768), label 11px mono `ink-3`, value 20px mono `ink-2`. No accent colour.
+- Filter row: `FilterChips` All, Firing, Resolved with counts, a 1px by 16px divider, then service chips ("All services" plus each service). Wraps.
+- Table from 768: 52px rows. Columns: Status (`StatusDot`), Alert (name in 14px `ink` 500, then `ServiceChip`), Suspect commit (`CommitSummary`), Pre-rank score (`ScoreBar`), Started (relative, absolute in `title`). Header 11px mono uppercase `ink-3`. Firing rows carry a 2px `firing` left border. The whole row is one link; hover is `bg-white/[0.03]` in 120ms and reveals a right chevron in `ink-3`; focus ring inset.
+- Under 768: each row is a Panel card. Line 1: `StatusDot` and relative time. Line 2: alert name in 15px. Line 3: `ServiceChip`. Line 4: `CommitSummary`. Line 5: `ScoreBar`.
+- Empty: a flat SignalLine 120px wide in `ink-3`, "No investigations match these filters." and a "Clear filters" button. Loading: 5 static 52px skeleton rows with `bg-white/[0.04]` blocks, no shimmer.
+
+### 9d. Benchmark drilldown
+
+Placed under the comparison table and above Limitations. Eyebrow "All 15 scenarios", sub "First pick per mode. Expand a row for the ranked candidates.", then `FilterChips`: All, Heuristics missed, Mini missed, with counts.
+
+- Row, 52px, a full-width button with `aria-expanded`: chevron (rotates 90 degrees in 200ms), the readable title in 14px `ink` with the scenario id under it in 11px mono `ink-3` (id hidden under 768), a "live" badge (`healthy` outline) or "synthetic" badge (`ink-3` outline), then three fixed 88px mode columns headed replay-fast, gpt-4.1-mini and gpt-6-luna (56px columns headed RF, MINI and LUNA under 768). Each cell: a 16px check in `healthy` or an x in `firing`, with an aria-label. The luna cell adds "{n}/4" in 11px mono. If a per-scenario pick is not in the artifacts, show a dash in `ink-3` with the title "not recorded". Never infer one.
+- Expanded: height and opacity over 200ms (instant under reduced motion); several rows may be open. Content sits on `bg-canvas` and lists the ranked candidates in the HeuristicTie row style: rank, `CommitSummary`, `ScoreBar`, then small tags for each mode that picked it and an "actual cause" tag in `healthy` on the right commit.
+
+### 9e. Status and Pipeline
+
+Tokens and polish only. Both get the 9a page heading, `Panel` surfaces, Eyebrow labels and the focus ring. Status: each dependency row uses `StatusDot` (ok is `healthy`, down is `firing`) with values in 12px mono; fault-control buttons get `.press` and a hover of `bg-white/[0.06]`. Pipeline: header, note and outer panel borders move to the tokens. Nodes, overlay, connectors and fault-control behaviour are untouched.
