@@ -332,7 +332,7 @@ function SynthesisBar() {
   const text = useTransition(BEATS.laneFade);
   const { synthesis } = demoReplay;
   return (
-    <div className="relative h-11 overflow-hidden rounded-xl border border-white/[0.07]">
+    <div className="relative min-h-11 overflow-hidden rounded-xl border border-white/[0.07]">
       <motion.div
         className="absolute inset-0 origin-left bg-accent/[0.14]"
         initial={reduce ? false : { scaleX: 0 }}
@@ -340,7 +340,7 @@ function SynthesisBar() {
         transition={fill}
         aria-hidden="true"
       />
-      <div className="relative flex h-full items-center justify-between gap-3 px-4">
+      <div className="relative flex min-h-11 flex-col justify-center gap-0.5 px-4 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-0">
         <motion.span
           className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-2"
           initial={reduce ? false : { opacity: 0 }}
@@ -351,7 +351,7 @@ function SynthesisBar() {
           {synthesis.label}
         </motion.span>
         <motion.span
-          className="truncate text-[13px] text-ink"
+          className="text-[13px] text-ink sm:truncate"
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: summaryOn ? 1 : 0 }}
           transition={text}

@@ -5,10 +5,8 @@ import { useEffect, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
-import { DEMO_MODE } from "./api";
 import { SignalLine } from "./components/SignalLine";
 import { Progress } from "./components/ui/progress";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip";
 import { DUR, EASE } from "./motion";
 
 const REPO_URL = "https://github.com/krishna31102004/ai-sre-new";
@@ -30,31 +28,6 @@ function Logo() {
       </span>
       Glassbox SRE
     </NavLink>
-  );
-}
-
-function DemoPill() {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          aria-label="Demo mode, sample data"
-          className="relative inline-flex h-7 shrink-0 items-center gap-2 rounded-full border border-line px-3 font-mono text-[11px] text-ink-2 transition-[border-color] duration-[160ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-white/[0.12] before:absolute before:-inset-y-2 before:inset-x-0 before:content-['']"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-          <span className="max-[479px]:hidden">Demo mode · sample data</span>
-          <span className="hidden max-[479px]:inline">Demo</span>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>
-        Running on sample data. Full setup on{" "}
-        <a className="text-accent underline-offset-2 hover:underline" href={REPO_URL} target="_blank" rel="noreferrer">
-          GitHub
-        </a>
-        .
-      </TooltipContent>
-    </Tooltip>
   );
 }
 
@@ -154,7 +127,6 @@ export function Shell({ children }: PropsWithChildren) {
             })}
           </nav>
           <div className="ml-auto flex items-center gap-3">
-            {DEMO_MODE && <DemoPill />}
             <a
               href={REPO_URL}
               target="_blank"

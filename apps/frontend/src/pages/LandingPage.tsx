@@ -6,8 +6,7 @@ import { LiveDemo } from "../landing/LiveDemo";
 import { NumbersBand } from "../landing/NumbersBand";
 import { StackChips } from "../landing/StackChips";
 
-// TODO: replace with the real LinkedIn profile URL
-export const LINKEDIN_URL = "https://www.linkedin.com/in/REPLACE_ME";
+export const LINKEDIN_URL = "https://www.linkedin.com/in/krishnabalaji";
 
 export function LandingPage() {
   return (

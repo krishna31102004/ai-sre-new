@@ -55,6 +55,7 @@ export function InvestigationsPage() {
         <div>
           <p className="eyebrow">Live investigation queue</p>
           <h1>Investigations</h1>
+          <p className="mt-1 text-sm text-ink-2">Recorded sample data. The live system runs locally against a fault-injected stack.</p>
           <p className="mt-2 text-sm text-slate-400">The latest 20 evidence-backed investigations, refreshed every 5 seconds.</p>
         </div>
         <Badge variant="accent" className="hidden sm:inline-flex">
