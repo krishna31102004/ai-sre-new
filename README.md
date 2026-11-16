@@ -9,7 +9,7 @@ creates a blameless postmortem from the stored event log.
 
 ## Live Demo
 
-Portfolio demo URL: `https://<vercel-demo-url>`
+Portfolio demo URL: `[https://<vercel-demo-url>](https://ai-sre-new.vercel.app/)`
 
 The Vercel demo is a static frontend build running with `VITE_DEMO_MODE=true`,
 so anyone can explore the dashboard with realistic investigation data and no
