@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Logo } from "../components/Logo";
 import { cn, T } from "../components/primitives";
 
 const REPO_URL = "https://github.com/krishna31102004/ai-sre-new";
@@ -18,7 +19,10 @@ export function Footer({ linkedinUrl }: { linkedinUrl: string }) {
     <footer className="border-t border-line">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
         <div>
-          <p className={T.h3}>Glassbox SRE</p>
+          <p className={cn(T.h3, "flex items-center gap-2")}>
+            <Logo size={24} />
+            Glassbox SRE
+          </p>
           <p className={cn(T.small, "mt-2 text-ink-3")}>
             Built by{" "}
             <a

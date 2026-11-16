@@ -1,23 +1,8 @@
 import { SignalLine } from "../components/SignalLine";
-import { Signal } from "lucide-react";
+import { Logo } from "../components/Logo";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { landingStats } from "../mockData";
-
-function LogoTile({ size }: { size: number }) {
-  return (
-    <span
-      className="relative flex items-center justify-center border border-line bg-ink/[0.06] text-ink"
-      style={{ width: size, height: size, borderRadius: Math.round(size * 0.22) }}
-    >
-      <Signal size={Math.round(size * 0.53)} strokeWidth={2.6} />
-      <span
-        className="absolute rounded-full bg-healthy"
-        style={{ width: size * 0.28, height: size * 0.28, right: -size * 0.04, top: -size * 0.04 }}
-      />
-    </span>
-  );
-}
 
 /** Fixed-size frames for headless capture of public/og.png (1200x630) and public/apple-touch-icon.png (180x180, ?icon=1). */
 export function OgPage() {
@@ -35,15 +20,15 @@ export function OgPage() {
   if (params.get("icon") === "1") {
     return (
       <div className="flex h-[180px] w-[180px] items-center justify-center overflow-hidden bg-canvas">
-        <LogoTile size={96} />
+        <Logo size={120} />
       </div>
     );
   }
 
   return (
     <div className="relative h-[630px] w-[1200px] overflow-hidden bg-canvas">
-      <div className="absolute left-16 top-14 flex items-center gap-3.5 font-sans text-[26px] font-semibold text-ink">
-        <LogoTile size={44} />
+      <div className="absolute left-16 top-14 flex items-center gap-2 font-sans text-[26px] font-semibold text-ink">
+        <Logo size={44} />
         Glassbox SRE
       </div>
       <h1 className="absolute left-16 top-[128px] w-[960px] font-display text-[76px] font-normal leading-[1] tracking-[-0.01em] text-ink">

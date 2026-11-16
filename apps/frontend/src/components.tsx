@@ -1,10 +1,11 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { ChevronDown, Github, Menu, Signal, X } from "lucide-react";
+import { ChevronDown, Github, Menu, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
+import { Logo } from "./components/Logo";
 import { SignalLine } from "./components/SignalLine";
 import { cn, sentenceCase, T } from "./components/primitives";
 import { Progress } from "./components/ui/progress";
@@ -20,13 +21,10 @@ const NAV_LINKS = [
   { to: "/status", label: "Status", end: false },
 ];
 
-function Logo() {
+function BrandLink() {
   return (
-    <NavLink to="/" className={cn(T.h3, "press flex shrink-0 items-center gap-2.5 rounded-md")}>
-      <span className="relative flex h-7 w-7 items-center justify-center rounded-md border border-line bg-ink/[0.06] text-ink">
-        <Signal size={15} strokeWidth={2.6} />
-        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-healthy pulse-dot" />
-      </span>
+    <NavLink to="/" className={cn(T.h3, "press flex shrink-0 items-center gap-2 rounded-md")}>
+      <Logo size={24} />
       Glassbox SRE
     </NavLink>
   );
@@ -104,7 +102,7 @@ export function Shell({ children }: PropsWithChildren) {
     <div className="flex min-h-screen flex-col bg-canvas text-ink">
       <header className="sticky top-0 z-30 h-14 border-b border-line bg-canvas/70 backdrop-blur-md">
         <div className="mx-auto flex h-full max-w-[1200px] items-center gap-4 px-4 md:px-6">
-          <Logo />
+          <BrandLink />
           <nav aria-label="Primary" className="ml-4 hidden items-center gap-1 nav:flex">
             {NAV_LINKS.map(({ to, label, end }) => {
               const active = isActive(to, end);
