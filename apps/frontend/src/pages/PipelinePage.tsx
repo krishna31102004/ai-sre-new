@@ -12,7 +12,7 @@ import {
   Workflow,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { getAllMockInvestigationDetails, mockBenchmark } from "../mockData";
 import { Badge } from "../components/ui/badge";
@@ -38,6 +38,8 @@ type PipelineEdge = {
 
 const SVG_WIDTH = 1100;
 const SVG_HEIGHT = 648;
+const STAGE_WIDTH = 1180;
+const MOBILE_QUERY = "(max-width: 767px)";
 
 const rowLabels = ["Ingest", "Investigate", "Report"];
 
@@ -360,6 +362,14 @@ export function PipelinePage() {
   const [hasExplored, setHasExplored] = useState(false);
   const [layout, setLayout] = useState({ width: SVG_WIDTH, height: SVG_HEIGHT, edges: [] as PipelineEdge[] });
   const gridRef = useRef<HTMLDivElement>(null);
+  const holderRef = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState(STAGE_WIDTH);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(MOBILE_QUERY).matches,
+  );
+  const scale = isMobile ? 1 : Math.min(1, availableWidth / STAGE_WIDTH);
+  const scaleRef = useRef(scale);
+  scaleRef.current = scale;
   const nodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const selectedNode = useMemo(
@@ -381,35 +391,53 @@ export function PipelinePage() {
   }, [selectedNode]);
 
   useEffect(() => {
+    const query = window.matchMedia(MOBILE_QUERY);
+    const onChange = () => setIsMobile(query.matches);
+    onChange();
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  useLayoutEffect(() => {
+    const holder = holderRef.current;
+    if (!holder) return;
+    const observer = new ResizeObserver(() => setAvailableWidth(holder.clientWidth));
+    observer.observe(holder);
+    setAvailableWidth(holder.clientWidth);
+    return () => observer.disconnect();
+  }, [isMobile]);
+
+  useEffect(() => {
     let resizeTimer: number | undefined;
 
     const measureConnectors = () => {
       const grid = gridRef.current;
       if (!grid) return;
 
+      const s = scaleRef.current || 1;
       const gridRect = grid.getBoundingClientRect();
       const anchors = Object.fromEntries(
         pipelineNodes.flatMap((node) => {
           const card = nodeRefs.current[node.id];
           if (!card) return [];
           const rect = card.getBoundingClientRect();
-          const left = rect.left - gridRect.left;
-          const top = rect.top - gridRect.top;
+          const left = (rect.left - gridRect.left) / s;
+          const top = (rect.top - gridRect.top) / s;
           return [[node.id, {
             left,
-            right: rect.right - gridRect.left,
+            right: (rect.right - gridRect.left) / s,
             top,
-            bottom: rect.bottom - gridRect.top,
-            centerX: left + rect.width / 2,
-            centerY: top + rect.height / 2,
+            bottom: (rect.bottom - gridRect.top) / s,
+            centerX: left + rect.width / s / 2,
+            centerY: top + rect.height / s / 2,
           } satisfies CardAnchor]];
         }),
       ) as Record<string, CardAnchor>;
 
       if (Object.keys(anchors).length !== pipelineNodes.length) return;
       setLayout({
-        width: gridRect.width,
-        height: gridRect.height,
+        width: gridRect.width / s,
+        height: gridRect.height / s,
         edges: edgeDefinitions.map((edge) => buildConnectorPath(edge, anchors)),
       });
     };
@@ -427,7 +455,7 @@ export function PipelinePage() {
       window.clearTimeout(resizeTimer);
       window.removeEventListener("resize", onResize);
     };
-  }, []);
+  }, [scale]);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -460,10 +488,26 @@ export function PipelinePage() {
         <Badge variant="accent">Interactive walkthrough</Badge>
       </div>
 
-      <div className="pipeline-surface glass-card overflow-x-auto p-6">
-        <div className="pipeline-stage relative mx-auto w-[1180px]">
+      <div className="pipeline-surface glass-card p-6">
+        {isMobile && (
+          <p className="mb-3 text-[12px] leading-4 text-ink-3">Best viewed on desktop. Scroll sideways to explore.</p>
+        )}
+        <div
+          ref={holderRef}
+          className={isMobile ? "overflow-x-auto rounded-xl border border-white/[0.12]" : ""}
+          style={isMobile ? undefined : { height: SVG_HEIGHT * scale, width: "100%" }}
+        >
+        <div
+          className="pipeline-stage relative"
+          style={{
+            width: STAGE_WIDTH,
+            height: SVG_HEIGHT,
+            transform: isMobile ? undefined : `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
           {rowLabels.map((label, index) => (
-            <span key={label} className={`pipeline-row-label pipeline-row-label-${index}`}>
+            <span key={label} className={`pipeline-row-label pipeline-row-label-${index}`} style={isMobile ? { left: 0 } : undefined}>
               {label}
             </span>
           ))}
@@ -520,6 +564,7 @@ export function PipelinePage() {
             </div>
           ))}
           </div>
+        </div>
         </div>
       </div>
 

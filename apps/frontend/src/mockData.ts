@@ -15,6 +15,7 @@ type TimelineStep = {
   reference?: string | null;
 };
 
+const AD_TOTAL_REQUESTS = 5797;
 const slackChannel = "C08GLASSBOX";
 const traceBase = "https://smith.langchain.com/public/";
 
@@ -262,7 +263,7 @@ for (const investigation of investigations) {
         "validation: validated (evidence: frontend deployment preceded the alert by 15 minutes; diff added fail-closed ad rendering path when upstream ads are unavailable)",
         "runbook: otel-demo.frontend-ad-failure / Signals (evidence: tag match on frontend + ad failure; embedding rank favored the ad failure runbook over generic frontend errors)",
         "runbook score: 0.98 (evidence: tag match on frontend + ad failure; embedding rank favored the ad failure runbook over generic frontend errors)",
-        "impact: error_rate=0.0014, affected_requests=8, severity=ticket (evidence: Computed 8 frontend 500s out of 5797 requests.)",
+        `impact: error_rate=0.0014, affected_requests=8, severity=ticket (evidence: Computed 8 frontend 500s out of ${AD_TOTAL_REQUESTS} requests.)`,
         "latency_p95_ms: not available",
       ].join("\n");
       findings = [
@@ -286,7 +287,7 @@ for (const investigation of investigations) {
         { event_type: "triage_completed", offset_ms: 1210, source: "worker", summary: "Triage classified the alert as a frontend ad failure with visible 500s." },
         { event_type: "commit_correlation_completed", offset_ms: 4820, source: "worker", summary: "Commit correlation ranked the frontend ad failure ground-truth commit first." },
         { event_type: "runbook_retrieval_completed", offset_ms: 5180, source: "worker", summary: "Runbook retrieval selected the frontend ad failure Signals section." },
-        { event_type: "impact_estimation_completed", offset_ms: 5490, source: "worker", summary: "Impact estimation measured 8 failed requests out of 5,797." },
+        { event_type: "impact_estimation_completed", offset_ms: 5490, source: "worker", summary: `Impact estimation measured 8 failed requests out of ${AD_TOTAL_REQUESTS.toLocaleString("en-US")}.` },
         { event_type: "brief_posted", offset_ms: 20000, source: "slack", summary: "Incident brief posted to Slack thread.", reference: investigation.slack_thread_ts },
       ], investigation.resolved_at);
       break;
@@ -478,3 +479,132 @@ export function getAllMockInvestigationDetails(): InvestigationDetail[] {
     .map((investigation) => detailMap.get(investigation.investigation_id))
     .filter((detail): detail is InvestigationDetail => detail !== undefined);
 }
+
+// ---------------------------------------------------------------------------
+// Landing page data. Everything below is derived from the data above.
+// ---------------------------------------------------------------------------
+
+const DEMO_INVESTIGATION_ID = "ccfce077-9822-4ee7-ab97-ba56100c74fd";
+
+export type DemoReplayBriefLine = { label: string; value: string };
+
+export type DemoReplay = {
+  alert: { name: string; service: string; status: string };
+  triage: { label: string; result: string };
+  lanes: {
+    commit: { sha: string; title: string; evidence: string };
+    runbook: { runbookId: string; section: string; score: number };
+    impact: { affectedRequests: number; totalRequests: number; severity: string };
+  };
+  synthesis: { label: string; summary: string };
+  brief: { app: string; tag: string; lines: DemoReplayBriefLine[] };
+  reply: { status: string; text: string };
+};
+
+function buildDemoReplay(): DemoReplay {
+  const detail = getMockInvestigationDetail(DEMO_INVESTIGATION_ID);
+  const inv = detail.investigation;
+  const evidence = detail.findings[0].evidence as Array<{ summary: string }>;
+  const event = (type: string) => detail.events.find((item) => item.event_type === type)?.summary ?? "";
+  const triageRaw = event("triage_completed")
+    .replace(/^Triage classified the alert as /, "")
+    .replace(/\.$/, "");
+  const triageResult = triageRaw.charAt(0).toUpperCase() + triageRaw.slice(1);
+  const briefLine = (prefix: string) =>
+    (detail.brief ?? "")
+      .split("\n")
+      .find((line) => line.startsWith(prefix))
+      ?.slice(prefix.length)
+      .replace(/ \(evidence:.*\)$/, "") ?? "";
+  const lanes: DemoReplay["lanes"] = {
+    commit: {
+      sha: (inv.suspect_commit_sha ?? "").slice(0, 7),
+      title: inv.suspect_commit_title ?? "",
+      evidence: evidence[0].summary,
+    },
+    runbook: { runbookId: inv.runbook_id ?? "", section: inv.runbook_section ?? "", score: inv.runbook_score ?? 0 },
+    impact: {
+      affectedRequests: inv.affected_requests ?? 0,
+      totalRequests: AD_TOTAL_REQUESTS,
+      severity: inv.severity ?? "",
+    },
+  };
+  return {
+    alert: { name: inv.alert_name, service: inv.service, status: "firing" },
+    triage: { label: "Triage", result: triageResult },
+    lanes,
+    synthesis: { label: "Evidence synthesis", summary: `${Object.keys(lanes).length} findings, each cited` },
+    brief: {
+      app: "Glassbox SRE",
+      tag: "APP",
+      lines: [
+        { label: "Status", value: briefLine("status: ") },
+        { label: "Suspect commit", value: briefLine("suspect commit: ") },
+        { label: "Runbook", value: briefLine("runbook: ") },
+        { label: "Impact", value: briefLine("impact: ") },
+        { label: "Confidence", value: (inv.confidence ?? 0).toFixed(2) },
+      ],
+    },
+    reply: { status: "Resolved", text: event("resolved") },
+  };
+}
+
+export const demoReplay: DemoReplay = buildDemoReplay();
+
+export type HeuristicTieRow = {
+  sha: string;
+  title: string;
+  score: number;
+  note?: string;
+  correct?: boolean;
+};
+
+const tieTruth = getMockInvestigationDetail(DEMO_INVESTIGATION_ID).investigation;
+const tieScore = tieTruth.confidence ?? 0.9;
+
+/** Initial (heuristic) order. The reordered order puts the `correct` row first. */
+// The three commits, titles and deploy order below are real records from
+// scenarios/benchmark/frontend-ad-failure-visible-500s/deploy_history.json.
+export const heuristicTie: HeuristicTieRow[] = [
+  { sha: "d56b8b31", title: "Seed frontend accessibility distractor", score: tieScore, note: "accessibility labels, benign" },
+  { sha: (tieTruth.suspect_commit_sha ?? "").slice(0, 8), title: tieTruth.suspect_commit_title ?? "", score: tieScore, correct: true },
+  { sha: "bcc8aa32", title: "Seed frontend banner copy distractor", score: tieScore, note: "banner copy, benign" },
+];
+
+export type LandingStat = { value: string; label: string };
+
+export type LandingStats = {
+  cells: [LandingStat, LandingStat, LandingStat, LandingStat];
+  /** Commit top-1 headline figures for the hero card and the OG image. */
+  top1: {
+    llm: { fraction: number; display: string; label: string };
+    heuristic: { fraction: number; display: string; label: string };
+  };
+  caption: string;
+};
+
+function buildLandingStats(): LandingStats {
+  const luna = benchmarkModes.find((mode) => mode.label.startsWith("gpt-6-luna"));
+  const heuristic = benchmarkModes.find((mode) => mode.label === "replay-fast");
+  if (!luna || !heuristic) throw new Error("benchmarkModes is missing a required row");
+  const pct = (value: number) => `${Math.round(value * 1000) / 10}%`;
+  const total = luna.result.scenario_count;
+  const hits = Math.round(luna.result.bad_commit_top1_accuracy * total);
+  const runs = 4; // "four-run mean" in the stored gpt-6-luna label
+  const cost = parseFloat(luna.cost.replace("$", ""));
+  return {
+    cells: [
+      { value: pct(luna.result.bad_commit_top1_accuracy), label: `commit top-1 (${hits}/${total}, ${runs} of ${runs} runs)` },
+      { value: pct(luna.result.runbook_hit_rate), label: "runbook hit" },
+      { value: pct(luna.result.impact_classification_accuracy), label: "impact classification" },
+      { value: `about $${cost.toFixed(3)}`, label: "per full benchmark run" },
+    ],
+    top1: {
+      llm: { fraction: luna.result.bad_commit_top1_accuracy, display: pct(luna.result.bad_commit_top1_accuracy), label: "gpt-6-luna" },
+      heuristic: { fraction: heuristic.result.bad_commit_top1_accuracy, display: pct(heuristic.result.bad_commit_top1_accuracy), label: "deterministic heuristics" },
+    },
+    caption: `gpt-6-luna vs deterministic heuristics, ${total}-scenario benchmark (${hits}/${total} in ${runs} of ${runs} runs)`,
+  };
+}
+
+export const landingStats: LandingStats = buildLandingStats();

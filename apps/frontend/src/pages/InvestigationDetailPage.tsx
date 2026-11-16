@@ -165,7 +165,7 @@ export function InvestigationDetailPage() {
 
   return (
     <section className="max-w-6xl pb-8">
-      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-blue-300">
+      <Link to="/investigations" className="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-blue-300">
         <ArrowLeft size={16} /> All investigations
       </Link>
       <div className="glass-card mb-6 p-6">
