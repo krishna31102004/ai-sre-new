@@ -44,7 +44,7 @@ export function Architecture() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 md:py-24" aria-labelledby="architecture-heading">
+    <section className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 md:py-16" aria-labelledby="architecture-heading">
       <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">Architecture</p>
       <h2
         id="architecture-heading"

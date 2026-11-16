@@ -13,7 +13,7 @@ const STACK = [
 
 export function StackChips() {
   return (
-    <section aria-label="Stack" className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6 md:pb-24">
+    <section aria-label="Stack" className="mx-auto max-w-[1200px] px-4 pb-12 sm:px-6 md:pb-16">
       <h2 className="sr-only">Stack</h2>
       <ul className="flex flex-wrap justify-center gap-2">
         {STACK.map((item) => (

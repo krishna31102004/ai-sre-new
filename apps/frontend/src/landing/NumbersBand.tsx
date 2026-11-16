@@ -6,7 +6,7 @@ import { landingStats } from "../mockData";
 export function NumbersBand() {
   const reduce = useReducedMotion();
   return (
-    <section aria-label="Benchmark numbers" className="py-16 md:py-24">
+    <section aria-label="Benchmark numbers" className="py-10 md:py-14">
       <h2 className="sr-only">Benchmark numbers</h2>
       <div className="border-y border-white/[0.07]">
         <motion.dl

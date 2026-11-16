@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { SignalLine } from "../components/SignalLine";
 import { SeverityBadge } from "../components";
-import { demoReplay } from "../mockData";
+import { commitLabel, demoReplay } from "../mockData";
 import { EASE } from "../motion";
 import { useReplayClock } from "./useReplayClock";
 
@@ -17,26 +17,26 @@ export const BEATS = {
   alertDur: 0.3,
   ringPulses: 2,
   ringDur: 0.7,
-  connector: 1.2,
+  connector: 0.6,
   connectorDur: 0.3,
-  triageLoad: 1.2,
-  triageDone: 2.2,
-  lanesActive: 2.6,
-  commit: 4.8,
-  runbook: 5.4,
-  impact: 6.0,
+  triageLoad: 0.6,
+  triageDone: 1.2,
+  lanesActive: 1.4,
+  commit: 2.8,
+  runbook: 3.2,
+  impact: 3.6,
   laneFade: 0.2,
-  synthesis: 6.6,
-  synthesisDur: 0.8,
-  synthesisSummary: 7.4,
-  brief: 8.0,
-  briefDur: 0.4,
-  briefLines: 8.2,
+  synthesis: 3.9,
+  synthesisDur: 0.5,
+  synthesisSummary: 4.4,
+  brief: 4.8,
+  briefDur: 0.3,
+  briefLines: 4.9,
   briefLineStagger: 0.06,
-  reply: 10.4,
+  reply: 6.2,
   replyDur: 0.3,
-  hold: 12.0,
-  end: 14.0,
+  hold: 7.2,
+  end: 8.0,
 } as const;
 
 const RING_END = BEATS.alert + BEATS.ringPulses * BEATS.ringDur;
@@ -59,18 +59,21 @@ function Reveal({
   on,
   dur,
   y = 0,
+  ghost = 0,
   className,
   children,
 }: {
   on: boolean;
   dur: number;
   y?: number;
+  /** Opacity while pending. A small value shows the final content as a faint placeholder. */
+  ghost?: number;
   className?: string;
   children: ReactNode;
 }) {
   const { reduce } = useContext(ReplayCtx);
   const transition = useTransition(dur);
-  const off = { opacity: 0, y };
+  const off = { opacity: ghost, y };
   return (
     <motion.div
       className={className}
@@ -89,6 +92,7 @@ function Slot({
   on,
   dur,
   y,
+  ghost,
   className = "",
   innerClassName = "",
   children,
@@ -96,6 +100,7 @@ function Slot({
   on: boolean;
   dur: number;
   y?: number;
+  ghost?: number;
   className?: string;
   innerClassName?: string;
   children: ReactNode;
@@ -107,6 +112,7 @@ function Slot({
         on={on}
         dur={dur}
         y={y}
+        ghost={ghost}
         className={`relative h-full rounded-xl border border-white/[0.12] bg-elevated ${innerClassName}`}
       >
         {children}
@@ -242,7 +248,7 @@ function Lane({
   const dimBody = { opacity: 0.4 };
   const status = done ? "done" : active ? "running" : "waiting";
   return (
-    <div className="relative flex min-h-[176px] flex-col gap-3 rounded-xl bg-panel p-4">
+    <div className="relative flex flex-col gap-3 rounded-xl bg-panel p-4">
       <motion.div
         className="pointer-events-none absolute inset-0 rounded-xl border border-white/[0.12]"
         initial={reduce ? false : dimBorder}
@@ -284,7 +290,9 @@ function Lanes() {
         result={
           <div className="flex flex-col gap-2">
             <ResultHead>{commit.sha}</ResultHead>
-            <p className="text-[14px] leading-5 text-ink">{commit.title}</p>
+            <p className="text-[14px] leading-5 text-ink" title={commit.title}>
+              {commitLabel(commit.sha) ?? commit.title}
+            </p>
             <p className="text-[13px] leading-5 text-ink-2">{commit.evidence}</p>
           </div>
         }
@@ -356,12 +364,12 @@ function SynthesisBar() {
   );
 }
 
-function BriefLine({ index, label, value }: { index: number; label: string; value: string }) {
+function BriefLine({ index, label, value, title }: { index: number; label: string; value: string; title?: string }) {
   const on = useOn(BEATS.briefLines + index * BEATS.briefLineStagger);
   return (
-    <Reveal on={on} dur={BEATS.laneFade} className="grid grid-cols-1 gap-0.5 sm:grid-cols-[120px_1fr] sm:gap-3">
+    <Reveal on={on} dur={BEATS.laneFade} ghost={0.6} className="grid grid-cols-1 gap-0.5 sm:grid-cols-[120px_1fr] sm:gap-3">
       <span className="text-[13px] leading-5 text-ink-3">{label}</span>
-      <span className="text-[13px] leading-5 text-ink">{value}</span>
+      <span className="text-[13px] leading-5 text-ink" title={title}>{value}</span>
     </Reveal>
   );
 }
@@ -370,7 +378,7 @@ function BriefCard() {
   const on = useOn(BEATS.brief);
   const { brief } = demoReplay;
   return (
-    <Slot on={on} dur={BEATS.briefDur} y={16} innerClassName="flex flex-col gap-3 p-4">
+    <Slot on={on} dur={BEATS.briefDur} y={16} ghost={0.14} innerClassName="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2.5">
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-canvas" aria-hidden="true">
           <Signal size={16} />
@@ -380,7 +388,7 @@ function BriefCard() {
       </div>
       <div className="flex flex-col gap-2">
         {brief.lines.map((line, index) => (
-          <BriefLine key={line.label} index={index} label={line.label} value={line.value} />
+          <BriefLine key={line.label} index={index} label={line.label} value={line.value} title={line.title} />
         ))}
       </div>
     </Slot>
@@ -406,7 +414,7 @@ export function LiveDemo() {
   const reduce = !!useReducedMotion();
   const [speed, setSpeed] = useState<1 | 2>(1);
   const frameRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(frameRef, { amount: 0.4, once: true });
+  const inView = useInView(frameRef, { amount: 0.3, once: true });
   const clock = useReplayClock(speed, BEATS.end);
 
   useEffect(() => {
@@ -421,7 +429,7 @@ export function LiveDemo() {
     "inline-flex min-h-11 items-center justify-center gap-2 px-3.5 text-[13px] font-medium transition-[color,border-color,transform] duration-[160ms] active:scale-[0.97] active:duration-[120ms] md:min-h-9";
 
   return (
-    <section id="demo" className="mx-auto max-w-[1200px] scroll-mt-14 px-4 py-16 sm:px-6 md:py-24" aria-labelledby="demo-title">
+    <section id="demo" className="mx-auto max-w-[1200px] scroll-mt-14 px-4 py-12 sm:px-6 md:py-16" aria-labelledby="demo-title">
       <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-3">
           <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">Replay of a recorded investigation</p>

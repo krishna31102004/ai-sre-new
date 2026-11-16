@@ -16,7 +16,7 @@ const H1_LINES = [
 
 /** Pressable button-like link styles shared by the CTAs. */
 const CTA_BASE =
-  "inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-medium transition-[transform,color,border-color,background-color] duration-[120ms] active:scale-[0.97]";
+  "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-lg px-3 text-sm font-medium transition sm:px-5-[transform,color,border-color,background-color] duration-[120ms] active:scale-[0.97]";
 
 function Bar({
   fraction,
@@ -114,7 +114,7 @@ export function Hero() {
         }}
       />
 
-      <div className="relative mx-auto w-full max-w-[1200px] px-4 py-6 sm:px-6 sm:pb-24 sm:pt-12 lg:pb-28 lg:pt-8">
+      <div className="relative mx-auto w-full max-w-[1200px] px-4 py-6 sm:px-6 sm:pb-16 sm:pt-12 lg:pb-20 lg:pt-8">
         <div className="grid items-center gap-4 sm:gap-8 lg:grid-cols-12 lg:gap-0">
           <div className="min-w-0 lg:col-span-7">
             <motion.div {...enter(0)}>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import { Check } from "lucide-react";
-import { heuristicTie } from "../mockData";
+import { commitLabel, heuristicTie } from "../mockData";
 import { DUR, EASE, SCROLL_IN, STAGGER } from "../motion";
 
 const INITIAL_ORDER = heuristicTie.map((row) => row.sha);
@@ -46,7 +46,7 @@ export function HeuristicTie() {
   const correct = heuristicTie.find((row) => row.correct);
 
   return (
-    <section className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 md:py-24" aria-labelledby="heuristic-tie-heading">
+    <section className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 md:py-16" aria-labelledby="heuristic-tie-heading">
       <motion.div {...(reduce ? {} : SCROLL_IN)}>
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">Why heuristics fail</p>
         <h2
@@ -109,18 +109,19 @@ export function HeuristicTie() {
                 </motion.span>
                 <span className="min-w-0 flex-1">
                   <motion.span
+                    title={row.title}
                     className="line-clamp-2 block text-[14px] leading-5 text-ink sm:line-clamp-1"
                     initial={false}
                     animate={{ opacity: dim ? 0.55 : 1 }}
                     transition={{ duration: reduce ? 0 : DUR.slow, ease: EASE }}
                   >
-                    {row.title}
+                    {commitLabel(row.sha) ?? row.title}
                   </motion.span>
                   <span className="relative block h-4 text-[12px] leading-4 text-ink-3">
                     {reordered && isCorrect && (
                       <span className="absolute inset-0 flex items-center gap-1 text-healthy">
                         <Check className="h-3 w-3" aria-hidden="true" />
-                        ground truth
+                        actual cause
                       </span>
                     )}
                     {reordered && !isCorrect && row.note && <span className="absolute inset-0 truncate">{row.note}</span>}

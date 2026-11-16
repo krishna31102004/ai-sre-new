@@ -1,5 +1,6 @@
 import { SignalLine } from "../components/SignalLine";
 import { Signal } from "lucide-react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { landingStats } from "../mockData";
 
@@ -21,6 +22,14 @@ function LogoTile({ size }: { size: number }) {
 /** Fixed-size frames for headless capture of public/og.png (1200x630) and public/apple-touch-icon.png (180x180, ?icon=1). */
 export function OgPage() {
   const [params] = useSearchParams();
+
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex, nofollow";
+    document.head.appendChild(meta);
+    return () => meta.remove();
+  }, []);
   const { llm, heuristic } = landingStats.top1;
 
   if (params.get("icon") === "1") {

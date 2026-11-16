@@ -8,7 +8,7 @@ import { Badge } from "../components/ui/badge";
 import { benchmarkModes } from "../mockData";
 import { DUR, EASE } from "../motion";
 
-function metric(value: number, suffix = "%") { return `${(value * 100).toFixed(1)}${suffix}`; }
+function metric(value: number, suffix = "%") { return value === 1 ? `100${suffix}` : `${(value * 100).toFixed(1)}${suffix}`; }
 function duration(value: number) { return value >= 1000 ? `${(value / 1000).toFixed(2)} s` : `${Math.round(value)} ms`; }
 
 const BASELINE_SUFFIX = " (baseline)";
@@ -53,11 +53,12 @@ export function BenchmarkPage() {
           <p className="mt-3 text-[13px] leading-5 text-ink-2">gpt-6-luna top-1 on this 15-scenario benchmark</p>
         </div>
         <div className="min-w-0 border-t border-white/[0.07] p-4 sm:p-6 md:border-l md:border-t-0 md:p-8">
+          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3 md:hidden" aria-hidden="true">vs</p>
           <p className="font-mono text-[clamp(64px,11vw,128px)] font-semibold leading-none tabular-nums text-ink-3">{metric(heuristicTop1)}</p>
           <ScoreBar fraction={heuristicTop1} tone="muted" reduce={reduce} />
           <p className="mt-3 text-[13px] leading-5 text-ink-2">Deterministic heuristics</p>
         </div>
-        <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.07] bg-panel px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">vs</span>
+        <span className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full md:block border border-white/[0.07] bg-panel px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">vs</span>
       </div>
     </div>
     <p className="mt-3 max-w-3xl text-[13px] leading-5 text-ink-2">gpt-6-luna scored 100% (15/15) in 4 of 4 runs. gpt-4.1-mini ranged 86.7% to 93.3% on the same corpus.</p>

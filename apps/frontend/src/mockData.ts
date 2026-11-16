@@ -486,7 +486,7 @@ export function getAllMockInvestigationDetails(): InvestigationDetail[] {
 
 const DEMO_INVESTIGATION_ID = "ccfce077-9822-4ee7-ab97-ba56100c74fd";
 
-export type DemoReplayBriefLine = { label: string; value: string };
+export type DemoReplayBriefLine = { label: string; value: string; /** Original stored text, shown as a tooltip when `value` is a shortened rewrite. */ title?: string };
 
 export type DemoReplay = {
   alert: { name: string; service: string; status: string };
@@ -500,6 +500,30 @@ export type DemoReplay = {
   brief: { app: string; tag: string; lines: DemoReplayBriefLine[] };
   reply: { status: string; text: string };
 };
+
+/**
+ * Short human summaries of the three frontend commits, taken from the "Change summary"
+ * line of each commit's change note in scenarios/ (benchmark/frontend-benign-accessibility-labels/change.md,
+ * benchmark/frontend-benign-banner-copy/change.md, otel-demo/frontend/ad-failure-visible-500s.md).
+ * Keyed by the first 7 characters of the commit SHA.
+ */
+export const commitLabels: Record<string, string> = {
+  "41080eb": "Ad recommendation failures now surface as visible frontend HTTP 500s",
+  d56b8b3: "Add accessible labels to product-card action buttons",
+  bcc8aa3: "Update homepage promotional banner copy and button text",
+};
+
+export function commitLabel(sha: string): string | undefined {
+  return commitLabels[sha.slice(0, 7)];
+}
+
+/** "41080eb51888 - <commit title>" becomes "41080eb - <short summary>", keeping the original as `title`. */
+function suspectCommitLine(stored: string): DemoReplayBriefLine {
+  const sha = stored.split(" ")[0] ?? "";
+  const summary = commitLabel(sha);
+  if (!summary) return { label: "Suspect commit", value: stored };
+  return { label: "Suspect commit", value: `${sha.slice(0, 7)} - ${summary}`, title: stored };
+}
 
 function buildDemoReplay(): DemoReplay {
   const detail = getMockInvestigationDetail(DEMO_INVESTIGATION_ID);
@@ -539,7 +563,7 @@ function buildDemoReplay(): DemoReplay {
       tag: "APP",
       lines: [
         { label: "Status", value: briefLine("status: ") },
-        { label: "Suspect commit", value: briefLine("suspect commit: ") },
+        suspectCommitLine(briefLine("suspect commit: ")),
         { label: "Runbook", value: briefLine("runbook: ") },
         { label: "Impact", value: briefLine("impact: ") },
         { label: "Confidence", value: (inv.confidence ?? 0).toFixed(2) },
