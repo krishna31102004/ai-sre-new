@@ -101,7 +101,7 @@ export function HeuristicTie() {
                 )}
                 <span className={cn(T.dataSm, "w-5 shrink-0")}>{index + 1}</span>
                 <motion.span
-                  className={cn(T.data, "w-[72px] shrink-0 text-accent")}
+                  className={cn(T.data, "w-[72px] shrink-0")}
                   initial={false}
                   animate={{ opacity: dim ? 0.55 : 1 }}
                   transition={{ duration: reduce ? 0 : DUR.slow, ease: EASE }}

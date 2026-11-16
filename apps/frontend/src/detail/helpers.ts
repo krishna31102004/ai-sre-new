@@ -1,4 +1,5 @@
 import type { Finding, InvestigationDetail } from "../api";
+import { benchmarkScenarios } from "../mockData";
 
 export type Evidence = { kind?: string; summary: string; reference?: string };
 
@@ -7,6 +8,19 @@ export function evidenceItems(evidence: unknown): Evidence[] {
   return evidence.filter(
     (item): item is Evidence => typeof item === "object" && item !== null && "summary" in item && typeof item.summary === "string",
   );
+}
+
+/** Deploy candidates the benchmark corpus recorded for the scenario this commit caused. Null when unknown. */
+export function deployCandidateCount(sha: string | undefined | null): number | null {
+  if (!sha) return null;
+  const scenario = benchmarkScenarios.find((item) => item.actualCause === sha.slice(0, 8));
+  return scenario ? scenario.candidates.length : null;
+}
+
+/** Evidence reference as shown to people. Internal deploy ids ("bench-...", "...-bad") read as "frontend deploy". The Raw tab keeps the original. */
+export function displayReference(reference: string | undefined | null, kind?: string): string | null {
+  if (!reference) return null;
+  return kind === "deploy" && /bench-|bad/i.test(reference) ? "frontend deploy" : reference;
 }
 
 export type Candidate = {

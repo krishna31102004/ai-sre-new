@@ -277,17 +277,17 @@ function PipelineCard({
       ref={cardRef}
       onClick={onClick}
       className={`glass-card pipeline-node relative h-40 w-full overflow-hidden px-4 py-4 text-left ${
-        active ? "pipeline-node-active border-accent/40 bg-accent/10 shadow-glow" : ""
+        active ? "pipeline-node-active border-accent/60" : ""
       } ${dimmed ? "pipeline-node-dimmed" : "pipeline-node-clear"} ${node.branch ? "pipeline-branch" : ""}`}
     >
-      <div className="pipeline-node-icon flex h-9 w-9 items-center justify-center rounded-md text-blue-100">
+      <div className="pipeline-node-icon flex h-9 w-9 items-center justify-center rounded-md text-ink">
         <Icon size={17} />
       </div>
-      <h3 className="mt-3 text-base font-semibold text-ink">{node.title}</h3>
+      <h3 className="mt-3 font-display text-[18px] font-normal leading-6 tracking-[-0.01em] text-ink">{node.title}</h3>
       <Badge variant={active ? "accent" : "muted"} className="pipeline-node-pill mt-1.5 max-w-full whitespace-normal text-[10px] leading-4">
         {node.subtitle}
       </Badge>
-      <p className="mt-1.5 truncate text-sm leading-6 text-ink-2">{node.input}</p>
+      <p className="mt-1.5 truncate text-sm leading-6 text-ink">{node.input}</p>
     </button>
   );
 }
@@ -308,17 +308,17 @@ function PipelineOverlay({
         <button className="icon-button absolute right-4 top-4 z-10" aria-label="Close pipeline overlay" onClick={onClose}>
           <X size={16} />
         </button>
-        <div className="glass-card border-accent/35 bg-panel/95 px-8 py-8 shadow-[0_0_0_1px_rgba(59,130,246,0.28),0_0_36px_rgba(59,130,246,0.16)]">
+        <div className="glass-card border-accent/40 bg-panel/95 px-8 py-8">
           <div className="mx-auto max-w-[420px]">
-            <div className="pipeline-node-active glass-card bg-accent/10 px-5 py-5">
+            <div className="pipeline-node-active glass-card bg-ink/[0.04] px-5 py-5">
               <div className="flex items-start justify-between gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-md border border-accent/30 bg-white/[0.06] text-blue-100">
+                <span className="flex h-12 w-12 items-center justify-center rounded-md border border-line bg-ink/[0.06] text-ink">
                   <Icon size={22} />
                 </span>
                 <Badge variant="accent">{node.subtitle}</Badge>
               </div>
-              <h2 className="mt-5 text-xl font-semibold text-ink">{node.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-ink-2">{node.input}</p>
+              <h2 className="mt-5 font-display text-[28px] font-normal leading-8 tracking-[-0.01em] text-ink">{node.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-ink">{node.input}</p>
             </div>
           </div>
 
@@ -326,24 +326,24 @@ function PipelineOverlay({
             <div className="space-y-5">
               <div className="soft-card p-4">
                 <p className="label">What this node does</p>
-                <p className="text-sm leading-6 text-ink-2">{node.description[0]}</p>
-                <p className="mt-3 text-sm leading-6 text-ink-2">{node.description[1]}</p>
+                <p className="text-sm leading-6 text-ink">{node.description[0]}</p>
+                <p className="mt-3 text-sm leading-6 text-ink">{node.description[1]}</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="soft-card p-4">
                   <p className="label">Input</p>
-                  <p className="text-sm leading-6 text-ink-2">{node.input}</p>
+                  <p className="text-sm leading-6 text-ink">{node.input}</p>
                 </div>
                 <div className="soft-card p-4">
                   <p className="label">Output</p>
-                  <p className="text-sm leading-6 text-ink-2">{node.output}</p>
+                  <p className="text-sm leading-6 text-ink">{node.output}</p>
                 </div>
               </div>
             </div>
             <div className="soft-card p-4">
               <p className="label">Real example</p>
-              <h3 className="text-sm font-semibold text-ink">{node.exampleTitle}</h3>
-              <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-ink-2">
+              <h3 className="font-display text-[18px] font-normal leading-6 tracking-[-0.01em] text-ink">{node.exampleTitle}</h3>
+              <div className="mt-3 space-y-2 font-mono text-xs leading-6 text-ink">
                 {node.exampleBody.map((line) => (
                   <div key={line} className="rounded-md border border-line bg-black/20 px-3 py-2">
                     {line}
@@ -528,7 +528,7 @@ export function PipelinePage() {
                 </feMerge>
               </filter>
               <marker id="pipeline-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" fillOpacity="0.6" />
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#ede8e0" fillOpacity="0.6" />
               </marker>
             </defs>
             {layout.edges.map((edge, index) => {
@@ -545,7 +545,7 @@ export function PipelinePage() {
             })}
           </svg>
 
-          <div className="pointer-events-none absolute inset-x-0 top-[220px] z-0 h-[192px] rounded-glass border border-dashed border-accent/20 bg-accent/[0.03]">
+          <div className="pointer-events-none absolute inset-x-0 top-[220px] z-0 h-[192px] rounded-glass border border-dashed border-ink/[0.12] bg-ink/[0.02]">
             <div className="pipeline-parallel-label absolute left-4 top-[-9px] text-[10px] font-medium text-ink-3">
               Parallel execution
             </div>

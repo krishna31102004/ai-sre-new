@@ -8,8 +8,8 @@ Exact spec. Where this file and `DESIGN_SPEC.md` disagree on fonts, text sizes, 
 
 | Family | Files in `public/fonts/` | Weights | Used for |
 |---|---|---|---|
-| Instrument Serif | `instrument-serif-400.woff2` (exists) | 400 | ONLY the landing hero headline in `src/landing/Hero.tsx`, and the same headline inside `src/pages/OgPage.tsx`. Nowhere else. Do not change how the hero headline looks. |
-| Geist | `geist-400.woff2`, `geist-500.woff2`, `geist-600.woff2` | 400, 500, 600 | Everything else: page titles, section titles, card titles, body, labels, buttons, badges, eyebrows, dates, times, statuses, table headers, nav, footer, tooltips. |
+| Instrument Serif | `instrument-serif-400.woff2` | 400 | EVERY heading: the landing hero headline (and the same headline in `src/pages/OgPage.tsx`), page titles, section titles, card titles, the investigation alert name, the benchmark title, the 404 title, pipeline node titles. Weight 400, letter-spacing -0.01em, never below 18px. The `h1`, `h2`, `h3` steps and the base `h1`, `h2`, `h3` elements use it. |
+| Geist | `geist-400.woff2`, `geist-500.woff2`, `geist-600.woff2` | 400, 500, 600 | All UI text that is not a heading: body, labels, buttons, badges, eyebrows, dates, times, statuses, table headers, nav, footer, tooltips. |
 | Geist Mono | `geist-mono-400.woff2`, `geist-mono-500.woff2` | 400, 500 | ONLY commit SHAs, numbers and metrics, scores, code, file paths, and machine identifiers (scenario ids, runbook ids, feature-flag names, mode names such as `replay-fast` inside table cells). |
 
 - Source: static woff2 files from the official `github.com/vercel/geist-font` repository (release assets, or the files in the repository at the latest release tag). Rename to the file names above. No npm dependency. If the static weights cannot be obtained from that repository, stop and report; do not use any other source.
@@ -26,10 +26,10 @@ Add these as Tailwind `fontSize` tokens (`text-<name>` for desktop, `text-<name>
 
 | Step | Family | Size desktop / mobile | Weight | Line height desktop / mobile | Letter-spacing | Default colour |
 |---|---|---|---|---|---|---|
-| `display` | Instrument Serif | `clamp(36px, 4.4vw, 64px)` (unchanged) | 400 | 0.98 | -0.02em | `ink` |
-| `h1` | Geist | 32px / 26px | 600 | 38px / 32px | -0.03em | `ink` |
-| `h2` | Geist | 20px / 18px | 600 | 28px / 26px | -0.02em | `ink` |
-| `h3` | Geist | 15px / 15px | 600 | 22px | -0.01em | `ink` |
+| `display` | Instrument Serif | `clamp(36px, 4.4vw, 64px)` (the value in git history since the first revamp commit; never changed) | 400 | 0.98 | -0.01em | `ink` |
+| `h1` | Instrument Serif | 44px / 34px | 400 | 48px / 38px | -0.01em | `ink` |
+| `h2` | Instrument Serif | 28px / 24px | 400 | 34px / 30px | -0.01em | `ink` |
+| `h3` | Instrument Serif | 20px / 20px | 400 | 26px | -0.01em | `ink` |
 | `lead` | Geist | 17px / 16px | 400 | 28px / 26px | -0.01em | `ink-2` |
 | `body` | Geist | 14px / 14px | 400 | 22px | 0 | `ink-2` |
 | `small` | Geist | 13px / 13px | 400 | 20px | 0 | `ink-2` |
@@ -40,23 +40,30 @@ Add these as Tailwind `fontSize` tokens (`text-<name>` for desktop, `text-<name>
 | `data-xl` | Geist Mono | 44px / 40px | 500 | 48px / 44px | -0.03em | `ink` |
 | `data-hero` | Geist Mono | `clamp(64px, 11vw, 128px)` | 500 | 1 | -0.04em | per element |
 
-Allowed modifiers, only where the mapping tables say so: "(500)" sets weight 500 on `body` or `small`; "(primary)", "(secondary)", "(muted)", "(accent)", "(healthy)", "(firing)", "(warning)" override the colour. Nothing else is overridden.
+Allowed modifiers, only where the mapping tables say so: "(500)" sets weight 500 on `body` or `small`; "(primary)", "(secondary)", "(muted)", "(accent)", "(healthy)", "(firing)" override the colour. Nothing else is overridden.
 
 Base element rules in `styles.css`: `h1` uses the `h1` step, `h2` the `h2` step, `h3` the `h3` step. `.eyebrow` and `.label` become the `label` step (no uppercase, no tracking, Geist).
 
-## 3. Text colours
+## 3. Palette (Ember, 60/30/10)
 
-Change the three ink variables in `:root`. No other text colour is allowed except the semantic colours.
+Base (60%): canvas `#0C0B0A`. Raised surfaces (30%): `#141210` (`bg-panel`, `bg-elevated`). Borders and dividers: `rgba(237,232,224,0.08)` (`border-line`). Insets and hover washes are `bg-ink/[...]` tints of the same warm white; there is no pure white and no black-tinted blue anywhere.
 
-| Token | Name | Value | RGB triplet |
-|---|---|---|---|
-| `ink` | primary | `#F2F4F8` | `242 244 248` |
-| `ink-2` | secondary | `#A3ACBD` | `163 172 189` |
-| `ink-3` | muted | `#7C8698` | `124 134 152` |
+| Token | Name | Value |
+|---|---|---|
+| `ink` | primary text | `#EDE8E0` |
+| `ink-2` | secondary text | `rgba(237,232,224,0.64)` |
+| `ink-3` | muted text | `rgba(237,232,224,0.42)` |
+| `accent` | accent (10%) | `#FF6A3D` |
+| `healthy` | resolved | `#5FB37A` |
+| `firing` | firing | `#E5534B` |
 
-Semantic text colours stay: `accent` `#4C8DFF`, `healthy` `#34D399`, `firing` `#F87171`, `warning` `#FBBF24`.
+Accent is used ONLY for: the hero proof number, the benchmark 100% on `/benchmark`, primary buttons, links, the active nav item, selected and expanded states (active tab underline, selected filter chip, selected pipeline node, focus rings), the highlighted bar fill, and the signal line spike. Not for SHAs, icons, badges, glows or decoration.
 
-Replace every Tailwind palette text class: `text-slate-100`, `text-slate-200`, `text-white`, `text-blue-100` become `text-ink`; `text-slate-300`, `text-slate-400` become `text-ink-2`; `text-slate-500`, `text-slate-600` become `text-ink-3`; `text-emerald-*` becomes `text-healthy`; `text-red-*` becomes `text-firing`; `text-amber-*` becomes `text-warning`. Text on a primary (accent-filled) button stays as it is now.
+Bars (pre-rank score bars, benchmark bars): accent for the highlighted value, `ink-3` for the rest.
+
+Status colours are only small dots, icons and short status labels. They are never fills or large areas; coloured badges use the neutral `bg-ink/[0.06]` fill with status-coloured text. There is no warning or amber colour; a middling state reads as neutral `ink-2`.
+
+No blue, sky, indigo, slate, emerald, amber or red Tailwind palette class, and no hex or rgb literal for a hue, may remain in `src`. Semantic text colours stay as the table above.
 
 ## 4. Spacing
 
@@ -90,20 +97,20 @@ Aim: one box, never a box inside a box.
 
 | Level | Where | Background | Border | Radius |
 |---|---|---|---|---|
-| 0 canvas | page | `#05070D` | none | n/a |
-| 1 surface | a container that sits directly on the canvas: `Panel`, table wrapper, scoreboard, mobile investigation card, landing demo frame, HeuristicTie row | `#0A0F1C` (`bg-panel`) | `1px solid rgba(255,255,255,0.07)` (`border-line`) | 12px |
-| 2 inset | anything that needs grouping INSIDE a level 1 surface | `rgba(255,255,255,0.03)` (`bg-white/[0.03]`) | none | 8px |
-| raised | suspect commit hero, tooltip, mobile nav sheet only | `#0F1626` (`bg-elevated`) | `1px solid rgba(255,255,255,0.07)` | 12px |
+| 0 canvas | page | `#0C0B0A` | none | n/a |
+| 1 surface | a container that sits directly on the canvas: `Panel`, table wrapper, scoreboard, mobile investigation card, landing demo frame, HeuristicTie row | `#141210` (`bg-panel`) | `1px solid rgba(237,232,224,0.08)` (`border-line`) | 12px |
+| 2 inset | anything that needs grouping INSIDE a level 1 surface | `rgba(237,232,224,0.03)` (`bg-ink/[0.03]`) | none | 8px |
+| raised | suspect commit hero, tooltip, mobile nav sheet only | `#141210` (`bg-elevated`) | `1px solid rgba(237,232,224,0.08)` | 12px |
 
 Rules:
 1. A border is used only on level 1 and raised surfaces, on controls, and as dividers. Nothing inside a level 1 surface has a border.
 2. Inside a surface, group with the level 2 background step or with a divider, never with another bordered box.
-3. Dividers (table rows, metric strip cells, header bottom, footer top, tab rail): `1px solid rgba(255,255,255,0.07)`.
-4. Controls (secondary buttons, icon buttons, filter chips, tabs are excluded): `1px solid rgba(255,255,255,0.12)` (`--line-strong`), radius 8px, buttons 36px tall (hero CTAs keep their current height), filter chips keep their current height and full radius.
-5. Badges and chips (`ServiceChip`, live, synthetic, baseline, validated, severity, mode tags, stack chips): no border and no ring. Neutral: `bg-white/[0.06]`, text `ink-2`. Coloured: background is the semantic colour at 12% (`bg-healthy/[0.12]` and so on) with text in that colour. Radius 6px, height 22px, side padding 8px, `label` step.
-6. Row hover inside a surface: `bg-white/[0.03]`; on a level 2 inset: `bg-white/[0.05]`.
+3. Dividers (table rows, metric strip cells, header bottom, footer top, tab rail): `1px solid rgba(237,232,224,0.08)`.
+4. Controls (secondary buttons, icon buttons, filter chips, tabs are excluded): `1px solid rgba(237,232,224,0.08)` (`border-line`; `--line-strong` equals it), radius 8px, buttons 36px tall (hero CTAs keep their current height), filter chips keep their current height and full radius.
+5. Badges and chips (`ServiceChip`, live, synthetic, baseline, validated, severity, mode tags, stack chips): no border and no ring. Neutral: `bg-ink/[0.06]`, text `ink-2`. Coloured: the same neutral background with the status colour as text only. Radius 6px, height 22px, side padding 8px, `label` step.
+6. Row hover inside a surface: `bg-ink/[0.03]`; on a level 2 inset: `bg-ink/[0.05]`.
 7. No `shadow-*` on cards (remove `shadow-lift` from `.glass-card`). Shadows only on tooltip, toast and the mobile sheet.
-8. State accents stay: the 2px left bars (accent on the suspect commit hero and the gpt-6-luna row, healthy on the actual-cause row, firing on firing rows) are not borders under this rule.
+8. State bars stay: the 2px left bars (`ink` on the suspect commit hero and the gpt-6-luna row, healthy on the actual-cause row, firing on firing rows) are not borders under this rule.
 
 Required un-boxing:
 - `detail/FindingCards.tsx`: candidate rows inside the Commit correlation card lose their border and become level 2 insets.
@@ -122,7 +129,7 @@ Every text element uses exactly the step listed. If an element is not listed, us
 |---|---|
 | Wordmark "Glassbox SRE" | `h3` |
 | Nav links | `body` (500); active `ink`, inactive `ink-2` |
-| Mobile sheet links | `h3` |
+| Mobile sheet links | `lead` |
 | Tooltip text, toast text | `small` (primary) |
 | Loading and error state text | `body` |
 | All buttons (primary, secondary, link buttons) | `body` (500), colour unchanged |
@@ -142,19 +149,19 @@ Every text element uses exactly the step listed. If an element is not listed, us
 | Section intro paragraphs | `body` |
 | Demo: alert name, lane titles, brief card title, reply card title | `h3` |
 | Demo: lane status (Waiting, Running, Done), triage chip, speed and replay controls, "Replay, timing compressed" | `label`; status colour unchanged |
-| Demo: commit SHA | `data` (accent) |
+| Demo: commit SHA | `data` |
 | Demo: scores, error rate, counts, offsets | `data` |
 | Demo: result lines, brief line values, reply text, synthesis bar summary | `small` (primary for values) |
 | Demo: brief line labels, synthesis bar label | `label` |
 | Demo: runbook id | `data` |
-| HeuristicTie: SHA | `data` (accent) |
+| HeuristicTie: SHA | `data` |
 | HeuristicTie: change summary | `body` (primary) |
 | HeuristicTie: score | `data` |
 | HeuristicTie: "actual cause" tag and other tags | `label` |
 | HeuristicTie: caption under the rows | `small` |
 | Architecture: node names | `small` (500, primary) |
 | Architecture: node sub-labels | `label` |
-| Architecture: link under the diagram | `body` (500, accent) |
+| Architecture: link under the diagram | `body` (500, accent link) |
 | NumbersBand: values | `data-lg` |
 | NumbersBand: "about" prefix | `small` (muted) |
 | NumbersBand: labels | `small` |
@@ -176,7 +183,7 @@ Every text element uses exactly the step listed. If an element is not listed, us
 | Status label (`StatusDot`) | `label` in the status colour, sentence case |
 | Alert name | `body` (500, primary) |
 | Service chip | `label`, badge style |
-| Commit SHA | `data` (accent) |
+| Commit SHA | `data` |
 | Commit summary | `small` (primary) |
 | Pre-rank score number | `data` |
 | Started date | `small` (muted) |
@@ -195,7 +202,7 @@ Every text element uses exactly the step listed. If an element is not listed, us
 | Slack and LangSmith buttons | `body` (500) |
 | Tabs | `body` (500); active `ink`, inactive `ink-2` |
 | Hero eyebrow "Suspect commit", "Top evidence" | `label` |
-| Hero SHA | `data` (accent) |
+| Hero SHA | `data` |
 | Hero change summary | `h2` |
 | Evidence kind tag | `label` |
 | Evidence summary | `small` |
@@ -204,14 +211,14 @@ Every text element uses exactly the step listed. If an element is not listed, us
 | "Pre-rank score" under the figure | `label` |
 | Validation badge | `label`, coloured badge style |
 | Finding card titles (Commit correlation, Runbook, Impact) | `h3` |
-| "1 candidate ranked", "Section: Signals" | `small` |
-| Candidate row SHA | `data` (accent) |
+| "N deploy candidates ranked" (shown only when the corpus records the real count; otherwise omitted), "Section: Signals" | `small` |
+| Candidate row SHA | `data` |
 | Candidate row summary | `small` (primary) |
 | Runbook id | `data` |
 | Score numbers | `data` |
 | Impact stat labels | `label` |
 | Impact numeric values (error rate, affected requests) | `data-lg` |
-| Impact severity value | `h2`; "page" in `firing`, otherwise `ink-2` |
+| Impact severity value | `lead` (500, primary); "page" in `firing`, otherwise `ink-2` |
 | "scale 0 to 5%" caption | `label` |
 | Replay strip title | `h2` |
 | "Replay, timing compressed" | `label` |
@@ -263,7 +270,7 @@ No number and no wording changes. Only fonts, sizes, casing of labels and colour
 | "4/4" | `data-sm` |
 | "Ranked candidates" | `label` |
 | Candidate rank number | `data-sm` |
-| Candidate SHA | `data` (accent) |
+| Candidate SHA | `data` |
 | Candidate summary | `small` (primary) |
 | Mode-pick tags, "actual cause" tag | `label`, badge style |
 | Scenario-level score number | `data` |
@@ -295,7 +302,7 @@ No number and no wording changes. Only fonts, sizes, casing of labels and colour
 | Page title | `h1` |
 | Intro text | `body` |
 | "Click to explore" note, mobile scroll note | `small` (muted) |
-| Nodes, overlay, connectors | not edited; they pick up Geist and Geist Mono through the global font families only |
+| Nodes, overlay, connectors | structure, animation and overlay unchanged; node and overlay titles are Instrument Serif 400 (18px nodes, 28px overlay), titles and descriptions use full `ink` contrast; colours follow the Ember palette |
 
 ### 404
 
@@ -308,4 +315,4 @@ No number and no wording changes. Only fonts, sizes, casing of labels and colour
 
 ### OG image (`/og`)
 
-Headline stays Instrument Serif. Wordmark Geist 600. The two figures Geist Mono 500. Their labels Geist 400. Pixel sizes unchanged. Recapture `public/og.png` at 1200x630 after the change.
+Headline stays Instrument Serif (-0.01em). Wordmark Geist 600. The two figures Geist Mono 500. Their labels Geist 400. Pixel sizes unchanged. Recapture `public/og.png` at 1200x630 after the change (done for the Ember palette; `public/apple-touch-icon.png` and `public/favicon.svg` follow the same tokens).

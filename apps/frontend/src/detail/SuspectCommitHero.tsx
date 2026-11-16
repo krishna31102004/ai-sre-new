@@ -1,11 +1,11 @@
 import { cn, Eyebrow, Panel, sentenceCase, T } from "../components/primitives";
 import { commitLabel } from "../mockData";
-import type { Candidate } from "./helpers";
+import { displayReference, type Candidate } from "./helpers";
 
 export function SuspectCommitHero({ top }: { top: Candidate | null }) {
   if (!top) {
     return (
-      <Panel className="border-dashed border-white/[0.12] bg-transparent">
+      <Panel className="border-dashed border-line bg-transparent">
         <p className={T.body}>No commit candidates in the lookback window.</p>
         <p className={cn(T.small, "mt-1")}>The agent reports that instead of guessing.</p>
       </Panel>
@@ -16,11 +16,11 @@ export function SuspectCommitHero({ top }: { top: Candidate | null }) {
   const score = top.score;
   const evidence = top.evidence.slice(0, 3);
   return (
-    <section aria-label="Suspect commit" className="rounded-xl border border-line border-l-2 border-l-accent bg-elevated p-4 md:p-6">
+    <section aria-label="Suspect commit" className="rounded-xl border border-line border-l-2 border-l-ink bg-elevated p-4 md:p-6">
       <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 flex-1">
           <Eyebrow>Suspect commit</Eyebrow>
-          <p className={cn(T.data, "mt-2 break-all text-accent")}>{top.sha.slice(0, 12)}</p>
+          <p className={cn(T.data, "mt-2 break-all")}>{top.sha.slice(0, 12)}</p>
           <h2
             className={cn(T.h2, "mt-1")}
             title={top.title ?? undefined}
@@ -37,7 +37,7 @@ export function SuspectCommitHero({ top }: { top: Candidate | null }) {
                     <span className={cn(T.small, "min-w-0")}>
                       {item.summary}
                       {item.reference ? (
-                        <span className={cn(T.dataSm, "block break-all")}>{item.reference}</span>
+                        <span className={cn(T.dataSm, "block break-all")}>{displayReference(item.reference, item.kind)}</span>
                       ) : null}
                     </span>
                   </li>
@@ -53,14 +53,14 @@ export function SuspectCommitHero({ top }: { top: Candidate | null }) {
             {score === null ? "--" : score.toFixed(2)}
           </p>
           <p className={T.label}>Pre-rank score</p>
-          <div className="h-0.5 w-full overflow-hidden rounded-full bg-white/[0.07]" aria-hidden="true">
+          <div className="h-0.5 w-full overflow-hidden rounded-full bg-ink/[0.07]" aria-hidden="true">
             <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(1, Math.max(0, score ?? 0)) * 100}%` }} />
           </div>
           <span
             className={cn(
               T.label,
               "mt-1 inline-flex h-[22px] w-fit items-center rounded-md px-2",
-              validated ? "bg-healthy/[0.12] text-healthy" : "bg-white/[0.06] text-ink-2",
+              validated ? "bg-ink/[0.06] text-healthy" : "bg-ink/[0.06] text-ink-2",
             )}
           >
             {sentenceCase(validated ? "validated" : (top.validation ?? "not validated"))}

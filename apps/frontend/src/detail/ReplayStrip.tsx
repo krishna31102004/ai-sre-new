@@ -97,7 +97,7 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
           }}
           className={cn(
             buttonClass,
-            finished ? "border-accent text-ink" : "border-white/[0.12] text-ink-2 hover:text-ink",
+            finished ? "border-ink/30 text-ink" : "border-line text-ink-2 hover:text-ink",
             reduce || beats.length < 2 ? "cursor-not-allowed opacity-50" : "",
           )}
         >
@@ -159,9 +159,9 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
       </ReplayCtx.Provider>
 
       <div>
-        <div className="relative h-0.5 w-full rounded-full bg-white/[0.07]" aria-hidden="true">
+        <div className="relative h-0.5 w-full rounded-full bg-ink/[0.07]" aria-hidden="true">
           <div
-            className="absolute inset-0 origin-left rounded-full bg-accent"
+            className="absolute inset-0 origin-left rounded-full bg-ink-2"
             style={{ transform: `scaleX(${Math.min(1, elapsed / REPLAY_SECONDS)})` }}
           />
           {beats.map((beat, index) => (
@@ -169,7 +169,7 @@ export function ReplayStrip({ detail }: { detail: InvestigationDetail }) {
               key={`${beat.type}-${index}`}
               className={cn(
                 "absolute top-1/2 h-2 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full",
-                elapsed >= beat.at - 1e-6 && (reduce || clock.started) ? "bg-accent" : "bg-white/[0.2]",
+                elapsed >= beat.at - 1e-6 && (reduce || clock.started) ? "bg-ink-2" : "bg-ink/[0.2]",
               )}
               style={{ left: `${(beat.at / REPLAY_SECONDS) * 100}%` }}
             />

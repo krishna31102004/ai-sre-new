@@ -73,7 +73,7 @@ export function StatusPage() {
           { label: "Redis", ok: health.redis.ok, detail: health.redis.ok ? "connected" : "unavailable", icon: Wifi },
         ].map((item) => <HealthCard key={item.label} {...item} />)}
       </div>
-      <div className="mt-8 border-t border-line pt-8 md:mt-10"><Eyebrow>Feature flags</Eyebrow><div className="mt-2 flex items-center gap-2"><Zap size={18} className="text-accent" /><h2 className={T.h2}>Fault controls</h2></div><p className={cn(T.body, "mt-2")}>Enable a fault only to run the controlled demo. The investigation system remains read-only.</p></div>
+      <div className="mt-8 border-t border-line pt-8 md:mt-10"><Eyebrow>Feature flags</Eyebrow><div className="mt-2 flex items-center gap-2"><Zap size={18} className="text-ink-2" /><h2 className={T.h2}>Fault controls</h2></div><p className={cn(T.body, "mt-2")}>Enable a fault only to run the controlled demo. The investigation system remains read-only.</p></div>
       <Panel className="mt-4 divide-y divide-line p-0 md:mt-6 md:p-0">
         {faults.map((fault) => {
           const isOn = variants[fault.name] === "on";
@@ -81,7 +81,7 @@ export function StatusPage() {
           const switchControl = (
             <div className="relative">
               <Switch checked={isOn} aria-label={`Turn ${fault.name} ${isOn ? "off" : "on"}`} onCheckedChange={() => void toggle(fault.name)} disabled={DEMO_MODE || isUpdating || !variants[fault.name]} />
-              {isUpdating && <Loader2 size={16} className="absolute left-1/2 top-1/2 -ml-2 -mt-2 animate-spin text-accent" />}
+              {isUpdating && <Loader2 size={16} className="absolute left-1/2 top-1/2 -ml-2 -mt-2 animate-spin text-ink-2" />}
             </div>
           );
           return <div key={fault.name} className="flex flex-wrap items-center gap-5 p-4 md:p-6"><div className="min-w-[230px] flex-1"><p className={T.data}>{fault.name}</p><p className={cn(T.small, "mt-1 max-w-xl")}>{fault.description}</p></div><Badge variant={isOn ? "danger" : "muted"}>{sentenceCase(variants[fault.name] ?? "loading")}</Badge>{DEMO_MODE ? <Tooltip><TooltipTrigger asChild><span>{switchControl}</span></TooltipTrigger><TooltipContent>Demo mode: fault injection disabled</TooltipContent></Tooltip> : switchControl}<span className={cn(T.label, "w-20 text-right")}>{sentenceCase(DEMO_MODE ? "demo" : isUpdating ? "updating" : isOn ? "enabled" : "disabled")}</span></div>;
@@ -96,13 +96,13 @@ function HealthCard({ label, ok, detail, age, icon: Icon }: { label: string; ok:
   const stale = label === "Worker" && typeof age === "number" && age > 30;
   const warning = label === "Worker" && typeof age === "number" && age > 15 && age <= 30;
   const down = !ok || stale;
-  const dot = down ? "bg-firing" : warning ? "bg-warning" : "bg-healthy";
-  const text = down ? "text-firing" : warning ? "text-warning" : "text-healthy";
+  const dot = down ? "bg-firing" : warning ? "bg-ink-2" : "bg-healthy";
+  const text = down ? "text-firing" : warning ? "text-ink-2" : "text-healthy";
   return (
     <Panel>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.03] text-accent"><Icon size={18} /></span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink/[0.03] text-ink-2"><Icon size={18} /></span>
           <div>
             <p className={T.h3}>{label}</p>
             <p className={cn(T.small, "mt-1")}>{detail}</p>

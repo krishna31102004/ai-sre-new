@@ -11,7 +11,7 @@ type ProgressProps = ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
 export function Progress({ className, indicatorClassName, value, ...props }: ProgressProps) {
   return (
     <ProgressPrimitive.Root
-      className={cn("relative h-1.5 w-full overflow-hidden rounded-full bg-white/10", className)}
+      className={cn("relative h-1.5 w-full overflow-hidden rounded-full bg-ink/10", className)}
       {...props}
     >
       <ProgressPrimitive.Indicator

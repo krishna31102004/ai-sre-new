@@ -21,7 +21,7 @@ export function NotFoundPage() {
         </Link>
         <Link
           to="/investigations"
-          className={cn(T.body, "press inline-flex h-9 items-center rounded-lg border border-white/[0.12] px-5 font-medium text-ink")}
+          className={cn(T.body, "press inline-flex h-9 items-center rounded-lg border border-line px-5 font-medium text-ink")}
         >
           Investigations
         </Link>

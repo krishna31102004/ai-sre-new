@@ -9,7 +9,7 @@ export function NumbersBand() {
   return (
     <section aria-label="Benchmark numbers" className="pt-20 md:pt-32">
       <h2 className="sr-only">Benchmark numbers</h2>
-      <div className="border-y border-white/[0.07]">
+      <div className="border-y border-line">
         <motion.dl
           {...(reduce ? {} : SCROLL_IN)}
           className="mx-auto grid max-w-[1200px] grid-cols-2 md:grid-cols-4"
@@ -21,9 +21,9 @@ export function NumbersBand() {
             return (
               <div
                 key={cell.label}
-                className={`px-4 py-8 md:px-6 ${i % 2 === 1 ? "border-l border-white/[0.07]" : ""} ${
-                  i > 0 ? "md:border-l md:border-white/[0.07]" : ""
-                } ${i >= 2 ? "border-t border-white/[0.07] md:border-t-0" : ""}`}
+                className={`px-4 py-8 md:px-6 ${i % 2 === 1 ? "border-l border-line" : ""} ${
+                  i > 0 ? "md:border-l md:border-line" : ""
+                } ${i >= 2 ? "border-t border-line md:border-t-0" : ""}`}
               >
                 <div className="flex flex-col-reverse">
                   <dt className={cn(T.small, "mt-1")}>

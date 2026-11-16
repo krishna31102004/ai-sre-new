@@ -5,7 +5,7 @@ import { eventLabel, eventMs, formatOffset } from "./helpers";
 function dotTone(type: string): string {
   if (type === "alert_received") return "bg-firing";
   if (type === "resolved") return "bg-healthy";
-  return "bg-accent";
+  return "bg-ink-3";
 }
 
 export function TimelineTab({ events }: { events: InvestigationDetail["events"] }) {
@@ -15,7 +15,7 @@ export function TimelineTab({ events }: { events: InvestigationDetail["events"] 
   const t0 = eventMs(events[0].occurred_at);
   return (
     <ol className="relative">
-      <span aria-hidden="true" className="absolute bottom-2 left-[87.5px] top-2 w-px bg-white/[0.07]" />
+      <span aria-hidden="true" className="absolute bottom-2 left-[87.5px] top-2 w-px bg-ink/[0.07]" />
       {events.map((event, index) => (
         <li key={`${event.event_type}-${event.occurred_at}-${index}`} className="relative grid grid-cols-[72px_8px_minmax(0,1fr)] gap-x-3 py-3">
           <span className={cn(T.dataSm, "pt-0.5 text-right")}>{formatOffset(eventMs(event.occurred_at) - t0)}</span>

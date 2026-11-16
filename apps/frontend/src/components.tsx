@@ -23,7 +23,7 @@ const NAV_LINKS = [
 function Logo() {
   return (
     <NavLink to="/" className={cn(T.h3, "press flex shrink-0 items-center gap-2.5 rounded-md")}>
-      <span className="relative flex h-7 w-7 items-center justify-center rounded-md border border-accent/30 bg-accent/15 text-accent">
+      <span className="relative flex h-7 w-7 items-center justify-center rounded-md border border-line bg-ink/[0.06] text-ink">
         <Signal size={15} strokeWidth={2.6} />
         <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-healthy pulse-dot" />
       </span>
@@ -73,7 +73,7 @@ function MobileMenu() {
                 to={to}
                 end={end}
                 onClick={() => setOpen(false)}
-                className={cn(T.h3, "flex h-12 items-center gap-3 rounded-lg px-3", isActive(to, end) ? "text-ink" : "text-ink-2")}
+                className={cn(T.lead, "flex h-12 items-center gap-3 rounded-lg px-3", isActive(to, end) ? "text-ink" : "text-ink-2")}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${isActive(to, end) ? "bg-accent" : "bg-transparent"}`} />
                 {label}
@@ -84,7 +84,7 @@ function MobileMenu() {
             href={REPO_URL}
             target="_blank"
             rel="noreferrer"
-            className={cn(T.h3, "mt-2 flex h-12 items-center gap-3 rounded-lg px-3 text-ink-2")}
+            className={cn(T.lead, "mt-2 flex h-12 items-center gap-3 rounded-lg px-3 text-ink-2")}
           >
             <Github size={16} />
             GitHub
@@ -113,12 +113,12 @@ export function Shell({ children }: PropsWithChildren) {
                   key={to}
                   to={to}
                   end={end}
-                  className={cn(T.body, "press relative rounded-lg px-3 py-1.5 font-medium hover:text-ink", active ? "text-ink" : "text-ink-2")}
+                  className={cn(T.body, "press relative rounded-lg px-3 py-1.5 font-medium hover:text-ink", active ? "text-accent" : "text-ink-2")}
                 >
                   {active && (
                     <motion.span
                       layoutId="nav-active"
-                      className="absolute inset-0 rounded-lg bg-white/[0.06]"
+                      className="absolute inset-0 rounded-lg bg-ink/[0.06]"
                       transition={reduce ? { duration: 0 } : { duration: DUR.base, ease: EASE }}
                     />
                   )}
@@ -171,7 +171,7 @@ export function SeverityBadge({ severity }: { severity: string | null }) {
 
 export function ConfidencePill({ confidence }: { confidence: number | null }) {
   if (confidence === null) return <span className="text-ink-3">--</span>;
-  const tone = confidence >= 0.8 ? "bg-healthy" : confidence >= 0.5 ? "bg-warning" : "bg-firing";
+  const tone = confidence >= 0.8 ? "bg-healthy" : confidence >= 0.5 ? "bg-ink-2" : "bg-firing";
   return (
     <span className={cn(T.dataSm, "inline-flex min-w-[112px] items-center gap-2 text-ink-2")}>
       <Progress value={Math.round(confidence * 100)} className="w-14" indicatorClassName={tone} />
@@ -202,5 +202,5 @@ export function LoadingState({ label = "Loading..." }: { label?: string }) {
 }
 
 export function ErrorState({ message }: { message: string }) {
-  return <div className={cn(T.body, "rounded-glass border border-firing/25 bg-red-950/40 p-4 text-firing")}>{message}</div>;
+  return <div className={cn(T.body, "rounded-glass border border-firing/40 bg-panel p-4 text-firing")}>{message}</div>;
 }

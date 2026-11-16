@@ -13,7 +13,7 @@ export function Switch({
       checked={checked}
       className={cn(
         "peer inline-flex h-8 w-[62px] shrink-0 cursor-pointer items-center rounded-full border p-1 transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 disabled:cursor-not-allowed disabled:opacity-50",
-        checked ? "border-firing/45 bg-firing/20" : "border-white/10 bg-white/8",
+        checked ? "border-firing/45 bg-ink/[0.06]" : "border-line bg-ink/[0.08]",
         className,
       )}
       {...props}

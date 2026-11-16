@@ -8,7 +8,7 @@ import { cn, CommitSummary, FilterChips, Panel, ScoreBar, ServiceChip, StatusDot
 import { SignalLine } from "../components/SignalLine";
 import { relativeTime } from "../lib";
 
-const GRID = "grid grid-cols-[96px_minmax(0,2fr)_minmax(0,1fr)_120px_96px_20px] lg:grid-cols-[96px_minmax(360px,auto)_minmax(0,1fr)_120px_96px_20px] items-center gap-x-4";
+const GRID = "grid grid-cols-[96px_minmax(0,2fr)_minmax(0,1fr)_120px_96px_20px] lg:grid-cols-[96px_minmax(0,1.3fr)_minmax(0,1.5fr)_120px_96px_20px] items-center gap-x-4";
 const ROW_FOCUS = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px]";
 
 function absoluteTime(value: string): string {
@@ -99,7 +99,7 @@ export function InvestigationsPage() {
           {metrics.map((metric, index) => (
             <div
               key={metric.label}
-              className={`p-4 md:p-6 ${index % 2 === 1 ? "border-l border-white/[0.07]" : ""} ${index >= 2 ? "border-t border-white/[0.07] md:border-t-0" : ""} ${index > 0 ? "md:border-l md:border-white/[0.07]" : ""}`}
+              className={`p-4 md:p-6 ${index % 2 === 1 ? "border-l border-line" : ""} ${index >= 2 ? "border-t border-line md:border-t-0" : ""} ${index > 0 ? "md:border-l md:border-line" : ""}`}
             >
               <p className={T.label}>{metric.label}</p>
               <p className={cn(T.dataLg, "mt-1 text-ink-2")}>{metric.value}</p>
@@ -120,7 +120,7 @@ export function InvestigationsPage() {
               { value: "resolved", label: "Resolved", count: summary.resolved },
             ]}
           />
-          <span className="hidden h-4 w-px bg-white/[0.07] sm:block" aria-hidden="true" />
+          <span className="hidden h-4 w-px bg-ink/[0.07] sm:block" aria-hidden="true" />
           <FilterChips
             ariaLabel="Filter by service"
             value={serviceFilter}
@@ -135,10 +135,10 @@ export function InvestigationsPage() {
           <Panel className="overflow-hidden p-0 md:p-0">
             {[0, 1, 2, 3, 4].map((row) => (
               <div key={row} className="flex h-[52px] items-center gap-4 border-b border-line px-4 last:border-b-0">
-                <span className="h-3 w-16 rounded bg-white/[0.04]" />
-                <span className="h-3 w-1/3 rounded bg-white/[0.04]" />
-                <span className="hidden h-3 w-1/4 rounded bg-white/[0.04] md:block" />
-                <span className="ml-auto h-3 w-12 rounded bg-white/[0.04]" />
+                <span className="h-3 w-16 rounded bg-ink/[0.04]" />
+                <span className="h-3 w-1/3 rounded bg-ink/[0.04]" />
+                <span className="hidden h-3 w-1/4 rounded bg-ink/[0.04] md:block" />
+                <span className="ml-auto h-3 w-12 rounded bg-ink/[0.04]" />
               </div>
             ))}
           </Panel>
@@ -153,7 +153,7 @@ export function InvestigationsPage() {
             <button
               type="button"
               onClick={clearFilters}
-              className={cn(T.body, "press inline-flex h-11 items-center rounded-lg border border-white/[0.12] px-4 font-medium text-ink nav:h-9")}
+              className={cn(T.body, "press inline-flex h-11 items-center rounded-lg border border-line px-4 font-medium text-ink nav:h-9")}
             >
               Clear filters
             </button>
@@ -178,7 +178,7 @@ export function InvestigationsPage() {
                 <li key={item.investigation_id} className="border-b border-line last:border-b-0">
                   <Link
                     to={`/investigations/${item.investigation_id}`}
-                    className={`group ${GRID} h-[52px] border-l-2 px-4 transition-colors duration-[120ms] hover:bg-white/[0.03] ${ROW_FOCUS} ${isFiring(item) ? "border-l-firing" : "border-l-transparent"}`}
+                    className={`group ${GRID} h-[52px] border-l-2 px-4 transition-colors duration-[120ms] hover:bg-ink/[0.03] ${ROW_FOCUS} ${isFiring(item) ? "border-l-firing" : "border-l-transparent"}`}
                   >
                     <StatusDot status={item.status} />
                     <span className="flex min-w-0 items-center gap-2">
@@ -209,7 +209,7 @@ export function InvestigationsPage() {
                   to={`/investigations/${item.investigation_id}`}
                   className={`block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2`}
                 >
-                  <Panel className={`flex flex-col gap-2 hover:border-white/[0.12] ${isFiring(item) ? "border-l-2 border-l-firing" : ""}`}>
+                  <Panel className={`flex flex-col gap-2 hover:border-ink/20 ${isFiring(item) ? "border-l-2 border-l-firing" : ""}`}>
                     <div className="flex items-center justify-between gap-3">
                       <StatusDot status={item.status} />
                       <span className={cn(T.small, "text-ink-3")} title={absoluteTime(item.started_at)}>

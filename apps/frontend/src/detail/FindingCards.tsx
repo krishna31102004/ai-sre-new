@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { InvestigationSummary } from "../api";
 import { cn, CommitSummary, Panel, ScoreBar, T } from "../components/primitives";
 import { number } from "../lib";
-import type { Candidate } from "./helpers";
+import { deployCandidateCount, type Candidate } from "./helpers";
 
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -16,9 +16,10 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 
 export function CommitCorrelationCard({ candidates }: { candidates: Candidate[] }) {
   const n = candidates.length;
+  const deploys = deployCandidateCount(candidates[0]?.sha);
   return (
     <Card title="Commit correlation">
-      <p className={T.small}>{n} {n === 1 ? "candidate" : "candidates"} ranked</p>
+      {deploys !== null ? <p className={T.small}>{deploys} deploy candidates ranked</p> : null}
       {n === 0 ? (
         <p className={T.body}>Nothing to rank in the lookback window.</p>
       ) : (
@@ -26,11 +27,11 @@ export function CommitCorrelationCard({ candidates }: { candidates: Candidate[] 
           {candidates.slice(0, 3).map((candidate, index) => (
             <li
               key={`${candidate.sha}-${index}`}
-              className="relative flex min-h-11 flex-col justify-center gap-1 rounded-lg bg-white/[0.03] px-3 py-2"
+              className="relative flex min-h-11 flex-col justify-center gap-1 rounded-lg bg-ink/[0.03] px-3 py-2"
             >
               {index === 0 ? <span aria-hidden="true" className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-healthy" /> : null}
               <CommitSummary sha={candidate.sha} title={candidate.title} />
-              <ScoreBar value={candidate.score} />
+              <ScoreBar value={candidate.score} highlight={index === 0} />
             </li>
           ))}
         </ul>
@@ -76,8 +77,8 @@ export function ImpactCard({ investigation }: { investigation: InvestigationSumm
           label="Error rate"
           footer={
             <div className="mt-2">
-              <div className="h-0.5 w-full overflow-hidden rounded-full bg-white/[0.07]" aria-hidden="true">
-                <div className="h-full rounded-full bg-accent" style={{ width: `${barWidth}%` }} />
+              <div className="h-0.5 w-full overflow-hidden rounded-full bg-ink/[0.07]" aria-hidden="true">
+                <div className="h-full rounded-full bg-ink-3" style={{ width: `${barWidth}%` }} />
               </div>
               <p className={cn(T.label, "mt-1")}>scale 0 to 5%</p>
             </div>
@@ -86,7 +87,7 @@ export function ImpactCard({ investigation }: { investigation: InvestigationSumm
           {rate === null ? "--" : `${(rate * 100).toFixed(2)}%`}
         </Stat>
         <Stat label="Affected requests">{number(investigation.affected_requests)}</Stat>
-        <Stat label="Severity" valueClass={T.h2}>
+        <Stat label="Severity" valueClass={cn(T.lead, "font-medium text-ink")}>
           <span className={severity?.toLowerCase() === "page" ? "text-firing" : "text-ink-2"}>{severity ?? "--"}</span>
         </Stat>
       </div>

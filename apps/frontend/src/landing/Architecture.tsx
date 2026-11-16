@@ -23,7 +23,7 @@ function Arrow({ vertical }: { vertical?: boolean }) {
       height="8"
       viewBox="0 0 6 8"
       aria-hidden="true"
-      className={`shrink-0 text-white/[0.25] ${vertical ? "rotate-90" : ""}`}
+      className={`shrink-0 text-ink/[0.25] ${vertical ? "rotate-90" : ""}`}
     >
       <path d="M0.5 0.5 L5 4 L0.5 7.5" fill="none" stroke="currentColor" strokeWidth="1" />
     </svg>
@@ -85,9 +85,9 @@ export function Architecture() {
                 {node.parallel && (
                   <span className="flex flex-col gap-[3px]">
                     <span className="flex flex-col gap-[3px]" aria-hidden="true">
-                      <span className="h-1.5 rounded-full bg-accent/60" />
-                      <span className="h-1.5 rounded-full bg-accent/60" />
-                      <span className="h-1.5 rounded-full bg-accent/60" />
+                      <span className="h-1.5 rounded-full bg-ink/30" />
+                      <span className="h-1.5 rounded-full bg-ink/30" />
+                      <span className="h-1.5 rounded-full bg-ink/30" />
                     </span>
                     <span className={T.label}>3 parallel nodes</span>
                   </span>
@@ -97,11 +97,11 @@ export function Architecture() {
               {!last && (
                 <>
                   <div className="ml-6 flex h-6 w-2 -translate-x-1/2 flex-col items-center nav:hidden" aria-hidden="true">
-                    <div className="w-px flex-1 bg-white/[0.12]" />
+                    <div className="w-px flex-1 bg-ink/[0.12]" />
                     <Arrow vertical />
                   </div>
                   <div className="hidden min-w-4 flex-1 items-center nav:flex" aria-hidden="true">
-                    <div className="h-px flex-1 bg-white/[0.12]" />
+                    <div className="h-px flex-1 bg-ink/[0.12]" />
                     <Arrow />
                   </div>
                 </>

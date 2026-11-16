@@ -17,23 +17,19 @@
 @font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/geist-mono-500.woff2") format("woff2"); }
 
 :root {
-  --color-canvas: 5 7 13;
-  --color-panel: 10 15 28;
-  --color-elevated: 15 22 38;
-  --color-line: 255 255 255;
-  --color-accent: 76 141 255;
-  --color-healthy: 52 211 153;
-  --color-firing: 248 113 113;
-  --color-warning: 251 191 36;
-  --color-ink: 242 244 248;
-  --color-ink-2: 163 172 189;
-  --color-ink-3: 124 134 152;
-  --canvas: #05070d;
-  --panel: #0a0f1c;
-  --elevated: #0f1626;
-  --line: rgba(255, 255, 255, 0.07);
-  --line-strong: rgba(255, 255, 255, 0.12);
-  --accent: #4c8dff;
+  --color-canvas: 12 11 10;
+  --color-panel: 20 18 16;
+  --color-elevated: 20 18 16;
+  --color-accent: 255 106 61;
+  --color-healthy: 95 179 122;
+  --color-firing: 229 83 75;
+  --color-ink: 237 232 224;
+  --canvas: #0c0b0a;
+  --panel: #141210;
+  --elevated: #141210;
+  --line: rgba(237, 232, 224, 0.08);
+  --line-strong: rgba(237, 232, 224, 0.08);
+  --accent: #ff6a3d;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -43,9 +39,9 @@
 @layer base {
   html { @apply bg-canvas; }
   body { @apply m-0 min-w-[320px] bg-canvas font-sans antialiased; font-family: var(--font-ui); color: rgb(var(--color-ink)); }
-  h1 { @apply font-sans text-h1-m font-semibold text-ink md:text-h1; }
-  h2 { @apply font-sans text-h2-m font-semibold text-ink md:text-h2; }
-  h3 { @apply font-sans text-h3 font-semibold text-ink; }
+  h1 { @apply font-display text-h1-m font-normal text-ink md:text-h1; }
+  h2 { @apply font-display text-h2-m font-normal text-ink md:text-h2; }
+  h3 { @apply font-display text-h3 font-normal text-ink; }
   th { @apply px-4 py-3 font-medium; }
   td { @apply px-4 py-3; }
   button:disabled { @apply cursor-not-allowed opacity-50; }
@@ -60,34 +56,34 @@
   .press:active { transform: scale(0.97); }
   .eyebrow { @apply font-sans text-label font-medium text-ink-3; }
   .glass-card { @apply rounded-xl border border-line bg-panel; }
-  .soft-card { @apply rounded-lg bg-white/[0.03]; }
+  .soft-card { @apply rounded-lg bg-ink/[0.03]; }
   .badge { @apply inline-flex h-[22px] items-center gap-1.5 rounded-md px-2 font-sans text-label font-medium; }
-  .badge-green { @apply bg-healthy/[0.12] text-healthy; }
-  .badge-red { @apply bg-firing/[0.12] text-firing; }
-  .badge-amber { @apply bg-warning/[0.12] text-warning; }
-  .badge-slate { @apply bg-white/[0.06] text-ink-2; }
+  .badge-green { @apply bg-ink/[0.06] text-healthy; }
+  .badge-red { @apply bg-ink/[0.06] text-firing; }
+  .badge-amber { @apply bg-ink/[0.06] text-ink-2; }
+  .badge-slate { @apply bg-ink/[0.06] text-ink-2; }
   .label { @apply mb-1.5 block font-sans text-label font-medium text-ink-3; }
   .detail-grid { @apply grid grid-cols-[minmax(120px,0.3fr)_1fr] gap-x-5 gap-y-3; }
   .detail-grid dt { @apply text-ink-3; }
   .detail-grid dd { @apply m-0 break-words; }
-  .evidence { @apply max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-white/[0.03] p-3 font-mono text-data-sm text-ink-2; }
-  .link-button { @apply press inline-flex h-9 items-center gap-2 rounded-lg border border-white/[0.12] px-3 font-sans text-body font-medium text-ink hover:border-accent/70 hover:bg-accent/10; }
-  .icon-button { @apply press inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.12] text-ink-2 hover:border-accent/70 hover:bg-accent/10 hover:text-ink; }
+  .evidence { @apply max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-ink/[0.03] p-3 font-mono text-data-sm text-ink-2; }
+  .link-button { @apply press inline-flex h-9 items-center gap-2 rounded-lg border border-line px-3 font-sans text-body font-medium text-ink hover:border-ink/30 hover:bg-ink/[0.06]; }
+  .icon-button { @apply press inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-ink-2 hover:border-ink/30 hover:bg-ink/[0.06] hover:text-ink; }
   .control-button { @apply h-9 min-w-24 rounded-lg px-3 font-sans text-body font-medium transition; }
-  .control-on { @apply bg-firing/15 text-firing hover:bg-firing/25; }
-  .control-off { @apply bg-healthy/15 text-healthy hover:bg-healthy/25; }
+  .control-on { @apply border border-firing/40 text-firing hover:bg-ink/[0.04]; }
+  .control-off { @apply border border-healthy/40 text-healthy hover:bg-ink/[0.04]; }
   .toast { @apply fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-glass border px-4 py-3 font-sans text-small text-ink shadow-lift backdrop-blur; }
-  .toast-success { @apply border-healthy/25 bg-emerald-950/90; }
-  .toast-error { @apply border-firing/25 bg-red-950/90; }
-  .skeleton { @apply animate-pulse rounded-md bg-white/[0.06]; }
+  .toast-success { @apply border-healthy/40 bg-panel; }
+  .toast-error { @apply border-firing/40 bg-panel; }
+  .skeleton { @apply animate-pulse rounded-md bg-ink/[0.06]; }
 }
 
-@keyframes highlight-new { from { box-shadow: inset 4px 0 0 rgba(76, 141, 255, 0.95), inset 18px 0 24px rgba(76, 141, 255, 0.14); } to { box-shadow: inset 0 0 0 transparent; } }
+@keyframes highlight-new { from { box-shadow: inset 4px 0 0 rgba(255, 106, 61, 0.95), inset 18px 0 24px rgba(255, 106, 61, 0.14); } to { box-shadow: inset 0 0 0 transparent; } }
 .new-row { animation: highlight-new 2s ease-out; }
 details[open] summary svg { transform: rotate(180deg); }
 
-@keyframes health-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.22); } 50% { box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); } }
-.status-dot.bg-emerald-400 { animation: health-pulse 3.2s ease-in-out infinite; }
+@keyframes health-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(95, 179, 122, 0.22); } 50% { box-shadow: 0 0 0 5px rgba(95, 179, 122, 0); } }
+.status-dot.bg-healthy { animation: health-pulse 3.2s ease-in-out infinite; }
 
 @keyframes status-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.82); } }
 .pulse-dot { animation: status-pulse 1.9s ease-in-out infinite; }
@@ -117,7 +113,7 @@ details[open] summary svg { transform: rotate(180deg); }
 .pipeline-node-active {
   opacity: 1;
   transform: scale(1.02);
-  box-shadow: 0 0 0 1px rgba(76, 141, 255, 0.28), 0 0 24px rgba(76, 141, 255, 0.18);
+  box-shadow: 0 0 0 1px rgba(255, 106, 61, 0.4);
 }
 
 @keyframes panel-slide-up {
@@ -130,8 +126,8 @@ details[open] summary svg { transform: rotate(180deg); }
 }
 
 @keyframes branch-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(76, 141, 255, 0.18); }
-  50% { box-shadow: 0 0 0 8px rgba(76, 141, 255, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(237, 232, 224, 0.12); }
+  50% { box-shadow: 0 0 0 8px rgba(237, 232, 224, 0); }
 }
 
 .pipeline-branch {
@@ -139,7 +135,7 @@ details[open] summary svg { transform: rotate(180deg); }
 }
 
 .pipeline-edge {
-  stroke: #4c8dff;
+  stroke: #ede8e0;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -167,8 +163,7 @@ details[open] summary svg { transform: rotate(180deg); }
 
 .pipeline-surface {
   background:
-    radial-gradient(ellipse at center, rgba(30, 64, 175, 0.14), transparent 64%),
-    rgba(13, 20, 36, 0.9);
+    rgba(20, 18, 16, 0.9);
 }
 
 .pipeline-row-label {
@@ -199,14 +194,13 @@ details[open] summary svg { transform: rotate(180deg); }
 }
 
 .pipeline-node:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 24px rgba(76, 141, 255, 0.15);
+  border-color: rgba(237, 232, 224, 0.4);
   transform: translateY(-2px);
 }
 
 .pipeline-node-icon {
-  border: 1px solid rgba(76, 141, 255, 0.32);
-  background: linear-gradient(135deg, rgba(76, 141, 255, 0.16), rgba(76, 141, 255, 0));
+  border: 1px solid rgba(237, 232, 224, 0.08);
+  background: rgba(237, 232, 224, 0.06);
 }
 
 .pipeline-node-pill {
@@ -223,7 +217,7 @@ details[open] summary svg { transform: rotate(180deg); }
 }
 
 .pipeline-flow-dot {
-  fill: #4c8dff;
+  fill: #ede8e0;
   transform-box: fill-box;
   transform-origin: center;
 }

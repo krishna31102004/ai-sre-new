@@ -29,7 +29,7 @@ export function RawTab({ brief }: { brief: string | null }) {
           onClick={() => void copy()}
           disabled={!brief}
           aria-label={copied ? "Brief copied" : "Copy rendered brief"}
-          className={cn(T.label, "press inline-flex h-11 items-center gap-1.5 rounded-lg border border-white/[0.12] px-3 text-ink-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 nav:h-9")}
+          className={cn(T.label, "press inline-flex h-11 items-center gap-1.5 rounded-lg border border-line px-3 text-ink-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50 nav:h-9")}
         >
           {copied ? <Check size={14} className="text-healthy" aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
           {copied ? "Copied" : "Copy"}

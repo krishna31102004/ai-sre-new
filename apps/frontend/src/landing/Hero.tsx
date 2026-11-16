@@ -30,7 +30,7 @@ function Bar({
 }) {
   return (
     <div
-      className="mt-4 h-0.5 w-full rounded-full bg-white/[0.07]"
+      className="mt-4 h-0.5 w-full rounded-full bg-ink/[0.07]"
       aria-hidden="true"
     >
       <div
@@ -44,7 +44,7 @@ function Bar({
 function ProofCard() {
   const { llm, heuristic } = landingStats.top1;
   return (
-    <div className="rounded-2xl border border-white/[0.12] bg-white/[0.03] p-4 backdrop-blur-md md:p-6">
+    <div className="rounded-2xl border border-line bg-ink/[0.03] p-4 backdrop-blur-md md:p-6">
       <p className={T.label}>
         Commit top-1
       </p>
@@ -121,7 +121,7 @@ export function Hero() {
         <div className="grid items-center gap-4 sm:gap-8 lg:grid-cols-12 lg:gap-0">
           <div className="min-w-0 lg:col-span-7">
             <motion.div {...enter(0)}>
-              <span className={cn(T.label, "inline-flex h-[22px] items-center gap-2 rounded-md bg-white/[0.06] px-2 text-ink-2")}>
+              <span className={cn(T.label, "inline-flex h-[22px] items-center gap-2 rounded-md bg-ink/[0.06] px-2 text-ink-2")}>
                 <span
                   className="h-1.5 w-1.5 rounded-full bg-healthy"
                   aria-hidden="true"
@@ -135,7 +135,7 @@ export function Hero() {
               - "From alert to cited root cause before the pager is acknowledged."
               - "Every alert gets an investigation, not just a page."
             */}
-            <h1 className="mt-4 font-display text-[clamp(36px,4.4vw,64px)] font-normal leading-[0.98] tracking-[-0.02em] text-ink">
+            <h1 className="mt-4 font-display text-[clamp(36px,4.4vw,64px)] font-normal leading-[0.98] tracking-[-0.01em] text-ink">
               {H1_LINES.map((line, i) => (
                 <Fragment key={line}>
                   {i > 0 ? " " : null}
@@ -163,13 +163,13 @@ export function Hero() {
                 <a
                   href="#demo"
                   onClick={scrollToDemo}
-                  className={cn(CTA_BASE, "flex-1 bg-accent text-[#05070d] hover:bg-accent/90 sm:flex-none")}
+                  className={cn(CTA_BASE, "flex-1 bg-accent text-[#0c0b0a] hover:bg-accent/90 sm:flex-none")}
                 >
                   Watch it investigate
                 </a>
                 <Link
                   to="/pipeline"
-                  className={cn(CTA_BASE, "flex-1 border border-white/[0.12] text-ink sm:flex-none")}
+                  className={cn(CTA_BASE, "flex-1 border border-line text-ink sm:flex-none")}
                 >
                   See the pipeline
                 </Link>

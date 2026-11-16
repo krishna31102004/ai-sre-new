@@ -7,7 +7,7 @@ type SignalLineProps = {
   className?: string;
 };
 
-// Hero geometry in a 1000x48 box. One continuous trace, with the red spike overlaid as a second path on top.
+// Hero geometry in a 1000x48 box. One continuous trace, with the accent spike overlaid as a second path on top.
 const TRACE = "M0 24 L380 24 L400 24 L412 18 L424 24 L520 24 L540 24 L556 4 L572 44 L588 24 L1000 24";
 const SPIKE = "M520 24 L540 24 L556 4 L572 44 L588 24";
 const DRAW_SECONDS = 1.6;
@@ -32,7 +32,7 @@ export function SignalLine({ variant, flat = false, className }: SignalLineProps
       >
         <path
           d="M0 8 L40 8 L46 5 L52 8 L60 8 L64 1 L68 15 L72 8 L120 8"
-          style={{ stroke: "rgb(var(--color-accent) / 0.2)" }}
+          style={{ stroke: "rgb(var(--color-ink) / 0.16)" }}
           strokeWidth={1.5}
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -41,7 +41,7 @@ export function SignalLine({ variant, flat = false, className }: SignalLineProps
           className="signal-loader-run"
           d="M0 8 L40 8 L46 5 L52 8 L60 8 L64 1 L68 15 L72 8 L120 8"
           pathLength={120}
-          style={{ stroke: "rgb(var(--color-accent))" }}
+          style={{ stroke: "rgb(var(--color-ink) / 0.6)" }}
           strokeWidth={1.5}
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -76,7 +76,7 @@ export function SignalLine({ variant, flat = false, className }: SignalLineProps
     >
       <motion.path
         d={TRACE}
-        style={{ stroke: "rgb(var(--color-accent) / 0.6)" }}
+        style={{ stroke: "rgb(var(--color-ink) / 0.42)" }}
         strokeWidth={1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -86,7 +86,7 @@ export function SignalLine({ variant, flat = false, className }: SignalLineProps
       />
       <motion.path
         d={SPIKE}
-        style={{ stroke: "rgb(var(--color-firing))" }}
+        style={{ stroke: "rgb(var(--color-accent))" }}
         strokeWidth={1.5}
         strokeLinejoin="round"
         strokeLinecap="round"

@@ -21,7 +21,7 @@ export function StackChips() {
         {STACK.map((item) => (
           <li
             key={item}
-            className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-white/[0.06] px-2 text-ink-2")}
+            className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-ink/[0.06] px-2 text-ink-2")}
           >
             {item}
           </li>

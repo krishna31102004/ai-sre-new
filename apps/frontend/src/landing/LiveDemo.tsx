@@ -108,13 +108,13 @@ function Slot({
 }) {
   return (
     <div className={`relative rounded-lg ${className}`}>
-      <div className="pointer-events-none absolute inset-0 rounded-lg bg-white/[0.03] opacity-40" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 rounded-lg bg-ink/[0.03] opacity-40" aria-hidden="true" />
       <Reveal
         on={on}
         dur={dur}
         y={y}
         ghost={ghost}
-        className={`relative h-full rounded-lg bg-white/[0.03] ${innerClassName}`}
+        className={`relative h-full rounded-lg bg-ink/[0.03] ${innerClassName}`}
       >
         {children}
       </Reveal>
@@ -167,7 +167,7 @@ function Connector() {
     <>
       <div className="mx-auto flex h-4 w-px items-stretch md:hidden" aria-hidden="true">
         <motion.span
-          className="w-px origin-top bg-white/[0.2]"
+          className="w-px origin-top bg-ink/[0.2]"
           style={{ flex: 1 }}
           initial={reduce ? false : { scaleY: 0 }}
           animate={{ scaleY: on ? 1 : 0 }}
@@ -176,7 +176,7 @@ function Connector() {
       </div>
       <div className="hidden w-8 shrink-0 items-center md:flex" aria-hidden="true">
         <motion.span
-          className="h-px w-full origin-left bg-white/[0.2]"
+          className="h-px w-full origin-left bg-ink/[0.2]"
           initial={reduce ? false : { scaleX: 0 }}
           animate={{ scaleX: on ? 1 : 0 }}
           transition={transition}
@@ -252,9 +252,9 @@ export function Lane({
   const dimBody = { opacity: 0.4 };
   const status = done ? "done" : active ? "running" : "waiting";
   return (
-    <div className={cn("relative flex flex-col gap-3", surface === "card" ? "rounded-xl bg-panel p-4 md:p-6" : "rounded-lg bg-white/[0.03] p-4")}>
+    <div className={cn("relative flex flex-col gap-3", surface === "card" ? "rounded-xl bg-panel p-4 md:p-6" : "rounded-lg bg-ink/[0.03] p-4")}>
       <motion.div
-        className={cn("pointer-events-none absolute inset-0 border border-white/[0.12]", surface === "card" ? "rounded-xl" : "rounded-lg")}
+        className={cn("pointer-events-none absolute inset-0 border border-line", surface === "card" ? "rounded-xl" : "rounded-lg")}
         initial={reduce ? false : dimBorder}
         animate={active ? { opacity: 1 } : dimBorder}
         transition={transition}
@@ -279,7 +279,7 @@ function ResultHead({ children, accent = false }: { children: ReactNode; accent?
   return (
     <div className="flex items-center gap-2">
       <Check size={14} className="shrink-0 text-healthy" aria-hidden="true" />
-      <span className={cn(T.data, "break-all", accent && "text-accent")}>{children}</span>
+      <span className={cn(T.data, "break-all", accent && "text-ink")}>{children}</span>
     </div>
   );
 }
@@ -336,9 +336,9 @@ function SynthesisBar() {
   const text = useTransition(BEATS.laneFade);
   const { synthesis } = demoReplay;
   return (
-    <div className="relative min-h-11 overflow-hidden rounded-lg bg-white/[0.03]">
+    <div className="relative min-h-11 overflow-hidden rounded-lg bg-ink/[0.03]">
       <motion.div
-        className="absolute inset-0 origin-left bg-accent/[0.14]"
+        className="absolute inset-0 origin-left bg-ink/[0.08]"
         initial={reduce ? false : { scaleX: 0 }}
         animate={{ scaleX: on ? 1 : 0 }}
         transition={fill}
@@ -384,11 +384,11 @@ function BriefCard() {
   return (
     <Slot on={on} dur={BEATS.briefDur} y={16} ghost={0.14} innerClassName="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2.5">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-canvas" aria-hidden="true">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ink/[0.08] text-ink" aria-hidden="true">
           <Signal size={16} />
         </span>
         <span className={T.h3}>{brief.app}</span>
-        <span className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-white/[0.06] px-2 text-ink-2")}>{sentenceCase(brief.tag)}</span>
+        <span className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-ink/[0.06] px-2 text-ink-2")}>{sentenceCase(brief.tag)}</span>
       </div>
       <div className="flex flex-col gap-2">
         {brief.lines.map((line, index) => (
@@ -407,7 +407,7 @@ function ReplyCard() {
       <Slot on={on} dur={BEATS.replyDur} y={8} className="min-h-[56px]" innerClassName="flex items-start gap-2.5 p-3.5">
         <Check size={16} className="mt-0.5 shrink-0 text-healthy" aria-hidden="true" />
         <p className={T.small}>
-          <span className={T.h3}>{reply.status}</span> {reply.text}
+          <span className={cn(T.small, "font-medium text-ink")}>{reply.status}</span> {reply.text}
         </p>
       </Slot>
     </div>
@@ -443,14 +443,14 @@ export function LiveDemo() {
         </div>
         <div className="flex items-center gap-2">
           {!reduce ? (
-            <div role="group" aria-label="Replay speed" className="inline-flex rounded-lg border border-white/[0.12] p-0.5">
+            <div role="group" aria-label="Replay speed" className="inline-flex rounded-lg border border-line p-0.5">
               {([1, 2] as const).map((value) => (
                 <button
                   key={value}
                   type="button"
                   aria-pressed={speed === value}
                   onClick={() => setSpeed(value)}
-                  className={cn(buttonBase, "rounded-md", speed === value ? "bg-white/[0.08] text-ink" : "text-ink-2 hover:text-ink")}
+                  className={cn(buttonBase, "rounded-md", speed === value ? "bg-ink/[0.08] text-ink" : "text-ink-2 hover:text-ink")}
                 >
                   {value}x
                 </button>
@@ -466,7 +466,7 @@ export function LiveDemo() {
             className={cn(
               buttonBase,
               "rounded-lg border",
-              finished ? "border-accent text-ink" : "border-white/[0.12] text-ink-2 hover:text-ink",
+              finished ? "border-ink/30 text-ink" : "border-line text-ink-2 hover:text-ink",
               reduce && "cursor-not-allowed opacity-50",
             )}
           >

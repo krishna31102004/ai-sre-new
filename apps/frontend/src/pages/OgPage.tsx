@@ -7,7 +7,7 @@ import { landingStats } from "../mockData";
 function LogoTile({ size }: { size: number }) {
   return (
     <span
-      className="relative flex items-center justify-center border border-accent/30 bg-accent/15 text-accent"
+      className="relative flex items-center justify-center border border-line bg-ink/[0.06] text-ink"
       style={{ width: size, height: size, borderRadius: Math.round(size * 0.22) }}
     >
       <Signal size={Math.round(size * 0.53)} strokeWidth={2.6} />
@@ -46,7 +46,7 @@ export function OgPage() {
         <LogoTile size={44} />
         Glassbox SRE
       </div>
-      <h1 className="absolute left-16 top-[128px] w-[960px] font-display text-[76px] font-normal leading-[1] tracking-[-0.02em] text-ink">
+      <h1 className="absolute left-16 top-[128px] w-[960px] font-display text-[76px] font-normal leading-[1] tracking-[-0.01em] text-ink">
         The on-call engineer&apos;s first five minutes, automated.
       </h1>
       <div className="absolute bottom-[112px] left-16 flex gap-16">

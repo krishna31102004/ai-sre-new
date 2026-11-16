@@ -8,12 +8,12 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white/[0.06] text-ink-2",
-        accent: "bg-accent/[0.12] text-accent",
-        success: "bg-healthy/[0.12] text-healthy",
-        danger: "bg-firing/[0.12] text-firing",
-        warning: "bg-warning/[0.12] text-warning",
-        muted: "bg-white/[0.06] text-ink-3",
+        default: "bg-ink/[0.06] text-ink-2",
+        accent: "bg-ink/[0.06] text-ink",
+        success: "bg-ink/[0.06] text-healthy",
+        danger: "bg-ink/[0.06] text-firing",
+        warning: "bg-ink/[0.06] text-ink-2",
+        muted: "bg-ink/[0.06] text-ink-3",
       },
     },
     defaultVariants: {

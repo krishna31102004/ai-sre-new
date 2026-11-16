@@ -17,7 +17,7 @@ const BASELINE_SUFFIX = " (baseline)";
 const headers = ["Mode", "Scenarios", "Commit top-1", "Commit top-3", "Runbook hit", "Impact class", "Latency p50", "Latency p95", "Tokens", "Estimated USD/run"];
 
 function ScoreBar({ fraction, tone, reduce }: { fraction: number; tone: "accent" | "muted"; reduce: boolean }) {
-  return <div className="mt-6 h-0.5 w-full bg-white/[0.07]" aria-hidden="true">
+  return <div className="mt-6 h-0.5 w-full bg-ink/[0.07]" aria-hidden="true">
     <motion.div
       className={`h-full origin-left ${tone === "accent" ? "bg-accent" : "bg-ink-3"}`}
       style={{ width: `${fraction * 100}%` }}
@@ -29,12 +29,12 @@ function ScoreBar({ fraction, tone, reduce }: { fraction: number; tone: "accent"
 }
 
 const MODE_COLUMNS: { id: BenchmarkModeId; label: string; short: string }[] = [
-  { id: "replay-fast", label: "replay-fast", short: "RF" },
-  { id: "gpt-4.1-mini", label: "gpt-4.1-mini", short: "MINI" },
-  { id: "gpt-6-luna", label: "gpt-6-luna", short: "LUNA" },
+  { id: "replay-fast", label: "replay-fast", short: "Heuristic" },
+  { id: "gpt-4.1-mini", label: "gpt-4.1-mini", short: "Mini" },
+  { id: "gpt-6-luna", label: "gpt-6-luna", short: "Luna" },
 ];
 const ROW_GRID = "grid grid-cols-[16px_minmax(0,1fr)_repeat(3,56px)] items-center gap-x-2 md:grid-cols-[16px_minmax(0,1fr)_auto_repeat(3,88px)] md:gap-x-3";
-const badgeClass = (live: boolean) => cn(T.label, "inline-flex h-[22px] shrink-0 items-center rounded-md px-2", live ? "bg-healthy/[0.12] text-healthy" : "bg-white/[0.06] text-ink-2");
+const badgeClass = (live: boolean) => cn(T.label, "inline-flex h-[22px] shrink-0 items-center rounded-md px-2", live ? "bg-ink/[0.06] text-healthy" : "bg-ink/[0.06] text-ink-2");
 
 function ModeCell({ scenario, mode }: { scenario: BenchmarkScenario; mode: BenchmarkModeId }) {
   const result = scenario.modes[mode];
@@ -52,7 +52,7 @@ function ScenarioRow({ scenario, open, onToggle, reduce }: { scenario: Benchmark
   const panelId = `scenario-${scenario.id}`;
   const dur = reduce ? 0 : DUR.base;
   return <li className="border-b border-line last:border-b-0">
-    <button type="button" aria-expanded={open} aria-controls={panelId} onClick={onToggle} className={`${ROW_GRID} press min-h-[52px] w-full max-md:py-2 md:h-[52px] px-4 text-left transition-colors duration-[160ms] hover:bg-white/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent`}>
+    <button type="button" aria-expanded={open} aria-controls={panelId} onClick={onToggle} className={`${ROW_GRID} press min-h-[52px] w-full max-md:py-2 md:h-[52px] px-4 text-left transition-colors duration-[160ms] hover:bg-ink/[0.03] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent`}>
       <motion.span className="flex text-ink-3" aria-hidden="true" initial={false} animate={{ rotate: open ? 90 : 0 }} transition={{ duration: dur, ease: EASE }}><ChevronRight size={16} /></motion.span>
       <span className="min-w-0">
         <span className={cn(T.body, "line-clamp-2 font-medium text-ink md:block md:truncate")}>{scenario.title}</span>
@@ -76,11 +76,11 @@ function ScenarioRow({ scenario, open, onToggle, reduce }: { scenario: Benchmark
               return <li key={candidate.sha} className="relative -mx-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-4 py-3 last:border-b-0">
                 {actual ? <span aria-hidden="true" className="absolute inset-y-3 left-0 w-[2px] rounded-full bg-healthy" /> : null}
                 <span className={cn(T.dataSm, "w-5 shrink-0")}>{index + 1}</span>
-                <span className="flex min-w-0 flex-1 basis-[200px] items-baseline gap-2"><span className={cn(T.data, "shrink-0 text-accent")}>{candidate.sha.slice(0, 7)}</span><span className={cn(T.small, "min-w-0 text-ink max-md:break-words md:truncate")}>{commitLabel(candidate.sha) ?? "No change summary recorded"}</span></span>
-                {candidate.score !== null ? <PreRankBar value={candidate.score} /> : null}
+                <span className="flex min-w-0 flex-1 basis-[200px] items-baseline gap-2"><span className={cn(T.data, "shrink-0")}>{candidate.sha.slice(0, 7)}</span><span className={cn(T.small, "min-w-0 text-ink max-md:break-words md:truncate")}>{commitLabel(candidate.sha) ?? "No change summary recorded"}</span></span>
+                {candidate.score !== null ? <PreRankBar value={candidate.score} highlight={actual} /> : null}
                 <span className="flex flex-wrap items-center gap-1.5">
-                  {pickedBy.map((column) => <span key={column.id} className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-white/[0.06] px-2 text-ink-2")} title={`${column.label} picked this first`}>{column.label} first pick</span>)}
-                  {actual ? <span className={cn(T.label, "inline-flex h-[22px] items-center gap-1 rounded-md bg-healthy/[0.12] px-2 text-healthy")}><Check size={12} aria-hidden="true" />actual cause</span> : null}
+                  {pickedBy.map((column) => <span key={column.id} className={cn(T.label, "inline-flex h-[22px] items-center rounded-md bg-ink/[0.06] px-2 text-ink-2")} title={`${column.label} picked this first`}>{column.label} first pick</span>)}
+                  {actual ? <span className={cn(T.label, "inline-flex h-[22px] items-center gap-1 rounded-md bg-ink/[0.06] px-2 text-healthy")}><Check size={12} aria-hidden="true" />actual cause</span> : null}
                 </span>
               </li>;
             })}
@@ -134,7 +134,7 @@ export function BenchmarkPage() {
   const cell = cn(T.data, "h-[52px] whitespace-nowrap border-b border-line px-4 py-0 group-last:border-b-0");
   return <section>
     <div className="flex flex-wrap items-end justify-between gap-4"><div><p className={T.label}>Evaluation harness</p><h1 className={cn(T.h1, "mt-2")}>Benchmark results</h1><p className={cn(T.body, "mt-2")}>Ground-truth scoring for the fixed 15-scenario corpus; gpt-6-luna uses medium reasoning and strict JSON schema.</p></div><Badge variant="accent" className="hidden sm:inline-flex"><Gauge size={13} /> 15 scenarios</Badge></div>
-    <div className="mt-6 overflow-hidden rounded-xl border border-line bg-panel transition-colors duration-[160ms] hover:border-white/[0.12] md:mt-8">
+    <div className="mt-6 overflow-hidden rounded-xl border border-line bg-panel transition-colors duration-[160ms] hover:border-ink/20 md:mt-8">
       <div className="border-b border-line p-4 md:p-6"><p className={T.label}>Commit correlation, top-1</p><p className={cn(T.body, "mt-2 max-w-3xl text-ink")}>gpt-6-luna selected the ground-truth commit 15/15 in 4 of 4 runs on this 15-scenario benchmark, versus 13.3% for deterministic heuristics.</p></div>
       <div className="relative grid md:grid-cols-2">
         <div className="min-w-0 p-4 md:p-6">
@@ -152,7 +152,7 @@ export function BenchmarkPage() {
       </div>
     </div>
     <p className={cn(T.small, "mt-3 max-w-3xl")}>gpt-6-luna scored 100% (15/15) in 4 of 4 runs. gpt-4.1-mini ranged 86.7% to 93.3% on the same corpus.</p>
-    <div className="mt-8 overflow-hidden rounded-xl border border-line bg-panel transition-colors duration-[160ms] hover:border-white/[0.12] md:mt-10">
+    <div className="mt-8 overflow-hidden rounded-xl border border-line bg-panel transition-colors duration-[160ms] hover:border-ink/20 md:mt-10">
       <div className="flex items-center gap-2 border-b border-line px-4 py-3"><GitCompareArrows size={15} className="text-ink-3" aria-hidden="true" /><span className={T.label}>Evaluation comparison</span></div>
       <div className="overflow-x-auto rounded-b-xl focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent" tabIndex={0} role="region" aria-label="Evaluation comparison table">
         <table className="w-full min-w-[1040px] border-separate border-spacing-0 text-left">
@@ -164,8 +164,8 @@ export function BenchmarkPage() {
             const qualified = /^(.*?)(\s+\(.*\))$/.exec(fullName);
             const name = qualified ? qualified[1] : fullName;
             const qualifier = qualified ? qualified[2].trim() : null;
-            return <tr key={mode} className={`group ${highlighted ? "bg-accent/[0.06]" : ""}`}>
-              <td className={cn(cell, "border-l-2 max-md:sticky max-md:left-0 max-md:z-10 max-md:border-r max-md:border-r-line", highlighted ? "border-l-accent text-accent max-md:bg-[rgb(14_23_42)]" : "border-l-transparent text-ink max-md:bg-panel")}>
+            return <tr key={mode} className={`group ${highlighted ? "bg-ink/[0.04]" : ""}`}>
+              <td className={cn(cell, "border-l-2 max-md:sticky max-md:left-0 max-md:z-10 max-md:border-r max-md:border-r-line", highlighted ? "border-l-ink text-ink max-md:bg-panel" : "border-l-transparent text-ink max-md:bg-panel")}>
                 <span className="inline-flex items-center gap-2">{name}{qualifier ? <span className={cn(T.small, "text-ink-3")}>{qualifier}</span> : null}{isBaseline ? <Badge variant="muted">{sentenceCase("baseline")}</Badge> : null}</span>
               </td>
               <td className={cell}>{result.scenario_count}</td>

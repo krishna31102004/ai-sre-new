@@ -15,7 +15,7 @@ const linkClass = cn(T.small, "text-ink-2 transition-colors duration-[160ms] hov
 
 export function Footer({ linkedinUrl }: { linkedinUrl: string }) {
   return (
-    <footer className="border-t border-white/[0.07]">
+    <footer className="border-t border-line">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
         <div>
           <p className={T.h3}>Glassbox SRE</p>

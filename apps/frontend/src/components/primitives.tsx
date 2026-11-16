@@ -27,9 +27,9 @@ export function cn(...inputs: ClassValue[]) {
 
 /** One class string per type-scale step (TYPE_SYSTEM.md section 2). Override colour or weight with `cn`. */
 export const T = {
-  h1: "font-sans font-semibold text-h1-m md:text-h1 text-ink",
-  h2: "font-sans font-semibold text-h2-m md:text-h2 text-ink",
-  h3: "font-sans font-semibold text-h3 text-ink",
+  h1: "font-display font-normal text-h1-m md:text-h1 text-ink",
+  h2: "font-display font-normal text-h2-m md:text-h2 text-ink",
+  h3: "font-display font-normal text-h3 text-ink",
   lead: "font-sans font-normal text-lead-m md:text-lead text-ink-2",
   body: "font-sans font-normal text-body text-ink-2",
   small: "font-sans font-normal text-small text-ink-2",
@@ -93,7 +93,7 @@ export function ServiceChip({ children, className }: { children: ReactNode; clas
   return (
     <span
       className={cn(
-        T.label, "inline-flex h-[22px] max-w-full items-center rounded-md bg-white/[0.06] px-2 text-ink-2",
+        T.label, "inline-flex h-[22px] max-w-full items-center rounded-md bg-ink/[0.06] px-2 text-ink-2",
         className,
       )}
     >
@@ -102,8 +102,8 @@ export function ServiceChip({ children, className }: { children: ReactNode; clas
   );
 }
 
-/** 48 x 2px track with an accent fill, then the value with 2 decimals. `value` 0 to 1. */
-export function ScoreBar({ value, label = "pre-rank score", className }: { value: number | null; label?: string; className?: string }) {
+/** 48 x 2px track, accent fill when highlighted and muted otherwise, then the value with 2 decimals. `value` 0 to 1. */
+export function ScoreBar({ value, label = "pre-rank score", className, highlight = false }: { value: number | null; label?: string; className?: string; highlight?: boolean }) {
   const clamped = value === null ? 0 : Math.min(1, Math.max(0, value));
   const text = value === null ? "--" : value.toFixed(2);
   return (
@@ -113,29 +113,29 @@ export function ScoreBar({ value, label = "pre-rank score", className }: { value
       title={label}
       className={cn("inline-flex shrink-0 items-center gap-2", className)}
     >
-      <span className="relative h-0.5 w-12 overflow-hidden rounded-full bg-white/[0.07]" aria-hidden="true">
-        <span className="absolute inset-y-0 left-0 rounded-full bg-accent" style={{ width: `${clamped * 100}%` }} />
+      <span className="relative h-0.5 w-12 overflow-hidden rounded-full bg-ink/[0.07]" aria-hidden="true">
+        <span className={cn("absolute inset-y-0 left-0 rounded-full", highlight ? "bg-accent" : "bg-ink-3")} style={{ width: `${clamped * 100}%` }} />
       </span>
       <span className={T.data} aria-hidden="true">{text}</span>
     </span>
   );
 }
 
-/** 7-char SHA in accent mono, then the human summary on one truncated line. Raw title goes in `title`. */
+/** 7-char SHA in mono, then the human summary on one truncated line. The full summary is the tooltip. */
 export function CommitSummary({
   sha,
   title,
   className,
 }: {
   sha: string;
-  /** Raw commit title. Used as the tooltip, and as the text only when no human summary exists. */
+  /** Raw commit title. Used as the text only when no human summary exists. */
   title?: string | null;
   className?: string;
 }) {
   const summary = commitLabel(sha) ?? title ?? "No change summary recorded";
   return (
-    <span className={cn("flex min-w-0 items-baseline gap-2", className)} title={title ?? undefined}>
-      <span className={cn(T.data, "shrink-0 text-accent")}>{sha.slice(0, 7)}</span>
+    <span className={cn("flex min-w-0 items-baseline gap-2", className)} title={summary}>
+      <span className={cn(T.data, "shrink-0")}>{sha.slice(0, 7)}</span>
       <span className={cn(T.small, "min-w-0 truncate text-ink")}>{summary}</span>
     </span>
   );
@@ -169,8 +169,8 @@ export function FilterChips({
             onClick={() => onChange(option.value)}
             className={cn(
               T.label,
-              "press inline-flex h-11 items-center gap-1.5 rounded-full border border-white/[0.12] px-3 focus-visible:outline-offset-2 nav:h-7",
-              selected ? "bg-white/[0.08] text-ink" : "text-ink-2 hover:text-ink",
+              "press inline-flex h-11 items-center gap-1.5 rounded-full border border-line px-3 focus-visible:outline-offset-2 nav:h-7",
+              selected ? "border-accent bg-ink/[0.06] text-ink" : "text-ink-2 hover:text-ink",
             )}
           >
             {option.label}
