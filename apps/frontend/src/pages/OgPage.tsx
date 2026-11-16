@@ -19,8 +19,8 @@ export function OgPage() {
 
   if (params.get("icon") === "1") {
     return (
-      <div className="flex h-[180px] w-[180px] items-center justify-center overflow-hidden bg-canvas">
-        <Logo size={120} />
+      <div className="flex h-[180px] w-[180px] items-center justify-center overflow-hidden bg-[#0C0B0A]">
+        <Logo size={112} />
       </div>
     );
   }

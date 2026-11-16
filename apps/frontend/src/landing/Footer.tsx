@@ -20,7 +20,7 @@ export function Footer({ linkedinUrl }: { linkedinUrl: string }) {
       <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
         <div>
           <p className={cn(T.h3, "flex items-center gap-2")}>
-            <Logo size={24} />
+            <Logo size={22} />
             Glassbox SRE
           </p>
           <p className={cn(T.small, "mt-2 text-ink-3")}>
